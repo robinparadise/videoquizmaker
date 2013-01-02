@@ -2,14 +2,13 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
-define([ "text!dialog/dialogs/quizme.html", "dialog/dialog" ],
-  function( LAYOUT_SRC, Dialog ){
+define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
+  function( LAYOUT_SRC, Dialog, XHR ){
 
-  Dialog.register( "quizme", LAYOUT_SRC, function( dialog, quizData ) {
+  Dialog.register( "quizme", LAYOUT_SRC, function( dialog ) {
 
-    var rootElement = dialog.rootElement;
-
-    var title       = rootElement.querySelector( ".title" ),
+    var rootElement = dialog.rootElement,
+        title       = rootElement.querySelector( ".title" ),
         quizzes     = rootElement.querySelector( ".quizzes" ),
         addQuiz     = rootElement.querySelector( ".addQz" ),
         delQuiz     = rootElement.querySelector( ".delQz" ),
@@ -605,8 +604,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog" ],
     
     quizzes.addEventListener( "change", function () {onChangeQuiz();editQz()}, false );
     questions.addEventListener( "change", editQz, false );
-    addAns0.addEventListener( "click", function () {addRow()}, false );
-    addAns1.addEventListener( "click", function () {addRow()}, false );
+    // addAns0.addEventListener( "click", function () {addRow()}, false );
+    // addAns1.addEventListener( "click", function () {addRow()}, false );
     delQuiz.addEventListener( "click", vanishQuizzes, false );
     delQ.addEventListener( "click", vanishQuestion, false );
     selectQ.addEventListener( "change", onSelectQ, false );
