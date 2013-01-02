@@ -6,29 +6,11 @@
 
 .wrapper {
   @media @small {
-    width: @small-w-px;
-  }
-  @media @medium {
-    width: @medium-w-px;
-  }
-  @media @large {
-    width: @large-w-px;
-  }
-  @media @xlarge {
-    width: @xlarge-w-px;
+    width: 400px;
   }
   .butter-header-spacing & {
     @media @small-in-editor {
-      width: @small-w-px;
-    }
-    @media @medium-in-editor {
-      width: @medium-w-px;
-    }
-    @media @large-in-editor {
-      width: @large-w-px;
-    }
-    @media @xlarge-in-editor {
-      width: @xlarge-w-px;
+      width: 400px;
     }
   }
   border: 15px solid #FFF;
@@ -57,6 +39,7 @@ body.editor-minimized .body-wrapper {
 
 #embed-wrapper {
   position: relative;
+  display: inline-block;
 
   background: #FFF;
 
