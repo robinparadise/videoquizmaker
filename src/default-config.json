@@ -67,6 +67,11 @@
         "type": "wikipedia",
         "path": "{{baseDir}}templates/assets/plugins/wikipedia/popcorn.wikipedia.js",
         "icon": "{{baseDir}}templates/assets/plugins/wikipedia/wikipedia-icon.png"
+      },
+      {
+        "type": "quizme",
+        "path": "{{baseDir}}templates/assets/plugins/quizme/popcorn.quizme.js",
+        "icon": "{{baseDir}}templates/assets/plugins/quizme/quizme-icon.png"
       }
     ],
     "defaults": [
@@ -78,7 +83,8 @@
       "wikipedia",
       "loopPlugin",
       "pausePlugin",
-      "skip"
+      "skip",
+      "quizme"
     ]
   },
   "player": {
