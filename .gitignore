@@ -27,3 +27,4 @@ templates/assets/plugins/wikipedia/popcorn.wikipedia.css
 templates/assets/plugins/twitter/popcorn.twitter.css
 templates/assets/css/jquery-ui/jquery.ui.butter.css
 src/ui/webmakernav/webmakernav.css
+*.directory
