@@ -2,17 +2,17 @@
       If a copy of the MIT license was not distributed with this file, you can
       obtain one at http://www.mozillapopcorn.org/butter-license.txt -->
 
-<div class="butter-dialog quiz">
+<div class="butter-dialog quizmanager">
   <h1><span class="title"></span>Quiz Manager</h1>
   <div class="container hbox center">
-    <div class=" vbox center"><br/>
+    <div class="vbox center">
     <table align="center"><tr align="top" VALIGN="top">
     
-        <td align=center>
+        <td align="center">
             </p><b><center>Quizzes</center></b></p>
             <select class="quizzes" size="16"></select><br/>
-            <input value="Add Quiz" type="button" class="butter-dialog-button addQz"></input><br/>
-            <input value="Delete" type="button" class="butter-dialog-button delQz"></input>
+            <input value="Add Quiz" type="button" class="butter-btn btn-green addQz"></input><br/>
+            <input value="Delete" type="button" class="butter-btn btn-red delQz"></input>
         </td>
         
         <td><table class="showQuestion">
@@ -23,8 +23,8 @@
           <tr id="Questions">
             <td align=center>
                 <select class="questions" size="16" style="width:330px"></select><br/>
-                <input value="Add Question" type="button" class="butter-dialog-button addQ"></input>
-                <input value="Delete" type="button" class="butter-dialog-button delQ"></input> 
+                <input value="Add Question" type="button" class="butter-btn btn-green addQ"></input>
+                <input value="Delete" type="button" class="butter-btn btn-red delQ"></input> 
             </td>
           </tr>   
         </table></td>
@@ -38,7 +38,7 @@
             <tr id="addQuestions">
                 <td>Type</td>
                 <td align="left">
-                    <select class="butter-dialog-button selectQ" size="1">
+                    <select class="butter-btn btn-light selectQ" size="1">
                         <option id="multiList" selected>Multilist
                         <option id="multi">List
                         <option id="tf">True False
@@ -79,22 +79,22 @@
             </tr>
             <tr id="multiList" class="show">
                 <td align="left">Ans 4</td>
-                <td align="left"><input type="radio" name="c"><input type="text" name="a" size="24">
-                <input value="+" type="button" class="addAns0"></input></td>
+                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24">
+                <!-- <input value="+" type="button" class="addAns0"></input> --></td>
             </tr>
-            <tr style="display:none" id="hidden" class="hidden">
+<!--             <tr style="display:none" id="hidden" class="hidden">
                 <td align="left">Ans 5</td>
-                <td align="left"><input type="radio" name="c"><input type="text" name="a" size="24">
+                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24">
                 <input value="+" type="button" class="addAns1"></input></td>
             </tr>
             <tr style="display:none" id="hidden" class="hidden">
                 <td align="left">Ans 6</td>
-                <td align="left"><input type="radio" name="c"><input type="text" name="a" size="24"></td>
-            </tr>
+                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24"></td>
+            </tr> -->
             <tr id="addQuestions">
                 <td></td>
                 <td align="center">
-                    <br/><input value="Ok" type="button" class="butter-dialog-button okQ"></input>
+                    <br/><input value="Ok" type="button" class="butter-btn btn-green okQ"></input>
                 </td>
             </tr>
             <!--  Debug () -->
@@ -113,7 +113,7 @@
             <tr id="addQuestions">
                 <td></td>
                 <td align="center">
-                    <br/><input value="Get Quizzes" type="button" class="butter-dialog-button quizzesbutton"></input>
+                    <br/><input value="Get Quizzes" type="button" class="quizzesbutton"></input>
                 </td>
             </tr>
             
@@ -128,5 +128,5 @@
     
     </div>
   </div>
-  <div class="close-button"></div>
+  <a class="close-button"><span class="icon icon-only icon-x"></span></a>
 </div>
