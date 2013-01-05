@@ -639,7 +639,54 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     editQz();
     
     
+    // cornfield quizdb
+
+    this.savequiz = function(data, callback) {
+      console.log("POST /api/savequiz")
+      var url = server + "/api/savequiz";
+
+      XHR.post( url, data, function() {
+        if (this.readyState === 4) {
+          try {
+            var response = JSON.parse(this.response);
+            callback(response);
+          } catch (err) {
+            callback({ error: "an unknown error occured" });
+          }
+        }
+      }, "application/json" );
+    }; //savequiz
     
+    this.quizzes = function(callback) {
+      XHR.get(server + "/api/quizzes/", function() {
+        if (this.readyState === 4) {
+          try {
+            var response = JSON.parse(this.response);
+            callback(response);
+          } catch (err) {
+            callback({ error: "an unknown error occured" });
+          }
+        }
+      });
+    }; // quizzes
+    
+    this.deletequiz = function(data, callback) {
+      console.log("DELETE /api/deletequiz")
+      var url = server + "/api/deletequiz";
+
+      XHR.post( url, data, function() {
+        if (this.readyState === 4) {
+          try {
+            var response = JSON.parse(this.response);
+            callback(response);
+          } catch (err) {
+            callback({ error: "an unknown error occured" });
+          }
+        }
+      }, "application/json" );
+    }; //deletequiz
+
+
     // "Registry Acticity for: ok" "save" "update" "delete"
     // e.toElement.className.split(' ')[1] #value button
     
@@ -648,11 +695,26 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         console.log("Get Quizzes");
       })
     });
+
     dialog.registerActivity( "save", function( e ){
-      dialog.send( "savequiz",  function( e ){
-        console.log("Saved One Quiz?");
-      })
+        alert('ddd');
+        console.log("Sumit DIALOG", e.data);
+        butter.quiz.name   = "New Quiz";
+        butter.quiz.object = "Obj";
+        butter.quiz.option = "opt";
+        var dat = JSON.stringify( butter.quiz, null, 4 );
+
+        this.savequiz( dat, function( e ){
+        if( e.error !== "okay" ){
+            console.log( "There was a problem saving your quiz. Please try again." );
+        return;
+        }
+        else {
+            console.log("DATA RECEIVE", e);
+        }
+        });
     });
+
     dialog.registerActivity("delete", function(e){
       dialog.send( "delete",  function( e ){
       })
