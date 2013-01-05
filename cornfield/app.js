@@ -355,6 +355,130 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
   });
 });
 
+// ************** //
+// Routes QuizDB //
+// ************ //
+app.post('/api/savequiz', function( req, res ) {
+  var email = req.session.email,
+      id = req.params.id;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  if (!canStoreData) {
+    res.json({ error: 'storage service is not running' }, 500);
+    return;
+  }
+
+  UserModel.findOne( { email: email }, function( err, doc ) {
+
+    if( err ){
+      res.json( {error: 'internal db error' }, 500 );
+      return;
+    }
+
+    if( !doc ){
+      doc = new UserModel({
+        email: email
+      });
+    }
+
+//     var quiz;
+//     for( var i=0, l=doc.quizzes.length; i<l; ++i ) {
+//       quiz = doc.quizzes[ i ];
+//       break;
+//     }
+    
+    var quiz = new QuizDBModel({
+      name:   req.body.name,
+      object: req.body.object,
+      option: req.body.option,
+    });
+    doc.quizzes.push( quiz );
+
+    doc.save();
+
+    res.json({ error: 'okay', quiz: doc.quizzes });
+    return;
+
+  });
+});
+
+
+app.get('/api/quizzes', function(req, res) {
+  var email = req.session.email,
+      id = req.params.id;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+
+  if (!canStoreData) {
+    res.json({ error: 'storage service is not running' }, 500);
+    return;
+  }
+
+  UserModel.findOne( { email: email }, function( err, doc ) {
+
+    if( err ){
+      res.json( {error: 'internal db error' }, 500 );
+      return;
+    }
+
+    if( !doc ){
+      doc = new UserModel({
+        email: email
+      });
+    }
+
+    res.json({ error: 'okay', quiz: doc.quizzes });
+    return;
+
+  });
+});
+
+app.post('/api/deletequiz', function( req, res ) {
+  var email = req.session.email,
+      id = req.params.id;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  if (!canStoreData) {
+    res.json({ error: 'storage service is not running' }, 500);
+    return;
+  }
+
+  UserModel.findOne( { email: email }, function( err, doc ) {
+
+    if( err ){
+      res.json( {error: 'internal db error' }, 500 );
+      return;
+    }
+
+    if( !doc ){
+      doc = new UserModel({
+        email: email
+      });
+    }
+
+    for( var i=0, l=doc.quizzes.length; i<l; ++i ){
+      doc.quizzes.splice(i, 1);
+      doc.save();
+    }
+
+    res.json({ error: 'okay', quiz: doc.quizzes });
+    return;
+
+  });
+});
+
 var port = process.env.PORT || CONFIG.server.bindPort;
 
 var server = app.listen(port, CONFIG.server.bindIP, function() {
