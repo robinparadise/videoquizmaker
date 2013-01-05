@@ -22,6 +22,7 @@ module.exports = function( config, dbReadyFn ) {
       sequelize = new Sequelize( config.database, username, password, config.options ),
       Project = sequelize.import( __dirname + "/models/project" ),
       ImageReference = sequelize.import( __dirname + "/models/image" ),
+      Quiz = sequelize.import( __dirname + "/models/quiz" ),
       versions;
 
   // travis-ci doesn't create this file when running `npm test` so we need a workaround
@@ -224,6 +225,103 @@ module.exports = function( config, dbReadyFn ) {
       .error(function( error ) {
         callback( error );
       });
-    }
+    },
+    // ********** //
+    // Model Quiz //
+    // ********** //
+    createQuiz: function( email, data, callback ) {
+      if ( !email || !data ) {
+        callback( "not enough parameters to update: email is required" );
+        return;
+      }
+
+      var quiz = Quiz.build({
+        data: JSON.stringify( data.data ),
+        email: email,
+        name: data.name,
+      });
+
+      quiz.save().complete( callback );
+    },
+    deleteQuiz: function( email, pid, callback ) {
+      if ( !email || !pid ) {
+        callback( "not enough parameters to delete" );
+        return;
+      }
+
+      Quiz.find( { where: { email: email, id: pid } } )
+      .success(function( quiz ) {
+
+        if ( quiz ) {
+
+            quiz.destroy().complete( function( err ) {
+              callback( err );
+            });
+
+        } else {
+          callback( "the quiz has already been deleted" );
+        }
+      })
+      .error(function( error ) {
+        callback( error );
+      });
+    },
+    updateQuiz: function updateQuiz( email, pid, data, callback ) {
+      if ( !email || !pid || !data ) {
+        callback( "not enough parameters to update" );
+        return;
+      }
+
+      Quiz.find( { where: { email: email, id: pid } } )
+      .success(function( quiz ) {
+        if ( !quiz ) {
+          callback( "quiz not found" );
+          return;
+        }
+
+        var quizDataJSON = data.data;
+        var quizDataString = JSON.stringify( quizDataJSON );
+
+        quiz.updateAttributes({
+          data: quizDataString,
+          email: email,
+          name: data.name,
+        })
+        .error( function( err ) {
+          callback( err );
+        })
+        .success( function( quizUpdateResult ) {
+
+          ImageReference.findAll( { where: { quiz: pid } } ).complete( function( imageReferenceErr, imageReferences ) {
+
+            callback( null, quizUpdateResult );
+          });
+        });
+      })
+      .error(function( error ) {
+        callback( error );
+      });
+    },
+    findAllQuizzes: function findAllQuizzes( email, callback ) {
+      if ( !email ) {
+        callback( "not enough parameters to search" );
+        return;
+      }
+
+      Quiz.findAll( { where: { email: email } } ).complete( function( err, quizzes ) {
+        callback( err, quizzes );
+      });
+    },
+
+    findQuiz: function findQuiz( email, pid, callback ) {
+      if ( !email || !pid ) {
+        callback( "not enough parameters to search" );
+        return;
+      }
+
+      Quiz.find( { where: { email: email, id: pid } } ).complete( function( err, quiz ) {
+        callback( err, quiz );
+      });
+    },
   };
 };
