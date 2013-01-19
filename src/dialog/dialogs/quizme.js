@@ -645,7 +645,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
       console.log("POST /api/savequiz")
       var url = server + "/api/savequiz";
 
-      XHR.post( url, data, function() {
+      XHR.post( url, function() {
         if (this.readyState === 4) {
           try {
             var response = JSON.parse(this.response);
@@ -697,22 +697,26 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     });
 
     dialog.registerActivity( "save", function( e ){
-        alert('ddd');
-        console.log("Sumit DIALOG", e.data);
-        butter.quiz.name   = "New Quiz";
-        butter.quiz.object = "Obj";
-        butter.quiz.option = "opt";
-        var dat = JSON.stringify( butter.quiz, null, 4 );
+        console.log("Sumit DIALOG");
+        var quiz = {
+            id: null,
+            name: "New quiz",
+            data: "null",
+            options: "null",
+        };
+        var data = JSON.stringify( quiz, null, 4 );
+        console.log("POST /api/savequiz");
 
-        this.savequiz( dat, function( e ){
-        if( e.error !== "okay" ){
-            console.log( "There was a problem saving your quiz. Please try again." );
-        return;
-        }
-        else {
-            console.log("DATA RECEIVE", e);
-        }
-        });
+        XHR.post( "/api/savequiz", data, function() {
+            if (this.readyState === 4) {
+              try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+              } catch (err) {
+                console.log("an unknown error occured");
+              }
+            }
+        }, "application/json" );
     });
 
     dialog.registerActivity("delete", function(e){

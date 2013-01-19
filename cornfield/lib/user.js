@@ -241,6 +241,7 @@ module.exports = function( config, dbReadyFn ) {
         name: data.name,
       });
 
+      console.log("createQuiz quiz.save():: ", quiz);
       quiz.save().complete( callback );
     },
     deleteQuiz: function( email, pid, callback ) {
@@ -284,7 +285,6 @@ module.exports = function( config, dbReadyFn ) {
 
         quiz.updateAttributes({
           data: quizDataString,
-          email: email,
           name: data.name,
         })
         .error( function( err ) {
