@@ -386,7 +386,7 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
 });
 
 
-app.get('/api/quizzes', function(req, res) {
+app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
   console.log("RCV::/api/savequiz");
   var email = req.session.email;
 
@@ -413,41 +413,28 @@ app.get('/api/quizzes', function(req, res) {
   });
 });
 
-app.post('/api/deletequiz', function( req, res ) {
-  var email = req.session.email,
-      id = req.params.id;
+app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
+  var email = req.session.email;
 
   if ( !email ) {
     res.json( { error: 'unauthorized' }, 403 );
     return;
   }
 
-  if (!canStoreData) {
-    res.json({ error: 'storage service is not running' }, 500);
+  var id = parseInt( req.body.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
     return;
   }
 
-  UserModel.findOne( { email: email }, function( err, doc ) {
-
-    if( err ){
-      res.json( {error: 'internal db error' }, 500 );
+  User.deleteQuiz( email, req.body.id, function( err, docs) {
+    if ( err ) {
+      res.json( { error: 'quiz not found' }, 404 );
       return;
     }
 
-    if( !doc ){
-      doc = new Object({
-        email: email
-      });
-    }
-
-    for( var i=0, l=doc.quizzes.length; i<l; ++i ){
-      doc.quizzes.splice(i, 1);
-      doc.save();
-    }
-
-    res.json({ error: 'okay', quiz: doc.quizzes });
-    return;
-
+    res.json( { error: 'okay' }, 200 );
   });
 });
 

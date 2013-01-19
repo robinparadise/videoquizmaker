@@ -637,54 +637,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     quizzes.selectedIndex = 0;
     onChangeQuiz();
     editQz();
-    
-    
-    // cornfield quizdb
-
-    this.savequiz = function(data, callback) {
-      console.log("POST /api/savequiz")
-      var url = server + "/api/savequiz";
-
-      XHR.post( url, function() {
-        if (this.readyState === 4) {
-          try {
-            var response = JSON.parse(this.response);
-            callback(response);
-          } catch (err) {
-            callback({ error: "an unknown error occured" });
-          }
-        }
-      }, "application/json" );
-    }; //savequiz
-    
-    this.quizzes = function(callback) {
-      XHR.get(server + "/api/quizzes/", function() {
-        if (this.readyState === 4) {
-          try {
-            var response = JSON.parse(this.response);
-            callback(response);
-          } catch (err) {
-            callback({ error: "an unknown error occured" });
-          }
-        }
-      });
-    }; // quizzes
-    
-    this.deletequiz = function(data, callback) {
-      console.log("DELETE /api/deletequiz")
-      var url = server + "/api/deletequiz";
-
-      XHR.post( url, data, function() {
-        if (this.readyState === 4) {
-          try {
-            var response = JSON.parse(this.response);
-            callback(response);
-          } catch (err) {
-            callback({ error: "an unknown error occured" });
-          }
-        }
-      }, "application/json" );
-    }; //deletequiz
 
 
     // "Registry Acticity for: ok" "save" "update" "delete"
@@ -727,8 +679,22 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     });
 
     dialog.registerActivity("delete", function(e){
-      dialog.send( "delete",  function( e ){
-      })
+      console.log("DELETE /api/deletequiz");
+      var pid = {
+            id: 1
+        };
+      var data = JSON.stringify( pid, null, 4 );
+
+        XHR.post( "/api/deletequiz", data, function() {
+            if (this.readyState === 4) {
+              try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+              } catch (err) {
+                console.log("an unknown error occured");
+              }
+            }
+        }, "application/json" );
     });
 
     dialog.assignButton( ".savebutton", "save" );
