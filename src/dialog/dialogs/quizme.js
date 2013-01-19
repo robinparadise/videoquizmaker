@@ -691,9 +691,16 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     // e.toElement.className.split(' ')[1] #value button
     
     dialog.registerActivity( "quizzes", function( e ){
-      dialog.send( "quizzes",  function( e ){
-        console.log("Get Quizzes");
-      })
+        XHR.get("/api/quizzes/", function() {
+            if (this.readyState === 4) {
+              try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+              } catch (err) {
+                console.log({ error: "an unknown error occured" });
+              }
+            }
+        });
     });
 
     dialog.registerActivity( "save", function( e ){

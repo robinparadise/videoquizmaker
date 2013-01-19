@@ -368,7 +368,6 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
   }
 
   var quizData = req.body;
-  console.log(quizData, "email:: ", email);
 
   User.createQuiz( email, quizData, function( err, doc ) {
     if ( err ) {
@@ -384,51 +383,12 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
     }
 
   });
-
-/*
-  User.findAllQuizzes( email, function( err, docs ) {
-
-    if ( err ) {
-      console.log("Se ha producido error 500");
-      console.log(docs);
-      res.json( { error: err }, 500 );
-      return;
-    }
-
-    if ( !docs ) {
-      res.json( { error: "quiz not found" }, 404 );
-      return;
-    }
-
-//     var quiz;
-//     for( var i=0, l=doc.quizzes.length; i<l; ++i ) {
-//       quiz = doc.quizzes[ i ];
-//       break;
-//     }
-    
-    var quiz = {
-        id: null,
-        name: "New quiz",
-        data: "null",
-        options: "null",
-    };
-
-    // docs.quizzes.push( quiz );
-
-    // docs.save();
-
-    res.json({ quiz: quiz });
-    return;
-
-  });
-*/
 });
 
 
 app.get('/api/quizzes', function(req, res) {
   console.log("RCV::/api/savequiz");
-  var email = req.session.email,
-      id = req.params.id;
+  var email = req.session.email;
 
   if ( !email ) {
     res.json( { error: 'unauthorized' }, 403 );
@@ -439,19 +399,17 @@ app.get('/api/quizzes', function(req, res) {
 
     if ( err ) {
       console.log("Se ha producido error 500");
-      console.log(docs);
       res.json( { error: err }, 500 );
       return;
     }
 
     if ( !docs ) {
-      res.json( { error: "quiz not found, Its empty" }, 200 );
+      res.json( { error: "quiz not found" }, 404 );
       return;
     }
 
-    res.json({ error: 'okay', quiz: doc.quizzes });
+    res.json({ quiz: docs }, 200);
     return;
-
   });
 });
 
