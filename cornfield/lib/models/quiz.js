@@ -14,6 +14,13 @@ module.exports = function(sequelize, DataTypes) {
         isAlphanumeric: true
       }
     },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isEmail: true
+      }
+    },
     data: {
       type: DataTypes.TEXT,
       allowNull: true
