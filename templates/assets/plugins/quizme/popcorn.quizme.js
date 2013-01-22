@@ -1085,10 +1085,10 @@
   ]};
 
   var opt1 = {
-      title: "Simple statements 1.",
+      title: "Simple statements",
       disableRestart: true,
       disableDelete: false,
-      intro: "Welcome to the  simple statements quiz. If you are an experienced user, I hope you won't be offended by the simplicity of the questions. This series is intended for beginners, jQuizMe is easily the best jQuery quiz plugin around.",
+      // intro: "Welcome to the  simple statements quiz. If you are an experienced user, I hope you won't be offended by the simplicity of the questions. This series is intended for beginners, jQuizMe is easily the best jQuery quiz plugin around.",
       help: "You do not need help.",
       multiLen: 5,
       showAns: false,
@@ -1119,12 +1119,14 @@
           elem: "input", 
           type: "text", 
           label: "Title",
-          optional: true
+          optional: true,
+          "default": "Simple statements"
         },
         name: {
           elem: "select", 
-          options: ["default", "TrueFalse", "Fill", "Multilist"], 
+          options: ["Default", "TrueFalse", "Fill", "MultiList"], 
           label: "Quiz",
+          "default": "TrueFalse",
         },
         start: {
           elem: "input", 
@@ -1140,7 +1142,7 @@
           elem: "select",
           options: ["No", "Yes"],
           label: "Block",
-          value: "No",
+          "default": "No",
         },       
         target: "quizme-container",
       }
@@ -1165,8 +1167,14 @@
         throw new Error( "target container doesn't exist" );
       }
       target && target.appendChild( options._container );
-      console.log(window);
-      $("#" + options._container.id).jQuizMe(Default, opt1);
+
+      if (options.name !== "Default") {
+        quiz = GlobalQuiz[options.name];
+      }
+      if (!!options.title && options.title !== opt1.title) {
+        opt1["title"] = options.title;
+      }
+      $("#" + options._container.id).jQuizMe(quiz, opt1);
 
     },
 
