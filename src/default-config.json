@@ -27,6 +27,11 @@
         "icon": "{{baseDir}}templates/assets/plugins/quizme/quizme-icon.png"
       },
       {
+        "type": "mvideo",
+        "path": "{{baseDir}}templates/assets/plugins/mvideo/popcorn.mvideo.js",
+        "icon": "{{baseDir}}templates/assets/plugins/mvideo/mvideo-icon.png"
+      },
+      {
         "type": "text",
         "path": "{{baseDir}}templates/assets/plugins/text/popcorn.text.js",
         "icon": "{{baseDir}}templates/assets/plugins/text/text-icon.png"
@@ -75,6 +80,7 @@
       }
     ],
     "defaults": [
+      "mvideo",
       "text",
       "popup",
       "googlemap",
