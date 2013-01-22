@@ -51,7 +51,7 @@ module.exports = function( config, dbReadyFn ) {
           errs.push( err );
         }
 
-        if ( ++finishedItems == files.length ) {
+        if ( ++finishedItems === files.length ) {
           callback( errs.length > 0 ? errs : null );
         }
       }
@@ -79,7 +79,7 @@ module.exports = function( config, dbReadyFn ) {
           filename: imageFile.filename,
           url: imageFile.url,
           project: projectId
-        }).save().complete( function( err, imageResult ) {
+        }).save().complete( function( err ) {
           if ( err ) {
             errs.push( err );
           }
