@@ -13,7 +13,7 @@ define( [ "util/lang", "core/eventmanager", "./modal" ],
   var __dialogs = {},
       __openDialogs = {},
       __keyboardAvoidElements = [
-        "TEXTAREA"
+        "TEXTAREA", "INPUT"
       ];
 
   /**
