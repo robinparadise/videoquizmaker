@@ -291,11 +291,7 @@ module.exports = function( config, dbReadyFn ) {
           callback( err );
         })
         .success( function( quizUpdateResult ) {
-
-          ImageReference.findAll( { where: { quiz: pid } } ).complete( function( imageReferenceErr, imageReferences ) {
-
             callback( null, quizUpdateResult );
-          });
         });
       })
       .error(function( error ) {

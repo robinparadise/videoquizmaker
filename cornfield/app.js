@@ -367,9 +367,7 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
     return;
   }
 
-  var quizData = req.body;
-
-  User.createQuiz( email, quizData, function( err, doc ) {
+  User.createQuiz( email, req.body, function( err, doc ) {
     if ( err ) {
       console.log("Se ha producido error 500");
       res.json( { error: err }, 500 );
@@ -379,6 +377,39 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
       // Send back the newly added row's ID
       console.log("Send back the newly added row's ID");
       res.json( { error: 'okay', quizId: doc.id }, 200 );
+      return;
+    }
+
+  });
+});
+
+app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
+  console.log("RCV::/api/updatequiz");
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  var id = parseInt( req.body.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
+    return;
+  }
+  var type = req.body.type;
+  delete req.body.type;
+
+  User.updateQuiz( email, req.body.id, req.body, function( err, doc ) {
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+    else {
+      // Send back the newly added row's ID
+      console.log("Send back the newly added row's ID");
+      res.json( { error: 'okay', id: doc.id, name: doc.name, type: type }, 200 );
       return;
     }
 
@@ -408,7 +439,44 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
       return;
     }
 
-    res.json({ quiz: docs }, 200);
+    var aux = new Object();
+    for (var i = 0; i < docs.length; i+=1) {
+      aux[docs[i].id] = docs[i].name;
+    }
+
+    res.json({ quiz: aux }, 200);
+    return;
+  });
+});
+
+app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+  var id = parseInt( req.params.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
+    return;
+  }
+
+  User.findQuiz( email, req.params.id, function( err, doc ) {
+
+    if ( err ) {
+      console.log("Se ha producido error 500");
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !doc ) {
+      res.json( { error: "quiz not found" }, 404 );
+      return;
+    }
+    
+    res.json({ quiz: doc }, 200);
     return;
   });
 });
