@@ -21,15 +21,46 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         okQ         = rootElement.querySelector( ".okQ" ),
         delQ        = rootElement.querySelector( ".delQ" ),
         
-        inputs      = thisform.getElementsByTagName("input");
+        inputs      = thisform.getElementsByTagName("input"),
+        GlobalQuiz  = new Object(),
+        GlobalDataQuiz  = new Object();
 
-        
+    
+    //*** BD Quiz ***//
+
+    getquizzesQuizDB = function (id, callback) {
+        if (id === undefined) { id = "" }
+        XHR.get("/api/quizzes/" + id, callback);
+    }
+
+    updatequizQuizDB = function (id, name, data, callback) {
+        if (name === undefined) { return }
+        if (id === undefined) { return }
+        if (data === undefined) { data = {} }
+        var quiz = {
+            id: id,
+            name: name,
+            data: data.quiz,
+            options: "",
+            type: data.type
+        }
+        var sdata = JSON.stringify( quiz, null, 4 );
+        XHR.post("/api/updatequiz", sdata, callback, "application/json");
+    }
+
+    deleteQuestionsQuizDB = function (id, callback) {
+        var pid = { id: id };
+        var data = JSON.stringify( pid, null, 4 );
+        XHR.post( "/api/deletequiz", data, callback, "application/json" );
+    }
+
+
     //*** CLEANERS ***//
         
     function stripBlanks(fld) {
         var result = "";
         var c = 0;
-        for (i=0; i < fld.length; i++) {
+        for (var i=0; i < fld.length; i++) {
             if (fld.charAt(i) != " " || c > 0) {
                 result += fld.charAt(i);
                 if (fld.charAt(i) != " ") {
@@ -54,8 +85,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     
     cleanArray = function (array) {
         var aux = [];
-        for (i=0; i<array.length; i++) {
-            if (typeof(array[i]) != 'undefined') {
+        for (var i=0; i<array.length; i++) {
+            if (array[i] !== undefined || array[i] !== null) {
                 if (array[i].length > 0) {
                     aux[aux.length] = array[i];
                 }
@@ -87,7 +118,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         else if (typeQ == "multi") {
             typeQ = "multiList";
         }
-        for (i=0; i<trs.length; i++) {
+        for (var i=0; i<trs.length; i++) {
             if ( trs[i].id == typeQ) {
                 trs[i].style.display = "table-row";
             }
@@ -100,7 +131,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     // Add a new text-row answer for a multilist quiz
     addRow = function () {
         var trs = thisform.getElementsByTagName("tr");
-        for (i=0; i<trs.length; i++) {
+        for (var i=0; i<trs.length; i++) {
             if (trs[i].id == "hidden") {
                 trs[i-1].getElementsByTagName("input")[2].style.display = "none";
                 trs[i].style.display = "table-row";
@@ -152,7 +183,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
         else {  // Multilist, multi or TrueFalse
             var c = []; // Create Array C (include radio box)
-            for (i=0; i<inputs.length; i++ ) {
+            for (var i=0; i<inputs.length; i++ ) {
                 try {
                     if (inputs[i].name == searchC) {  //Search "c" o "ctf"
                         c[c.length] = inputs[i];
@@ -166,7 +197,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             }
 
             var anscorrect = -1; //num ans correct
-            for (i=0; i<c.length; i++) {
+            for (var i=0; i<c.length; i++) {
                 if (c[i].checked) {
                     anscorrect = i;
                 }
@@ -201,7 +232,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
 
         //Nulo
-        for (i=0; i<a.length; i++) {
+        for (var i=0; i<a.length; i++) {
             if (anscorrect == i && a[i] == '') {
                 ax[i].focus();
                 return false
@@ -209,7 +240,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
 
         //Igualdad
-        for (i=1; i<a.length; i++) {
+        for (var i=1; i<a.length; i++) {
             if (a[i] == '') {
                 break;
             }
@@ -220,22 +251,15 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 }
             }
         }
-        
-        cleanFormQuestions();
 
         if (questions.selectedIndex >= 0) { // It means we just have to update question
-            if (updateQuiz(question, a, anscorrect, typeQ)) {
-                onChangeQuiz(questions.selectedIndex);
-            }
-            else {  // Because we create a new one
-                onChangeQuiz(questions.length - 1);
-            }
+            updateQuestionLocal(question, a, anscorrect, typeQ);
         }
         else {  // Create a new one
-            storeQz(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
-            onChangeQuiz(questions.length);
+            cleanFormQuestions();
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
         }
-        editQz(); 
+        storeQuiz(quizzes[quizzes.selectedIndex].innerHTML, GlobalDataQuiz, typeQ, reloadQuiz);
     }, false );
     
     
@@ -453,6 +477,227 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             this.obj[name] = new Object();
         }
     }
+
+
+    // *** Interaction (callbacks) with BD *** //
+
+    print_quizzes = function() {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response) { return }
+
+        cleanList(quizzes);
+        for (var id in response.quiz) {
+            quizzes[quizzes.length] = new Option(response.quiz[id], id);
+        }
+    }
+
+    onChangeQuizzes = function (){
+        cleanFormQuestions();
+        okQ.value = "Create Question";
+
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        getquizzesQuizDB(quizzes[quizzes.selectedIndex]['value'], load_Questions);
+    }
+
+    load_List_Questions = function (name, data) {
+        cleanList(questions);
+        if (data === undefined) {
+            data = GlobalQuiz[name];
+        }
+        console.log(data);
+        for (var type in data) {
+            for (var n in data[type]) {
+                questions[questions.length] = new Option(data[type][n].ques, [name, type, n].join('|'));
+            }
+        } 
+    }
+
+    load_Questions = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                var data = JSON.parse(JSON.parse(this.response).quiz.data);
+                console.log("RESP:: ", response, this);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response || !data) { return }
+        if (!quizzes[quizzes.selectedIndex]) { return }
+
+        GlobalQuiz[response.quiz.name] = data; // Guardamos en local
+        
+        load_List_Questions(response.quiz.name);
+    }
+
+    reloadQuiz = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (questions.selectedIndex >= 0) {
+            cleanFormQuestions();
+        }
+
+        GlobalQuiz[response.name] = GlobalDataQuiz;
+
+        load_List_Questions(response.name);
+    }
+
+    editQuestion = function () {
+        cleanFormQuestions();
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        if (!questions[questions.selectedIndex]) { return }
+
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        
+        okQ.value = "Update Question";
+        
+        var name   = info[0];
+        var type   = info[1];
+        var n      = info[2];
+        var quiz   = GlobalQuiz[name][type] [n];
+
+        onSelectQ(type);
+        
+        thisform.getElementsByTagName("textarea")[0].value = quiz.ques; //fix this
+        
+        if (type == "fill" || type == "cards") {
+            for (var k=0; k<inputs.length; k++ ) {
+                if (inputs[k].name == "f") {
+                    inputs[k].value = quiz.ans;
+                    break;
+                }
+            }
+        }
+        else if (type == "tf") {
+            var pass = false;
+            for (var i=0; i<inputs.length; i++ ) {
+                if (!pass && inputs[i].type == "radio" && inputs[i].name == "ctf") {
+                    inputs[i].checked = true == quiz.ans;
+                    pass = true;
+                }
+                else if (pass && inputs[i].type == "radio" && inputs[i].name == "ctf") {
+                    inputs[i].checked = false == quiz.ans;
+                    break;
+                }
+            }
+        }
+        else {
+            var ans = quiz.ansSel.slice();
+            for (k=1; k<inputs.length; k++ ) {
+                if (inputs[k].name == "a") {
+                    if (ans.length > 0) {
+                        inputs[k].value = ans.shift();
+                        inputs[k+2].value = quiz.ans;
+                        inputs[k+1].checked = true;
+                    }
+                }
+            }
+        }
+    }
+
+    storeQuizLocal = function (quiz, question, x, anscorrect, typeQ, position) {
+        if (typeof(position) == 'undefined') {
+            try {
+                position = GlobalQuiz[quiz][typeQ].length;  // create a new question
+            }
+            catch (err) {
+                position = 0;
+            }
+        }
+        var ans = x[anscorrect];
+        a = x.splice(anscorrect, 1);
+        
+        if (typeQ == "tf") {
+            ans = ans != "false";
+        }
+
+        GlobalDataQuiz = GlobalQuiz[quiz];
+        if (typeQ == "multiList" || typeQ == "multi") {
+            try {
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans, ansSel: a};
+            }
+            catch (ex){
+                GlobalDataQuiz[typeQ] = [];
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans, ansSel: a};
+            }
+        }
+        else {
+            try {
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans};
+            }
+            catch (ex){
+                GlobalDataQuiz[typeQ] = [];
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans};
+            }
+        }
+    }
+
+    storeQuiz = function (name, dataQuiz, typeQ, callback) {
+        var id = quizzes[quizzes.selectedIndex]['value'];
+        data = {type: typeQ, quiz: GlobalDataQuiz}
+        updatequizQuizDB(id, name, data, callback); // XHR
+    }
+
+
+
+    updateQuestionLocal = function (question, a, anscorrect, typeQ) {
+        if (!questions.options[questions.selectedIndex]) { return }
+        
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        var name = info[0];
+        var type = info[1];
+        var n    = info[2];
+
+        if (type != typeQ) { // It means we need to delete the question and create a new one
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
+            delete GlobalDataQuiz[type] [n];
+            if (GlobalDataQuiz[type].length <= 0) {
+                delete GlobalDataQuiz[type];
+            }
+        } else { // It means we need to overwrite the question in the position n
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ, n);
+        }
+    }
+
+    deleteQuestionLocal = function () {
+        if (!questions.options[questions.selectedIndex]) { return }
+
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        var name = info[0];
+        var type = info[1];
+        var n    = info[2];
+
+        GlobalDataQuiz = GlobalQuiz[name];
+        console.log(GlobalDataQuiz);
+        GlobalDataQuiz[type].splice(parseInt( n, 10 ), 1);
+
+        if (GlobalDataQuiz[type].length <= 0) {
+            delete GlobalDataQuiz[type];
+        }
+        console.log("4");
+        console.log(GlobalDataQuiz);
+
+        storeQuiz(name, GlobalDataQuiz, type, reloadQuiz);
+    }
+
+
+    getquizzesQuizDB(undefined, print_quizzes);
     
 
     // Make editable option select  
@@ -602,12 +847,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     })(jQuery);
     $(quizzes).editableOptions();
     
-    quizzes.addEventListener( "change", function () {onChangeQuiz();editQz()}, false );
-    questions.addEventListener( "change", editQz, false );
-    // addAns0.addEventListener( "click", function () {addRow()}, false );
-    // addAns1.addEventListener( "click", function () {addRow()}, false );
+    quizzes.addEventListener( "change", onChangeQuizzes, false );
+    questions.addEventListener( "change", editQuestion, false );
+
     delQuiz.addEventListener( "click", vanishQuizzes, false );
-    delQ.addEventListener( "click", vanishQuestion, false );
+    delQ.addEventListener( "click", deleteQuestionLocal, false );
     selectQ.addEventListener( "change", onSelectQ, false );
     dialog.enableCloseButton();
     
@@ -633,10 +877,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     }, false );
     
     // Main
-    loadquizzes();
-    quizzes.selectedIndex = 0;
-    onChangeQuiz();
-    editQz();
+    // loadquizzes();
+    // quizzes.selectedIndex = 0;
+    // onChangeQuiz();
+     editQz();
 
 
     // "Registry Acticity for: ok" "save" "update" "delete"
@@ -655,12 +899,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         });
     });
 
+
     dialog.registerActivity( "save", function( e ){
         console.log("Sumit DIALOG");
         var quiz = {
             id: null,
-            name: "New quiz",
-            data: "null",
+            name: "New One",
+            data: TrueFalse,
             options: "null",
         };
         var data = JSON.stringify( quiz, null, 4 );
