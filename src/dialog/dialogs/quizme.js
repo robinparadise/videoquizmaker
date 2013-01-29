@@ -13,13 +13,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         addQuiz     = rootElement.querySelector( ".addQz" ),
         delQuiz     = rootElement.querySelector( ".delQz" ),
         questions   = rootElement.querySelector( ".questions" ),
-        addQ        = rootElement.querySelector( ".addQ" ),
+        addQuestion = rootElement.querySelector( ".addQ" ),
         thisform    = rootElement.querySelector( ".addQuestions" ),
         selectQ     = rootElement.querySelector( ".selectQ" ),        
         addAns0     = rootElement.querySelector( ".addAns0" ),
         addAns1     = rootElement.querySelector( ".addAns1" ),
         okQ         = rootElement.querySelector( ".okQ" ),
-        delQ        = rootElement.querySelector( ".delQ" ),
+        delQuestion = rootElement.querySelector( ".delQ" ),
         
         inputs      = thisform.getElementsByTagName("input"),
         GlobalQuiz  = new Object(),
@@ -52,6 +52,18 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         var pid = { id: id };
         var data = JSON.stringify( pid, null, 4 );
         XHR.post( "/api/deletequiz", data, callback, "application/json" );
+    }
+
+    addquizQuizDB = function (name, data, callback) {
+        if (data === undefined) { data = {} }
+        var quiz = {
+            id: null,
+            name: name,
+            data: data,
+            options: null,
+        }
+        var sdata = JSON.stringify( quiz, null, 4 );
+        XHR.post( "/api/savequiz", sdata, callback, "application/json" );
     }
 
 
@@ -495,16 +507,22 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
         cleanList(quizzes);
         for (var id in response.quiz) {
+            GlobalQuiz[response.quiz[id]] = new Object();
             quizzes[quizzes.length] = new Option(response.quiz[id], id);
         }
     }
 
     onChangeQuizzes = function (){
+        if (!quizzes[quizzes.selectedIndex]) { return }
         cleanFormQuestions();
         okQ.value = "Create Question";
 
-        if (!quizzes[quizzes.selectedIndex]) { return }
-        getquizzesQuizDB(quizzes[quizzes.selectedIndex]['value'], load_Questions);
+        if (Object.keys( GlobalQuiz[quizzes[quizzes.selectedIndex].innerHTML] ).length === 0) {
+            getquizzesQuizDB(quizzes[quizzes.selectedIndex]['value'], load_Questions);
+        } else {
+            load_List_Questions(quizzes[quizzes.selectedIndex].innerHTML);
+        }
+
     }
 
     load_List_Questions = function (name, data) {
@@ -666,7 +684,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
         if (type != typeQ) { // It means we need to delete the question and create a new one
             storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
-            delete GlobalDataQuiz[type] [n];
+            GlobalDataQuiz[type].splice(parseInt( n, 10 ), 1);
             if (GlobalDataQuiz[type].length <= 0) {
                 delete GlobalDataQuiz[type];
             }
@@ -694,6 +712,56 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         console.log(GlobalDataQuiz);
 
         storeQuiz(name, GlobalDataQuiz, type, reloadQuiz);
+    }
+
+    sendAddQuiz = function () {
+        var name0 = "New quiz";
+        var name = name0;
+        var i = 0;
+        while (nameExist(GlobalQuiz, name)) {
+            i += 1;
+            name = name0 +" ("+i+")";
+        }
+        console.log("BEFORE SEND ADD QUIZ");
+        addquizQuizDB(name, {}, addQuizResp);
+        console.log("SEND ADD QUIZ");
+    }
+
+    addQuizResp = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        GlobalQuiz[response.name] = new Object();
+        quizzes[quizzes.length] = new Option(response.name, response.id);
+        $(quizzes).editableOptions();
+    }
+
+    deleteQuiz = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response || !quizzes[quizzes.selectedIndex]) { return }
+
+        delete GlobalQuiz[quizzes.options[quizzes.selectedIndex].innerHTML];
+        cleanList(questions);
+        quizzes[quizzes.selectedIndex] = null;
+    }
+
+    deleteQuizLocal = function () {
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        var id = quizzes[quizzes.selectedIndex]['value'];
+        deleteQuestionsQuizDB(id, deleteQuiz);
     }
 
 
@@ -850,55 +918,25 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     quizzes.addEventListener( "change", onChangeQuizzes, false );
     questions.addEventListener( "change", editQuestion, false );
 
-    delQuiz.addEventListener( "click", vanishQuizzes, false );
-    delQ.addEventListener( "click", deleteQuestionLocal, false );
-    selectQ.addEventListener( "change", onSelectQ, false );
-    dialog.enableCloseButton();
+    delQuestion.addEventListener( "click", deleteQuestionLocal, false );
+    delQuiz.addEventListener( "click", deleteQuizLocal, false );
     
-    addQuiz.addEventListener( "click", function () {
-        var name0 = "New quiz";
-        var name = name0;
-        var i = 0;
-        while (nameExist(GlobalQuiz, name)) {
-            i += 1;
-            name = name0 +" ("+i+")";
-        }
-            
-        GlobalQuiz[name] = new Object();
-        quizzes[quizzes.length] = new Option(name, quizzes.length);
-        $(quizzes).editableOptions();
-    } );
-    
-    addQ.addEventListener( "click", function () {
+    addQuiz.addEventListener( "click", sendAddQuiz, false );
+    addQuestion.addEventListener( "click", function () {
         cleanFormQuestions();
         questions.selectedIndex = -1;
         okQ.value = "Create Question";
         thisform.getElementsByTagName("textarea")[0].focus();
     }, false );
+
+    selectQ.addEventListener( "change", onSelectQ, false );
     
     // Main
-    // loadquizzes();
-    // quizzes.selectedIndex = 0;
-    // onChangeQuiz();
-     editQz();
+    onSelectQ("tf");
+    dialog.enableCloseButton();
 
 
-    // "Registry Acticity for: ok" "save" "update" "delete"
-    // e.toElement.className.split(' ')[1] #value button
-    
-    dialog.registerActivity( "quizzes", function( e ){
-        XHR.get("/api/quizzes/", function() {
-            if (this.readyState === 4) {
-              try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-              } catch (err) {
-                console.log({ error: "an unknown error occured" });
-              }
-            }
-        });
-    });
-
+    // DEBUG
 
     dialog.registerActivity( "save", function( e ){
         console.log("Sumit DIALOG");
@@ -926,7 +964,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     dialog.registerActivity("delete", function(e){
       console.log("DELETE /api/deletequiz");
       var pid = {
-            id: 1
+            id: 5
         };
       var data = JSON.stringify( pid, null, 4 );
 
@@ -944,7 +982,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
     dialog.assignButton( ".savebutton", "save" );
     dialog.assignButton( ".deletebutton", "delete" );
-    dialog.assignButton( ".quizzesbutton", "quizzes" );
     
   });
   

@@ -376,7 +376,7 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
     else {
       // Send back the newly added row's ID
       console.log("Send back the newly added row's ID");
-      res.json( { error: 'okay', quizId: doc.id }, 200 );
+      res.json( { error: 'okay', id: doc.id, name: doc.name }, 200 );
       return;
     }
 
