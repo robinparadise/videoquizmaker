@@ -1168,13 +1168,10 @@
       }
       target && target.appendChild( options._container );
 
-      if (options.name !== "Default") {
-        quiz = GlobalQuiz[options.name];
-      }
       if (!!options.title && options.title !== opt1.title) {
         opt1["title"] = options.title;
       }
-      $("#" + options._container.id).jQuizMe(quiz, opt1);
+      $("#" + options._container.id).jQuizMe(Default, opt1);
 
     },
 
