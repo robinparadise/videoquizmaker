@@ -28,12 +28,12 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     
     //*** BD Quiz ***//
 
-    getquizzesQuizDB = function (id, callback) {
+    var getquizzesQuizDB = function (id, callback) {
         if (id === undefined) { id = "" }
         XHR.get("/api/quizzes/" + id, callback);
     }
 
-    updatequizQuizDB = function (id, name, data, callback) {
+    var updatequizQuizDB = function (id, name, data, callback) {
         if (name === undefined) { return }
         if (id === undefined) { return }
         if (data === undefined) { data = {} }
@@ -48,13 +48,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         XHR.post("/api/updatequiz", sdata, callback, "application/json");
     }
 
-    deleteQuestionsQuizDB = function (id, callback) {
+    var deleteQuestionsQuizDB = function (id, callback) {
         var pid = { id: id };
         var data = JSON.stringify( pid, null, 4 );
         XHR.post( "/api/deletequiz", data, callback, "application/json" );
     }
 
-    addquizQuizDB = function (name, data, callback) {
+    var addquizQuizDB = function (name, data, callback) {
         if (data === undefined) { data = {} }
         var quiz = {
             id: null,
@@ -69,7 +69,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
     //*** CLEANERS ***//
         
-    function stripBlanks(fld) {
+    var stripBlanks = function (fld) {
         var result = "";
         var c = 0;
         for (var i=0; i < fld.length; i++) {
@@ -83,7 +83,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         return result.substr(0,c);
     }
     
-    cleanFormQuestions = function () {
+    var cleanFormQuestions = function () {
         thisform.getElementsByTagName("textarea")[0].value = '';
         for (var i=0; i<inputs.length; i++) {
             if (inputs[i].type == "text" && inputs[i].name != "atf") {
@@ -95,13 +95,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
     
-    cleanList = function (obj) {
+    var cleanList = function (obj) {
         obj.innerHTML = "";  // remove all select list options
     }
 
 
     // Choose The type of select option: Multilist, TrueFalse, Fill, List, Cards.
-    onSelectQ = function(select) {
+    var onSelectQ = function(select) {
         if (typeof(select) != 'undefined') {
             for (var i=0; i<selectQ.options.length; i++) {
                 if ( selectQ.options[i].id == select) {
@@ -129,7 +129,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     }
     
     // Add a new text-row answer for a multilist quiz
-    addRow = function () {
+    var addRow = function () {
         var trs = thisform.getElementsByTagName("tr");
         for (var i=0; i<trs.length; i++) {
             if (trs[i].id == "hidden") {
@@ -263,7 +263,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     }, false );
     
     
-    changeNameQuiz = function(obj, name, newname) {
+    var changeNameQuiz = function(obj, name, newname) {
         if (name != newname) {
             if (obj[newname] === undefined) {
                 obj[newname] = obj[name];
@@ -275,14 +275,14 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         return false;
     }
     
-    nameExist = function (obj, newname) {
+    var nameExist = function (obj, newname) {
         return obj[newname] !== undefined;
     }
 
 
     // *** Interaction (callbacks) with BD *** //
 
-    print_quizzes = function() {
+    var print_quizzes = function() {
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -301,7 +301,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
 
-    onChangeQuizzes = function (){
+    var onChangeQuizzes = function (){
         if (!quizzes[quizzes.selectedIndex]) { return }
         cleanFormQuestions();
         okQ.value = "Create Question";
@@ -314,7 +314,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
     }
 
-    load_List_Questions = function (name, data) {
+    var load_List_Questions = function (name, data) {
         cleanList(questions);
         if (data === undefined) {
             data = GlobalQuiz[name];
@@ -327,7 +327,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         } 
     }
 
-    load_Questions = function () {
+    var load_Questions = function () {
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -346,7 +346,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         load_List_Questions(response.quiz.name);
     }
 
-    reloadQuiz = function () {
+    var reloadQuiz = function () {
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -365,7 +365,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         load_List_Questions(response.name);
     }
 
-    editQuestion = function () {
+    var editQuestion = function () {
         cleanFormQuestions();
         if (!quizzes[quizzes.selectedIndex]) { return }
         if (!questions[questions.selectedIndex]) { return }
@@ -418,7 +418,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
 
-    storeQuizLocal = function (quiz, question, x, anscorrect, typeQ, position) {
+    var storeQuizLocal = function (quiz, question, x, anscorrect, typeQ, position) {
         if (typeof(position) == 'undefined') {
             try {
                 position = GlobalQuiz[quiz][typeQ].length;  // create a new question
@@ -455,15 +455,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
 
-    storeQuiz = function (name, dataQuiz, typeQ, callback) {
+    var storeQuiz = function (name, dataQuiz, typeQ, callback) {
         var id = quizzes[quizzes.selectedIndex]['value'];
         data = {type: typeQ, quiz: GlobalDataQuiz}
         updatequizQuizDB(id, name, data, callback); // XHR
     }
 
-
-
-    updateQuestionLocal = function (question, a, anscorrect, typeQ) {
+    var updateQuestionLocal = function (question, a, anscorrect, typeQ) {
         if (!questions.options[questions.selectedIndex]) { return }
         
         var info = questions.options[questions.selectedIndex].value.split('|');
@@ -482,7 +480,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
 
-    deleteQuestionLocal = function () {
+    var deleteQuestionLocal = function () {
         if (!questions.options[questions.selectedIndex]) { return }
 
         var info = questions.options[questions.selectedIndex].value.split('|');
@@ -503,7 +501,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         storeQuiz(name, GlobalDataQuiz, type, reloadQuiz);
     }
 
-    sendAddQuiz = function () {
+    var sendAddQuiz = function () {
         var name0 = "New quiz";
         var name = name0;
         var i = 0;
@@ -516,7 +514,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         console.log("SEND ADD QUIZ");
     }
 
-    addQuizResp = function () {
+    var addQuizResp = function () {
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -531,7 +529,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         $(quizzes).editableOptions();
     }
 
-    deleteQuiz = function () {
+    var deleteQuiz = function () {
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -547,7 +545,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         quizzes[quizzes.selectedIndex] = null;
     }
 
-    deleteQuizLocal = function () {
+    var deleteQuizLocal = function () {
         if (!quizzes[quizzes.selectedIndex]) { return }
         var id = quizzes[quizzes.selectedIndex]['value'];
         deleteQuestionsQuizDB(id, deleteQuiz);
