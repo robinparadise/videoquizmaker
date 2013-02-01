@@ -359,7 +359,6 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
 // Routes QuizDB //
 // ************ //
 app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
-  console.log("RCV::/api/savequiz");
   var email = req.session.email;
 
   if ( !email ) {
@@ -369,13 +368,11 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
 
   User.createQuiz( email, req.body, function( err, doc ) {
     if ( err ) {
-      console.log("Se ha producido error 500");
       res.json( { error: err }, 500 );
       return;
     }
     else {
       // Send back the newly added row's ID
-      console.log("Send back the newly added row's ID");
       res.json( { error: 'okay', id: doc.id, name: doc.name }, 200 );
       return;
     }
@@ -384,7 +381,6 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
 });
 
 app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
-  console.log("RCV::/api/updatequiz");
   var email = req.session.email;
 
   if ( !email ) {
@@ -408,7 +404,6 @@ app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
     }
     else {
       // Send back the newly added row's ID
-      console.log("Send back the newly added row's ID");
       res.json( { error: 'okay', id: doc.id, name: doc.name, type: type }, 200 );
       return;
     }
@@ -418,7 +413,6 @@ app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
 
 
 app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
-  console.log("RCV::/api/savequiz");
   var email = req.session.email;
 
   if ( !email ) {
@@ -429,7 +423,6 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
   User.findAllQuizzes( email, function( err, docs ) {
 
     if ( err ) {
-      console.log("Se ha producido error 500");
       res.json( { error: err }, 500 );
       return;
     }
@@ -466,7 +459,6 @@ app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
   User.findQuiz( email, req.params.id, function( err, doc ) {
 
     if ( err ) {
-      console.log("Se ha producido error 500");
       res.json( { error: err }, 500 );
       return;
     }
@@ -480,6 +472,32 @@ app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
     return;
   });
 });
+
+app.get('/api/quizzes/name/:name', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.findQuizbyName( email, req.params.name, function( err, doc ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !doc ) {
+      res.json( { error: "quiz not found" }, 404 );
+      return;
+    }
+    
+    res.json({ quiz: doc }, 200);
+    return;
+  });
+});
+
 
 app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
   var email = req.session.email;

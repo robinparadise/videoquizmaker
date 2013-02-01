@@ -319,5 +319,15 @@ module.exports = function( config, dbReadyFn ) {
         callback( err, quiz );
       });
     },
+    findQuizbyName: function findQuizbyName( email, name, callback ) {
+      if ( !email || !name ) {
+        callback( "not enough parameters to search" );
+        return;
+      }
+
+      Quiz.find( { where: { email: email, name: name } } ).complete( function( err, quiz ) {
+        callback( err, quiz );
+      });
+    },
   };
 };
