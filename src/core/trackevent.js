@@ -176,7 +176,7 @@ define( [ "./logger", "./eventmanager", "./observer",
               _popcornOptions.target = updateOptions.target;
             }
             if ( "zindex" in manifestOptions && media ) {
-              _popcornOptions.zindex = media.maxPluginZIndex - _track.order;
+              _popcornOptions.zindex = updateOptions.zindex = media.maxPluginZIndex - _track.order;
             }
           }
         }
@@ -188,7 +188,7 @@ define( [ "./logger", "./eventmanager", "./observer",
       // if PopcornWrapper exists, it means we're connected properly to a Popcorn instance,
       // and can update the corresponding Popcorn trackevent for this object
       if ( _popcornWrapper ) {
-        _popcornWrapper.updateEvent( _this );
+        _popcornWrapper.synchronizeEvent( _this, updateOptions );
       }
 
       _view.update( _popcornOptions );

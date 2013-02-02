@@ -9,7 +9,7 @@
 
   // This fix is to ensure content-editable still updates correctly, and deals with ie9 not reading document.activeElement properly
   function blurActiveEl() {
-   if ( document.activeElement ) {
+   if ( document.activeElement && document.activeElement.blur ) {
       document.activeElement.blur();
     }
   }
@@ -73,6 +73,10 @@
      *                    {Function} end: Fucntion to execute on drag end event
      */
     global.EditorHelper.draggable = function( trackEvent, dragContainer, targetContainer, options ) {
+      if ( $( dragContainer ).data( "draggable" ) ) {
+        return;
+      }
+
       var iframeCover = targetContainer.querySelector( ".butter-iframe-fix" );
 
       options = options || {};
@@ -122,12 +126,18 @@
      * @param {Object} extra options to apply to the resizeable call
      *                 Options are:
      *                    {String} handlePositions: describes where to position resize handles ( i.e. "n,s,e,w" )
+     *                              - Recommended that this option is specified due to a bug in z-indexing with
+     *                                jQueryUI Resizable.
      *                    {Function} start: Function to execute on resize start event
      *                    {Function} end: Fucntion to execute on resize end event
      *                    {Number} minWidth: Minimum width that the resizeContainer should be
      *                    {Number} minHeight: Minimum height that the resizeContainer should be
      */
     global.EditorHelper.resizable = function( trackEvent, resizeContainer, targetContainer, options ) {
+      if ( $( resizeContainer ).data( "resizable" ) ) {
+        return;
+      }
+
       var iframeCover = targetContainer.querySelector( ".butter-iframe-fix" );
 
       options = options || {};

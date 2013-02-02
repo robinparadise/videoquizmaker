@@ -170,18 +170,6 @@
         }
       }
     },
-    "client-sessions": {
-      "version": "0.0.9",
-      "dependencies": {
-        "cookies": {
-          "version": "0.1.7",
-          "from": "https://github.com/benadida/cookies/tarball/d2f0f0b3"
-        },
-        "node-proxy": {
-          "version": "0.6.0"
-        }
-      }
-    },
     "csslint": {
       "version": "0.9.9"
     },
@@ -236,13 +224,16 @@
     "node-uuid": {
       "version": "1.4.0"
     },
-    "raven": {
-      "version": "0.4.5",
+    "newrelic": {
+      "version": "0.9.17-132",
       "dependencies": {
-        "node-uuid": {
-          "version": "1.4.0"
+        "bunyan": {
+          "version": "0.14.6"
         }
       }
+    },
+    "habitat": {
+      "version": "0.4.0"
     },
     "supertest": {
       "version": "0.5.1",

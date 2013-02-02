@@ -1,5 +1,7 @@
-/*jshint eqeqeq:false */
-console.log( __dirname );
+// Newrelic *must* be the first module loaded. Do not move this require module!
+if ( process.env.NEW_RELIC_APP_NAME && process.env.NEW_RELIC_LICENSE_KEY ) {
+  require( 'newrelic' );
+}
 
 // Given foo/ return foo
 function stripSlash( path ) {
@@ -11,15 +13,15 @@ var express = require('express'),
     path = require('path'),
     jade = require('jade'),
     app = express(),
-    clientSessions = require('client-sessions'),
     lessMiddleware = require('less-middleware'),
     CONFIG = require('config'),
     User = require( './lib/user' )( CONFIG.database ),
     filter = require( './lib/filter' )( User.isDBOnline ),
     sanitizer = require( './lib/sanitizer' ),
     FileStore = require('./lib/file-store.js'),
-    raven = require('raven'),
+    habitat = require('habitat'),
     utils,
+    env = new habitat( 'butter' ),
     stores = {},
     TEMPLATES_DIR = CONFIG.dirs.templates,
     APP_HOSTNAME = stripSlash( CONFIG.dirs.appHostname ),
@@ -47,8 +49,6 @@ for ( var templateName in VALID_TEMPLATES ) {
   }
 }
 
-console.log( "Templates Dir:", TEMPLATES_DIR );
-
 app.configure( 'development', function() {
   app.use( lessMiddleware( WWW_ROOT ));
   CONFIG.additionalStaticRoots.forEach( function( dir ) {
@@ -68,7 +68,8 @@ app.configure( function() {
   app.use( express.logger( CONFIG.logger ) )
     .use( express.static( WWW_ROOT, JSON.parse( JSON.stringify( CONFIG.staticMiddleware ) ) ) )
     .use( express.bodyParser() )
-    .use( clientSessions( CONFIG.session ) )
+    .use( express.cookieParser() )
+    .use( express.cookieSession( env.get( 'session', CONFIG.session ) ) )
     .use( express.csrf() )
     /* Show Zeus who's boss
      * This only affects requests under /api and /persona, not static files
@@ -79,15 +80,6 @@ app.configure( function() {
       return next();
     })
     .use( app.router );
-
-  // Error handling
-  if ( CONFIG.sentry ) {
-    var ravenClient = new raven.Client( CONFIG.sentry.dsn, CONFIG.sentry.options );
-    app.use( raven.middleware.express( ravenClient ) );
-    ravenClient.patchGlobal( function() {
-      process.exit(1);
-    });
-  }
 
   // File Store types and options come from JSON config file.
   stores.publish = setupStore( CONFIG.publishStore );
