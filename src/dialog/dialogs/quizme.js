@@ -22,7 +22,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         delQuestion = rootElement.querySelector( ".delQ" ),
         
         inputs      = thisform.getElementsByTagName("input"),
-        GlobalQuiz  = new Object(),
+        GlobalQuiz  = this.Butter.QuizOptions,
         GlobalDataQuiz  = new Object();
 
     
@@ -296,7 +296,9 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
         cleanList(quizzes);
         for (var id in response.quiz) {
-            GlobalQuiz[response.quiz[id]] = new Object();
+            if (!GlobalQuiz[response.quiz[id]]) {
+                GlobalQuiz[response.quiz[id]] = new Object();
+            }
             quizzes[quizzes.length] = new Option(response.quiz[id], id);
         }
     }
@@ -720,55 +722,21 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     
     // Main
     onSelectQ("tf");
+
+    // Save and Close (on variable Butter.QuizOptions)
+    var saveAndClose = function () {
+        this.Butter.QuizOptions = {};
+        this.Butter.QuizOptions = GlobalQuiz;
+        this.Popcorn.manifest.quizme.options.name.options = ["Default"];
+        for (name in GlobalQuiz) {
+            this.Popcorn.manifest.quizme.options.name.options.push(name);
+        }
+    }
+    dialog.registerActivity( "close", function( e ) {
+        saveAndClose();
+    });
+    dialog.assignButton( ".close-button", "close" );
     dialog.enableCloseButton();
-
-
-    // DEBUG
-
-    dialog.registerActivity( "save", function( e ){
-        console.log("Sumit DIALOG");
-        var quiz = {
-            id: null,
-            name: "New One",
-            data: TrueFalse,
-            options: "null",
-        };
-        var data = JSON.stringify( quiz, null, 4 );
-        console.log("POST /api/savequiz");
-
-        XHR.post( "/api/savequiz", data, function() {
-            if (this.readyState === 4) {
-              try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-              } catch (err) {
-                console.log("an unknown error occured");
-              }
-            }
-        }, "application/json" );
-    });
-
-    dialog.registerActivity("delete", function(e){
-      console.log("DELETE /api/deletequiz");
-      var pid = {
-            id: 5
-        };
-      var data = JSON.stringify( pid, null, 4 );
-
-        XHR.post( "/api/deletequiz", data, function() {
-            if (this.readyState === 4) {
-              try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-              } catch (err) {
-                console.log("an unknown error occured");
-              }
-            }
-        }, "application/json" );
-    });
-
-    dialog.assignButton( ".savebutton", "save" );
-    dialog.assignButton( ".deletebutton", "delete" );
     
   });
   
