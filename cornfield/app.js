@@ -442,6 +442,31 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
   });
 });
 
+app.get('/api/quizzes/all', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.findAllQuizzes( email, function( err, docs ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !docs ) {
+      res.json( { error: "quizzes not found" }, 404 );
+      return;
+    }
+
+    res.json({ all: docs }, 200);
+    return;
+  });
+});
+
 app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
   var email = req.session.email;
 
@@ -497,7 +522,6 @@ app.get('/api/quizzes/name/:name', filter.isStorageAvailable, function(req, res)
     return;
   });
 });
-
 
 app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
   var email = req.session.email;
