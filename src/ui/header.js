@@ -1,5 +1,5 @@
-define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/tooltip" ],
-  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, ToolTip ) {
+define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/tooltip", "util/xhr" ],
+  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, ToolTip, XHR ) {
 
   return function( butter, options ){
 
@@ -42,6 +42,26 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
     _tabzilla.addEventListener( "click", function() {
       document.body.classList.toggle( "tabzilla-open" );
     }, false );
+
+    function getquizzesQuizDB(callback) {
+      XHR.get("/api/quizzes/all", callback);
+    }
+
+    function assignQuizmeOptions() {
+      if (this.readyState === 4) {
+          try {
+              var response = JSON.parse(this.response);
+          } catch (err) {
+              console.log({ error: "an unknown error occured" });
+              return err;
+          }
+      }
+      if (response) {
+        for(var n in response.all){
+          Butter.QuizOptions[response.all[n].name] = JSON.parse(response.all[n].data);
+        }
+      }
+    }
 
     function saveProject() {
       if ( !butter.cornfield.authenticated() ) {
@@ -172,6 +192,7 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         togglePreviewButton( isSaved );
         toggleSaveButton( !isSaved );
         toggleShareButton( isSaved );
+        getquizzesQuizDB(assignQuizmeOptions);
       },
       logout: function() {
         togglePreviewButton( false );
@@ -180,6 +201,7 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _previewBtn.style.display = "none";
         _projectTitle.style.display = "none";
         _saveButton.innerHTML = "Sign in to save";
+        Butter.QuizOptions = [];
       },
       mediaReady: function() {
         toggleSaveButton( true );

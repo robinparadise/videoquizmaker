@@ -68,6 +68,14 @@ define( [ "./logger", "./eventmanager", "./observer",
       return item.type === "number" ? 0 : "";
     }
 
+    function getNamesQuizzes(obj) {
+      var aux = ["Default"];
+      for (name in obj) {
+        aux.push(name);
+      }
+      return aux;
+    }
+
     if ( !_type ){
       _logger.log( "Warning: " + _id + " has no type." );
     }
@@ -149,6 +157,8 @@ define( [ "./logger", "./eventmanager", "./observer",
         duration = media.duration;
 
         if ( this.manifest ) {
+          // Get names of quizzes
+          this.manifest.options.name.options = getNamesQuizzes(Butter.QuizOptions);
           manifestOptions = this.manifest.options;
           if ( manifestOptions ) {
             for ( var prop in manifestOptions ) {

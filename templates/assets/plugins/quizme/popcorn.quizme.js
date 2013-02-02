@@ -1,6 +1,5 @@
 (function ( Popcorn ) {
 
-
   var Default = {tf: [
     {
       ques: "Directions given by teachers should be very unclear.",
@@ -57,9 +56,9 @@
         },
         name: {
           elem: "select", 
-          options: ["Default", "TrueFalse", "Fill", "MultiList"], 
+          options: ["Default"], 
           label: "Quiz",
-          "default": "TrueFalse",
+          "default": "Default",
         },
         start: {
           elem: "input", 
@@ -104,7 +103,14 @@
       if (!!options.title && options.title !== opt1.title) {
         opt1["title"] = options.title;
       }
-      $("#" + options._container.id).jQuizMe(Default, opt1);
+
+      if (options.name !== "Default") {     
+        quiz = Butter.QuizOptions[options.name];
+      }
+      else {
+        quiz = Default;
+      }
+      $("#" + options._container.id).jQuizMe(quiz, opt1);
 
     },
 

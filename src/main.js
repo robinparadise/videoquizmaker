@@ -40,6 +40,7 @@
     var Butter = {};
 
     Butter.ToolTip = ToolTip;
+    Butter.QuizOptions = {};
 
     Butter.showUAWarning = function() {
       var uaWarningDiv = Lang.domFragment( UA_WARNING_LAYOUT, ".butter-ua-warning" );
