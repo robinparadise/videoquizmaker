@@ -175,9 +175,10 @@ define( [ "dialog/dialog", "util/xhr", "util/uri" ], function( Dialog, XHR, URI 
             };
 
         try {
-          _dialog = Dialog.spawn( "crash", { data: crashReport } );
-          _dialog.listen( "close", function() { _dialog = null; } );
-          _dialog.open();
+          console.log("ERROR::", crashReport);
+          //_dialog = Dialog.spawn( "crash", { data: crashReport } );
+          //_dialog.listen( "close", function() { _dialog = null; } );
+          //_dialog.open();
         } catch( e ) {
           attemptRecovery();
         }
