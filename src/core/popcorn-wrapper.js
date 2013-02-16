@@ -115,23 +115,28 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * user.
      */
     this.prepare = function( url, target, popcornOptions, callbacks, scripts ){
+console.log("this.prepare");
       var urlsFromString;
 
       _mediaReady = false;
 
       // called when timeout occurs preparing popcorn
       function popcornTimeoutWrapper( e ) {
+console.log("popcornTimeoutWrapper");
         _interruptLoad = true;
         _onTimeout( e );
       }
 
       // called when timeout occurs preparing media
       function mediaTimeoutWrapper( e ) {
+console.log("mediaTimeoutWrapper");
+//return;
         _onTimeout( e );
       }
 
       // called when there's a serious failure in preparing popcorn
       function failureWrapper( e ) {
+console.log("failureWrapper");
         _interruptLoad = true;
         _logger.log( e );
         _onFail( e );
@@ -146,7 +151,9 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
           throw "URL is invalid: empty array or not a string.";
         }
         else {
+console.log("Express");
           firstUrl = url[ 0 ];
+          console.log(url[0]);
         }
       }
       else if ( url.indexOf( "#t" ) !== 0 && url.indexOf( "," ) > -1 ) {
@@ -178,6 +185,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
             // wait for the media to become available and notify the user, or timeout
             waitForMedia( _onPrepare, mediaTimeoutWrapper );
           }, popcornTimeoutWrapper );
+          console.log("Now popcorn exist ");
         }
         catch( e ) {
           // if we've reached here, we have an internal failure in butter or popcorn
@@ -191,6 +199,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * based on the specified url
      */
     function findMediaType( url ){
+console.log("findMediaType", url);
       var regexResult = __urlRegex.exec( url );
       if ( regexResult ) {
         _mediaType = regexResult[ 1 ];
@@ -211,9 +220,11 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * dwell in.
      */
     function constructPlayer( target ){
+console.log("constructPlayer");
       var targetElement = document.getElementById( target );
 
       if( _mediaType !== "object" && targetElement ) {
+console.log("_mediaType !== object");
         if( [ "VIDEO", "AUDIO" ].indexOf( targetElement.nodeName ) !== -1 ) {
           var parentNode = targetElement.parentNode,
               newElement = document.createElement( "div" ),
@@ -244,7 +255,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * insert in a script tag).
      */
     var generatePopcornString = this.generatePopcornString = function( popcornOptions, url, target, method, callbacks, scripts, trackEvents ){
-
+console.log("generatePopcornString");
       callbacks = callbacks || {};
       scripts = scripts || {};
 
@@ -376,6 +387,8 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * and insert it as a script in the head if that fails.
      */
     function createPopcorn( popcornString ){
+      popcornString = "Popcorn.player( 'baseplayer' ); var popcorn = Popcorn.baseplayer( '#video');"
+console.log("createPopcorn", "****", popcornString, "****");
       var popcornFunction = new Function( "", popcornString ),
           popcorn = popcornFunction();
       if ( !popcorn ) {
@@ -385,24 +398,29 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
         popcorn = window.Popcorn.instances[ window.Popcorn.instances.length - 1 ];
       }
       _popcorn = popcorn;
+console.log("createPopcorn", _popcorn);
     }
 
     /* Abstract the problem of waiting for some condition to occur with a timeout. Loop on checkFunction,
      * calling readyCallback when it succeeds, or calling timeoutCallback after MEDIA_WAIT_DURATION milliseconds.
      */
     function checkTimeoutLoop( checkFunction, readyCallback, timeoutCallback ){
+console.log("checkTimeoutLoop");
       var ready = false;
 
       // perform one check
       function doCheck(){
-
+//readyCallback();
         if ( _interruptLoad ) {
+console.log("_interruptLoad");
           return;
         }
 
         // run the check function
-        ready = checkFunction();
+//        ready = checkFunction();
+console.log("Ready", ready);
         if ( ready ) {
+console.log("call the ready callback");
           // if success, call the ready callback
           readyCallback();
         }
@@ -410,6 +428,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
           // otherwise, prepare for another loop
           setTimeout( doCheck, STATUS_INTERVAL );
         }
+        ready = checkFunction();
       }
 
       // set a timeout to occur after timeoutDuration milliseconds
@@ -421,6 +440,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
       }, MEDIA_WAIT_DURATION );
 
       //init
+console.log("docheck");
       doCheck();
     }
 
@@ -428,12 +448,18 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * with it (uses checkTimeoutLoop).
      */
     function waitForMedia( readyCallback, timeoutCallback ){
+console.log("***waitForMedia");
       checkTimeoutLoop(function(){
         // Make sure _popcorn still exists (e.g., destroy() hasn't been called),
         // that we're ready, and that we have a duration.
-        _mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 && _popcorn.duration() > 0 ) );
+        //_mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 && _popcorn.duration() > 0 ) );
+        _mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 ) );
+console.log("###Loop checkTimeoutLoop", "_mediaReady", _mediaReady, "So we force true", _popcorn, _popcorn.duration() );
+// It's very strange, we have to set duration before.
+_popcorn.media.duration = 20;
 
         return _mediaReady;
+        //return true;
       }, readyCallback, timeoutCallback, MEDIA_WAIT_DURATION );
     }
 
@@ -441,6 +467,7 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
      * checkTimeoutLoop).
      */
     function waitForPopcorn( readyCallback, timeoutCallback ){
+console.log("waitForPopcorn");
       if( _mediaType !== "object" ){
         _onPlayerTypeRequired( _mediaType );
         checkTimeoutLoop(function(){
