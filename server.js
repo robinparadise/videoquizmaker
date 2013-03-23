@@ -339,11 +339,6 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
   });
 });
 
-<<<<<<< HEAD:server.js
-app.listen( config.PORT, function() {
-  console.log( 'HTTP Server started on ' + APP_HOSTNAME );
-  console.log( 'Press Ctrl+C to stop' );
-=======
 // ************** //
 // Routes QuizDB //
 // ************ //
@@ -537,11 +532,7 @@ app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
   });
 });
 
-var port = process.env.PORT || CONFIG.server.bindPort;
-
-var server = app.listen(port, CONFIG.server.bindIP, function() {
-  var addy = server.address();
-  console.log('HTTP Server started on http://' + CONFIG.server.bindIP + ':' + addy.port);
-  console.log('Press Ctrl+C to stop');
->>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:cornfield/app.js
+app.listen( config.PORT, function() {
+  console.log( 'HTTP Server started on ' + APP_HOSTNAME );
+  console.log( 'Press Ctrl+C to stop' );
 });

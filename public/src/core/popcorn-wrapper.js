@@ -213,12 +213,7 @@ console.log("Express");
             addPopcornHandlers();
             // wait for the media to become available and notify the user, or timeout
             waitForMedia( _onPrepare, mediaTimeoutWrapper );
-<<<<<<< HEAD:public/src/core/popcorn-wrapper.js
           }, popcornTimeoutWrapper, _mediaType );
-=======
-          }, popcornTimeoutWrapper );
-          console.log("Now popcorn exist ");
->>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:src/core/popcorn-wrapper.js
         }
         catch( e ) {
           // if we've reached here, we have an internal failure in butter or popcorn
@@ -232,14 +227,9 @@ console.log("Express");
      * based on the specified url
      */
     function findMediaType( url ){
-<<<<<<< HEAD:public/src/core/popcorn-wrapper.js
       var regexResult = __urlRegex.exec( url ),
           // if the regex didn't return anything we know it's an HTML5 source
           mediaType = "object";
-=======
-console.log("findMediaType", url);
-      var regexResult = __urlRegex.exec( url );
->>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:src/core/popcorn-wrapper.js
       if ( regexResult ) {
         mediaType = regexResult[ 1 ];
         // our regex only handles youtu ( incase the url looks something like youtu.be )
@@ -266,14 +256,8 @@ console.log("findMediaType", url);
 console.log("constructPlayer");
       var targetElement = document.getElementById( target );
 
-<<<<<<< HEAD:public/src/core/popcorn-wrapper.js
       if ( _mediaType !== "object" && targetElement ) {
         if ( [ "VIDEO", "AUDIO" ].indexOf( targetElement.nodeName ) !== -1 ) {
-=======
-      if( _mediaType !== "object" && targetElement ) {
-console.log("_mediaType !== object");
-        if( [ "VIDEO", "AUDIO" ].indexOf( targetElement.nodeName ) !== -1 ) {
->>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:src/core/popcorn-wrapper.js
           var parentNode = targetElement.parentNode,
               newElement = document.createElement( "div" ),
               videoAttributes = [ "controls", "preload", "autoplay", "loop", "muted", "poster", "src" ],
@@ -514,15 +498,8 @@ _popcorn.media.duration = 20;
     /* Wait for Popcorn to be set up and to have the required players load (uses
      * checkTimeoutLoop).
      */
-<<<<<<< HEAD:public/src/core/popcorn-wrapper.js
     function waitForPopcorn( readyCallback, timeoutCallback, mediaType ) {
       if ( mediaType !== "object" ) {
-=======
-    function waitForPopcorn( readyCallback, timeoutCallback ){
-console.log("waitForPopcorn");
-      if( _mediaType !== "object" ){
-        _onPlayerTypeRequired( _mediaType );
->>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:src/core/popcorn-wrapper.js
         checkTimeoutLoop(function(){
           return ( !!window.Popcorn[ mediaType ] );
         }, readyCallback, timeoutCallback, PLAYER_WAIT_DURATION );
