@@ -13,12 +13,17 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         addQuiz     = rootElement.querySelector( ".addQz" ),
         delQuiz     = rootElement.querySelector( ".delQz" ),
         questions   = rootElement.querySelector( ".questions" ),
+<<<<<<< HEAD
         addQ        = rootElement.querySelector( ".addQ" ),
+=======
+        addQuestion = rootElement.querySelector( ".addQ" ),
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         thisform    = rootElement.querySelector( ".addQuestions" ),
         selectQ     = rootElement.querySelector( ".selectQ" ),        
         addAns0     = rootElement.querySelector( ".addAns0" ),
         addAns1     = rootElement.querySelector( ".addAns1" ),
         okQ         = rootElement.querySelector( ".okQ" ),
+<<<<<<< HEAD
         delQ        = rootElement.querySelector( ".delQ" ),
         
         inputs      = thisform.getElementsByTagName("input");
@@ -30,6 +35,62 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         var result = "";
         var c = 0;
         for (i=0; i < fld.length; i++) {
+=======
+        delQuestion = rootElement.querySelector( ".delQ" ),
+        
+        inputs      = thisform.getElementsByTagName("input"),
+        GlobalQuiz  = this.Butter.QuizOptions,
+        GlobalDataQuiz  = new Object();
+
+    
+    //*** BD Quiz ***//
+
+    var getquizzesQuizDB = function (id, callback) {
+        if (id === undefined) { id = "" }
+        XHR.get("/api/quizzes/" + id, callback);
+    }
+
+    var updatequizQuizDB = function (id, name, data, callback) {
+        if (name === undefined) { return }
+        if (id === undefined) { return }
+        if (data === undefined) { data = {} }
+        var quiz = {
+            id: id,
+            name: name,
+            data: data.quiz,
+            options: "",
+            type: data.type
+        }
+        var sdata = JSON.stringify( quiz, null, 4 );
+        XHR.post("/api/updatequiz", sdata, callback, "application/json");
+    }
+
+    var deleteQuestionsQuizDB = function (id, callback) {
+        var pid = { id: id };
+        var data = JSON.stringify( pid, null, 4 );
+        XHR.post( "/api/deletequiz", data, callback, "application/json" );
+    }
+
+    var addquizQuizDB = function (name, data, callback) {
+        if (data === undefined) { data = {} }
+        var quiz = {
+            id: null,
+            name: name,
+            data: data,
+            options: null,
+        }
+        var sdata = JSON.stringify( quiz, null, 4 );
+        XHR.post( "/api/savequiz", sdata, callback, "application/json" );
+    }
+
+
+    //*** CLEANERS ***//
+        
+    var stripBlanks = function (fld) {
+        var result = "";
+        var c = 0;
+        for (var i=0; i < fld.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
             if (fld.charAt(i) != " " || c > 0) {
                 result += fld.charAt(i);
                 if (fld.charAt(i) != " ") {
@@ -40,7 +101,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         return result.substr(0,c);
     }
     
+<<<<<<< HEAD
     cleanFormQuestions = function () {
+=======
+    var cleanFormQuestions = function () {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         thisform.getElementsByTagName("textarea")[0].value = '';
         for (var i=0; i<inputs.length; i++) {
             if (inputs[i].type == "text" && inputs[i].name != "atf") {
@@ -52,6 +117,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
     }
     
+<<<<<<< HEAD
     cleanArray = function (array) {
         var aux = [];
         for (i=0; i<array.length; i++) {
@@ -65,12 +131,19 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     }
     
     cleanList = function (obj) {
+=======
+    var cleanList = function (obj) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         obj.innerHTML = "";  // remove all select list options
     }
 
 
     // Choose The type of select option: Multilist, TrueFalse, Fill, List, Cards.
+<<<<<<< HEAD
     onSelectQ = function(select) {
+=======
+    var onSelectQ = function(select) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         if (typeof(select) != 'undefined') {
             for (var i=0; i<selectQ.options.length; i++) {
                 if ( selectQ.options[i].id == select) {
@@ -87,7 +160,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         else if (typeQ == "multi") {
             typeQ = "multiList";
         }
+<<<<<<< HEAD
         for (i=0; i<trs.length; i++) {
+=======
+        for (var i=0; i<trs.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
             if ( trs[i].id == typeQ) {
                 trs[i].style.display = "table-row";
             }
@@ -98,9 +175,15 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     }
     
     // Add a new text-row answer for a multilist quiz
+<<<<<<< HEAD
     addRow = function () {
         var trs = thisform.getElementsByTagName("tr");
         for (i=0; i<trs.length; i++) {
+=======
+    var addRow = function () {
+        var trs = thisform.getElementsByTagName("tr");
+        for (var i=0; i<trs.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
             if (trs[i].id == "hidden") {
                 trs[i-1].getElementsByTagName("input")[2].style.display = "none";
                 trs[i].style.display = "table-row";
@@ -152,7 +235,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
         else {  // Multilist, multi or TrueFalse
             var c = []; // Create Array C (include radio box)
+<<<<<<< HEAD
             for (i=0; i<inputs.length; i++ ) {
+=======
+            for (var i=0; i<inputs.length; i++ ) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
                 try {
                     if (inputs[i].name == searchC) {  //Search "c" o "ctf"
                         c[c.length] = inputs[i];
@@ -166,7 +253,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             }
 
             var anscorrect = -1; //num ans correct
+<<<<<<< HEAD
             for (i=0; i<c.length; i++) {
+=======
+            for (var i=0; i<c.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
                 if (c[i].checked) {
                     anscorrect = i;
                 }
@@ -201,7 +292,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
 
         //Nulo
+<<<<<<< HEAD
         for (i=0; i<a.length; i++) {
+=======
+        for (var i=0; i<a.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
             if (anscorrect == i && a[i] == '') {
                 ax[i].focus();
                 return false
@@ -209,7 +304,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }
 
         //Igualdad
+<<<<<<< HEAD
         for (i=1; i<a.length; i++) {
+=======
+        for (var i=1; i<a.length; i++) {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
             if (a[i] == '') {
                 break;
             }
@@ -220,6 +319,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 }
             }
         }
+<<<<<<< HEAD
         
         cleanFormQuestions();
 
@@ -314,6 +414,131 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
           onSelectQ();  // select option by default
           return;
         };
+=======
+
+        if (questions.selectedIndex >= 0) { // It means we just have to update question
+            updateQuestionLocal(question, a, anscorrect, typeQ);
+        }
+        else {  // Create a new one
+            cleanFormQuestions();
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
+        }
+        storeQuiz(quizzes[quizzes.selectedIndex].innerHTML, GlobalDataQuiz, typeQ, reloadQuiz);
+    }, false );
+    
+    
+    var changeNameQuiz = function(obj, name, newname) {
+        if (name != newname) {
+            if (obj[newname] === undefined) {
+                obj[newname] = obj[name];
+                delete obj[name];
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+    
+    var nameExist = function (obj, newname) {
+        return obj[newname] !== undefined;
+    }
+
+
+    // *** Interaction (callbacks) with BD *** //
+
+    var print_quizzes = function() {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response) { return }
+
+        cleanList(quizzes);
+        for (var id in response.quiz) {
+            if (!GlobalQuiz[response.quiz[id]]) {
+                GlobalQuiz[response.quiz[id]] = new Object();
+            }
+            quizzes[quizzes.length] = new Option(response.quiz[id], id);
+        }
+    }
+
+    var onChangeQuizzes = function (){
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        cleanFormQuestions();
+        okQ.value = "Create Question";
+
+        if (Object.keys( GlobalQuiz[quizzes[quizzes.selectedIndex].innerHTML] ).length === 0) {
+            getquizzesQuizDB(quizzes[quizzes.selectedIndex]['value'], load_Questions);
+        } else {
+            load_List_Questions(quizzes[quizzes.selectedIndex].innerHTML);
+        }
+
+    }
+
+    var load_List_Questions = function (name, data) {
+        cleanList(questions);
+        if (data === undefined) {
+            data = GlobalQuiz[name];
+        }
+        console.log(data);
+        for (var type in data) {
+            for (var n in data[type]) {
+                questions[questions.length] = new Option(data[type][n].ques, [name, type, n].join('|'));
+            }
+        } 
+    }
+
+    var load_Questions = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                var data = JSON.parse(JSON.parse(this.response).quiz.data);
+                console.log("RESP:: ", response, this);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response || !data) { return }
+        if (!quizzes[quizzes.selectedIndex]) { return }
+
+        GlobalQuiz[response.quiz.name] = data; // Guardamos en local
+        
+        load_List_Questions(response.quiz.name);
+    }
+
+    var reloadQuiz = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (questions.selectedIndex >= 0) {
+            cleanFormQuestions();
+        }
+
+        GlobalQuiz[response.name] = GlobalDataQuiz;
+
+        load_List_Questions(response.name);
+    }
+
+    var editQuestion = function () {
+        cleanFormQuestions();
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        if (!questions[questions.selectedIndex]) { return }
+
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         okQ.value = "Update Question";
         
         var name   = info[0];
@@ -359,6 +584,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             }
         }
     }
+<<<<<<< HEAD
         
     loadquizzes = function () {
         cleanList(quizzes);
@@ -453,6 +679,144 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             this.obj[name] = new Object();
         }
     }
+=======
+
+    var storeQuizLocal = function (quiz, question, x, anscorrect, typeQ, position) {
+        if (typeof(position) == 'undefined') {
+            try {
+                position = GlobalQuiz[quiz][typeQ].length;  // create a new question
+            }
+            catch (err) {
+                position = 0;
+            }
+        }
+        var ans = x[anscorrect];
+        a = x.splice(anscorrect, 1);
+        
+        if (typeQ == "tf") {
+            ans = ans != "false";
+        }
+
+        GlobalDataQuiz = GlobalQuiz[quiz];
+        if (typeQ == "multiList" || typeQ == "multi") {
+            try {
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans, ansSel: a};
+            }
+            catch (ex){
+                GlobalDataQuiz[typeQ] = [];
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans, ansSel: a};
+            }
+        }
+        else {
+            try {
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans};
+            }
+            catch (ex){
+                GlobalDataQuiz[typeQ] = [];
+                GlobalDataQuiz[typeQ] [position] = {ques: question, ans: ans};
+            }
+        }
+    }
+
+    var storeQuiz = function (name, dataQuiz, typeQ, callback) {
+        var id = quizzes[quizzes.selectedIndex]['value'];
+        data = {type: typeQ, quiz: GlobalDataQuiz}
+        updatequizQuizDB(id, name, data, callback); // XHR
+    }
+
+    var updateQuestionLocal = function (question, a, anscorrect, typeQ) {
+        if (!questions.options[questions.selectedIndex]) { return }
+        
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        var name = info[0];
+        var type = info[1];
+        var n    = info[2];
+
+        if (type != typeQ) { // It means we need to delete the question and create a new one
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ);
+            GlobalDataQuiz[type].splice(parseInt( n, 10 ), 1);
+            if (GlobalDataQuiz[type].length <= 0) {
+                delete GlobalDataQuiz[type];
+            }
+        } else { // It means we need to overwrite the question in the position n
+            storeQuizLocal(quizzes[quizzes.selectedIndex].innerHTML, question, a, anscorrect, typeQ, n);
+        }
+    }
+
+    var deleteQuestionLocal = function () {
+        if (!questions.options[questions.selectedIndex]) { return }
+
+        var info = questions.options[questions.selectedIndex].value.split('|');
+        var name = info[0];
+        var type = info[1];
+        var n    = info[2];
+
+        GlobalDataQuiz = GlobalQuiz[name];
+        console.log(GlobalDataQuiz);
+        GlobalDataQuiz[type].splice(parseInt( n, 10 ), 1);
+
+        if (GlobalDataQuiz[type].length <= 0) {
+            delete GlobalDataQuiz[type];
+        }
+        console.log("4");
+        console.log(GlobalDataQuiz);
+
+        storeQuiz(name, GlobalDataQuiz, type, reloadQuiz);
+    }
+
+    var sendAddQuiz = function () {
+        var name0 = "New quiz";
+        var name = name0;
+        var i = 0;
+        while (nameExist(GlobalQuiz, name)) {
+            i += 1;
+            name = name0 +" ("+i+")";
+        }
+        console.log("BEFORE SEND ADD QUIZ");
+        addquizQuizDB(name, {}, addQuizResp);
+        console.log("SEND ADD QUIZ");
+    }
+
+    var addQuizResp = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+                console.log("RESP:: ", response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        GlobalQuiz[response.name] = new Object();
+        quizzes[quizzes.length] = new Option(response.name, response.id);
+        $(quizzes).editableOptions();
+    }
+
+    var deleteQuiz = function () {
+        if (this.readyState === 4) {
+            try {
+                var response = JSON.parse(this.response);
+            } catch (err) {
+                console.log({ error: "an unknown error occured" });
+                return err;
+            }
+        }
+        if (!response || !quizzes[quizzes.selectedIndex]) { return }
+
+        delete GlobalQuiz[quizzes.options[quizzes.selectedIndex].innerHTML];
+        cleanList(questions);
+        quizzes[quizzes.selectedIndex] = null;
+    }
+
+    var deleteQuizLocal = function () {
+        if (!quizzes[quizzes.selectedIndex]) { return }
+        var id = quizzes[quizzes.selectedIndex]['value'];
+        deleteQuestionsQuizDB(id, deleteQuiz);
+    }
+
+
+    getquizzesQuizDB(undefined, print_quizzes);
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
     
 
     // Make editable option select  
@@ -602,6 +966,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     })(jQuery);
     $(quizzes).editableOptions();
     
+<<<<<<< HEAD
     quizzes.addEventListener( "change", function () {onChangeQuiz();editQz()}, false );
     questions.addEventListener( "change", editQz, false );
     // addAns0.addEventListener( "click", function () {addRow()}, false );
@@ -626,11 +991,22 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     } );
     
     addQ.addEventListener( "click", function () {
+=======
+    quizzes.addEventListener( "change", onChangeQuizzes, false );
+    questions.addEventListener( "change", editQuestion, false );
+
+    delQuestion.addEventListener( "click", deleteQuestionLocal, false );
+    delQuiz.addEventListener( "click", deleteQuizLocal, false );
+    
+    addQuiz.addEventListener( "click", sendAddQuiz, false );
+    addQuestion.addEventListener( "click", function () {
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
         cleanFormQuestions();
         questions.selectedIndex = -1;
         okQ.value = "Create Question";
         thisform.getElementsByTagName("textarea")[0].focus();
     }, false );
+<<<<<<< HEAD
     
     // Main
     loadquizzes();
@@ -723,6 +1099,28 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     dialog.assignButton( ".savebutton", "save" );
     dialog.assignButton( ".deletebutton", "delete" );
     dialog.assignButton( ".quizzesbutton", "quizzes" );
+=======
+
+    selectQ.addEventListener( "change", onSelectQ, false );
+    
+    // Main
+    onSelectQ("tf");
+
+    // Save and Close (on variable Butter.QuizOptions)
+    var saveAndClose = function () {
+        this.Butter.QuizOptions = {};
+        this.Butter.QuizOptions = GlobalQuiz;
+        this.Popcorn.manifest.quizme.options.name.options = ["Default"];
+        for (name in GlobalQuiz) {
+            this.Popcorn.manifest.quizme.options.name.options.push(name);
+        }
+    }
+    dialog.registerActivity( "close", function( e ) {
+        saveAndClose();
+    });
+    dialog.assignButton( ".close-button", "close" );
+    dialog.enableCloseButton();
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d
     
   });
   

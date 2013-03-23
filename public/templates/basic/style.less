@@ -6,29 +6,11 @@
 
 .wrapper {
   @media @small {
-    width: @small-w-px;
-  }
-  @media @medium {
-    width: @medium-w-px;
-  }
-  @media @large {
-    width: @large-w-px;
-  }
-  @media @xlarge {
-    width: @xlarge-w-px;
+    width: 400px;
   }
   .butter-header-spacing & {
     @media @small-in-editor {
-      width: @small-w-px;
-    }
-    @media @medium-in-editor {
-      width: @medium-w-px;
-    }
-    @media @large-in-editor {
-      width: @large-w-px;
-    }
-    @media @xlarge-in-editor {
-      width: @xlarge-w-px;
+      width: 400px;
     }
   }
   border: 15px solid #FFF;
@@ -55,8 +37,16 @@ body.editor-minimized .body-wrapper {
   right: 0;
 }
 
+<<<<<<< HEAD:public/templates/basic/style.less
 .loading-message {
   position: absolute;
+=======
+#embed-wrapper {
+  position: relative;
+  display: inline-block;
+
+  background: #FFF;
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:templates/basic/style.less
 
   opacity: 0;
   visibility: hidden;

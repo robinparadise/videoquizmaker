@@ -339,7 +339,209 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
   });
 });
 
+<<<<<<< HEAD:server.js
 app.listen( config.PORT, function() {
   console.log( 'HTTP Server started on ' + APP_HOSTNAME );
   console.log( 'Press Ctrl+C to stop' );
+=======
+// ************** //
+// Routes QuizDB //
+// ************ //
+app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.createQuiz( email, req.body, function( err, doc ) {
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+    else {
+      // Send back the newly added row's ID
+      res.json( { error: 'okay', id: doc.id, name: doc.name }, 200 );
+      return;
+    }
+
+  });
+});
+
+app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  var id = parseInt( req.body.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
+    return;
+  }
+  var type = req.body.type;
+  delete req.body.type;
+
+  User.updateQuiz( email, req.body.id, req.body, function( err, doc ) {
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+    else {
+      // Send back the newly added row's ID
+      res.json( { error: 'okay', id: doc.id, name: doc.name, type: type }, 200 );
+      return;
+    }
+
+  });
+});
+
+
+app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.findAllQuizzes( email, function( err, docs ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !docs ) {
+      res.json( { error: "quiz not found" }, 404 );
+      return;
+    }
+
+    var aux = new Object();
+    for (var i = 0; i < docs.length; i+=1) {
+      aux[docs[i].id] = docs[i].name;
+    }
+
+    res.json({ quiz: aux }, 200);
+    return;
+  });
+});
+
+app.get('/api/quizzes/all', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.findAllQuizzes( email, function( err, docs ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !docs ) {
+      res.json( { error: "quizzes not found" }, 404 );
+      return;
+    }
+
+    res.json({ all: docs }, 200);
+    return;
+  });
+});
+
+app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+  var id = parseInt( req.params.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
+    return;
+  }
+
+  User.findQuiz( email, req.params.id, function( err, doc ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !doc ) {
+      res.json( { error: "quiz not found" }, 404 );
+      return;
+    }
+    
+    res.json({ quiz: doc }, 200);
+    return;
+  });
+});
+
+app.get('/api/quizzes/name/:name', filter.isStorageAvailable, function(req, res) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  User.findQuizbyName( email, req.params.name, function( err, doc ) {
+
+    if ( err ) {
+      res.json( { error: err }, 500 );
+      return;
+    }
+
+    if ( !doc ) {
+      res.json( { error: "quiz not found" }, 404 );
+      return;
+    }
+    
+    res.json({ quiz: doc }, 200);
+    return;
+  });
+});
+
+app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
+  var email = req.session.email;
+
+  if ( !email ) {
+    res.json( { error: 'unauthorized' }, 403 );
+    return;
+  }
+
+  var id = parseInt( req.body.id, 10 );
+
+  if ( isNaN( id ) ) {
+    res.json( { error: "ID was not a number" }, 500 );
+    return;
+  }
+
+  User.deleteQuiz( email, req.body.id, function( err, docs) {
+    if ( err ) {
+      res.json( { error: 'quiz not found' }, 404 );
+      return;
+    }
+
+    res.json( { error: 'okay' }, 200 );
+  });
+});
+
+var port = process.env.PORT || CONFIG.server.bindPort;
+
+var server = app.listen(port, CONFIG.server.bindIP, function() {
+  var addy = server.address();
+  console.log('HTTP Server started on http://' + CONFIG.server.bindIP + ':' + addy.port);
+  console.log('Press Ctrl+C to stop');
+>>>>>>> 2b5ebb289c0349e63c3d87a6dbc7e79b6dadeb5d:cornfield/app.js
 });
