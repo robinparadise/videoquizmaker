@@ -419,7 +419,7 @@ console.log("generatePopcornString");
      * and insert it as a script in the head if that fails.
      */
     function createPopcorn( popcornString ){
-      popcornString = "Popcorn.player( 'baseplayer' ); var popcorn = Popcorn.baseplayer( '#video');"
+      //popcornString = "Popcorn.player( 'baseplayer' ); var popcorn = Popcorn.baseplayer( '#video');"
 console.log("createPopcorn", "****", popcornString, "****");
       var popcornFunction = new Function( "", popcornString ),
           popcorn = popcornFunction();
