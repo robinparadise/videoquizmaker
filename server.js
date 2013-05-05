@@ -407,7 +407,7 @@ app.post('/api/savequiz', filter.isStorageAvailable, function( req, res ) {
     return;
   }
 
-  User.createQuiz( email, req.body, function( err, doc ) {
+  Project.createQuiz( email, req.body, function( err, doc ) {
     if ( err ) {
       res.json( { error: err }, 500 );
       return;
@@ -438,7 +438,7 @@ app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
   var type = req.body.type;
   delete req.body.type;
 
-  User.updateQuiz( email, req.body.id, req.body, function( err, doc ) {
+  Project.updateQuiz( email, req.body.id, req.body, function( err, doc ) {
     if ( err ) {
       res.json( { error: err }, 500 );
       return;
@@ -461,7 +461,7 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
     return;
   }
 
-  User.findAllQuizzes( email, function( err, docs ) {
+  Project.findAllQuizzes( email, function( err, docs ) {
 
     if ( err ) {
       res.json( { error: err }, 500 );
@@ -472,15 +472,15 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
       res.json( { error: "quiz not found" }, 404 );
       return;
     } else if (isEmpty(docs)) {
-      User.createQuiz( email, quizTF, function(err, doc) {
+      Project.createQuiz( email, quizTF, function(err, doc) {
         if (!err) {
           docs.push({'id': doc.id, 'name': doc.name})
         }
-      User.createQuiz( email, quizFILL, function(err, doc){
+      Project.createQuiz( email, quizFILL, function(err, doc){
         if (!err) {
           docs.push({'id': doc.id, 'name': doc.name})
         }
-      User.createQuiz( email, quizMultiList, function(err, doc){
+      Project.createQuiz( email, quizMultiList, function(err, doc){
         if (!err) {
           docs.push({'id': doc.id, 'name': doc.name})
         }
@@ -512,7 +512,7 @@ app.get('/api/quizzes/all', filter.isStorageAvailable, function(req, res) {
     return;
   }
 
-  User.findAllQuizzes( email, function( err, docs ) {
+  Project.findAllQuizzes( email, function( err, docs ) {
 
     if ( err ) {
       res.json( { error: err }, 500 );
@@ -543,7 +543,7 @@ app.get('/api/quizzes/:id', filter.isStorageAvailable, function(req, res) {
     return;
   }
 
-  User.findQuiz( email, req.params.id, function( err, doc ) {
+  Project.findQuiz( email, req.params.id, function( err, doc ) {
 
     if ( err ) {
       res.json( { error: err }, 500 );
@@ -568,7 +568,7 @@ app.get('/api/quizzes/name/:name', filter.isStorageAvailable, function(req, res)
     return;
   }
 
-  User.findQuizbyName( email, req.params.name, function( err, doc ) {
+  Project.findQuizbyName( email, req.params.name, function( err, doc ) {
 
     if ( err ) {
       res.json( { error: err }, 500 );
@@ -594,13 +594,14 @@ app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
   }
 
   var id = parseInt( req.body.id, 10 );
+  console.log("[ID]", id, req);
 
   if ( isNaN( id ) ) {
     res.json( { error: "ID was not a number" }, 500 );
     return;
   }
 
-  User.deleteQuiz( email, req.body.id, function( err, docs) {
+  Project.deleteQuiz( email, req.body.id, function( err, docs) {
     if ( err ) {
       res.json( { error: 'quiz not found' }, 404 );
       return;
