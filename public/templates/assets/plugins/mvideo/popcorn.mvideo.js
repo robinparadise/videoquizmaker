@@ -22,7 +22,7 @@
           elem: "select", 
           options: ["Video1.mp4", "Video2.mp4", "Video3.mp4"],
           label: "Video",
-          "default": "Video1.mp4",
+          "default": "Video2.mp4",
           optional: true
         },
         start: {
