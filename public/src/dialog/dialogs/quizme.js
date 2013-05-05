@@ -282,7 +282,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
     // *** Interaction (callbacks) with BD *** //
 
-    var print_quizzes = function() {
+    var print_quizzes = function(data) {
+        console.log(" [print_quizzes] " + data);
         if (this.readyState === 4) {
             try {
                 var response = JSON.parse(this.response);
@@ -292,7 +293,12 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 return err;
             }
         }
+        console.log(" [response] " + response['error']);
         if (!response) { return }
+        if (response['error'] === "unauthorized") {
+            dialog.activity( "default-close" );
+            dialog = Dialog.spawn( "unauthorized" ).open();
+        }
 
         cleanList(quizzes);
         for (var id in response.quiz) {
@@ -704,6 +710,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     })(jQuery);
     $(quizzes).editableOptions();
     
+
+    // Listener
     quizzes.addEventListener( "change", onChangeQuizzes, false );
     questions.addEventListener( "change", editQuestion, false );
 

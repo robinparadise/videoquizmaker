@@ -11,5 +11,6 @@ define([
   "dialog/dialogs/crash",
   "dialog/dialogs/first-run",
   "dialog/dialogs/backup",
-  "dialog/dialogs/quizme"
+  "dialog/dialogs/quizme",
+  "dialog/dialogs/unauthorized"
 ], function() {} );
