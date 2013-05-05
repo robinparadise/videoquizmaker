@@ -130,11 +130,26 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
 
         // Updating functions
         function updateUI( options ) {
-          options = options || _popcornOptions;
+          var start,
+              end,
+              from;
 
-          var start = ( options.start || options.start === 0 ) && options.start || _popcornOptions.start,
-              end = options.end || ( options.end || options.end === 0 ) && options.end || _popcornOptions.end,
-              from = options.from || ( options.from || options.from === 0 ) && options.from || _popcornOptions.from;
+          options = options || _popcornOptions;
+          start = options.start;
+          end = options.end;
+          from = options.from;
+
+          if ( !from && from !== 0 ) {
+            from = _popcornOptions.from;
+          }
+
+          if ( !end && end !== 0 ) {
+            end = _popcornOptions.end;
+          }
+
+          if ( !start && start !== 0 ) {
+            start = _popcornOptions.start;
+          }
 
           // Adjust UI to account for very small durations
           if ( timeToPosition( end - start ) < MIN_VISUAL_WIDTH ) {
@@ -143,16 +158,11 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
             clipSection.classList.remove( "small" );
           }
 
-          if ( options.from || options.from === 0 ) {
-            clipSection.style.left = timeToPosition( from ) + "px";
-            inInput.value = Time.toTimecode( from );
-            outInput.value = Time.toTimecode( from + end - start );
-          }
+          clipSection.style.left = timeToPosition( from ) + "px";
+          inInput.value = Time.toTimecode( from );
 
-          if ( options.end || options.start ) {
-            clipSection.style.width = timeToPosition( end - start ) + "px";
-            outInput.value = Time.toTimecode( from + end - start );
-          }
+          clipSection.style.width = timeToPosition( end - start ) + "px";
+          outInput.value = Time.toTimecode( from + end - start );
 
           if ( options.duration ) {
             clipEndLable.innerHTML = Time.toTimecode( options.duration );
@@ -172,6 +182,9 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
         }
 
         function updateTrackEvent( options ) {
+          if ( !_butter.currentMedia.paused ) {
+            _butter.currentMedia.pause();
+          }
           // If the end time is greater than the duration of the video, expand it to fit.
           // We have to set an event listener on "mediaready" to update the trackevent after the base duration has been changed
           if ( options.end && options.end > _butter.duration ) {
@@ -213,13 +226,17 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
           var left = startLeft + e.clientX - firstX,
               width = startWidth - ( e.clientX - firstX );
 
-          if ( left < 0 || width < 0 ) {
+          if ( left < 0 ) {
+            width += left;
+            left = 0;
+          }
+
+          if ( width < 0 ) {
             return;
           }
 
           updateOptions.end = _popcornOptions.start + positionToTime( width );
           updateOptions.from = positionToTime( left );
-
           updateUI({
             from: updateOptions.from,
             end: updateOptions.end
@@ -232,7 +249,11 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
           var left = clipSection.offsetLeft,
               width = startWidth + e.clientX - firstX;
 
-          if ( left + width > el.offsetWidth || width < 0 ) {
+          if ( left + width > el.offsetWidth ) {
+            width = el.offsetWidth - left;
+          }
+
+          if ( width < 0 ) {
             return;
           }
 
@@ -274,7 +295,15 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
           var left = startLeft + e.clientX - firstX,
               width = clipSection.offsetWidth;
 
-          if ( left < 0 || ( left + width ) > el.offsetWidth ) {
+          if ( left < 0 ) {
+            left = 0;
+          }
+
+          if ( left + width > el.offsetWidth ) {
+            left = el.offsetWidth - width;
+          }
+
+          if ( width < 0 ) {
             return;
           }
 
@@ -350,25 +379,31 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
         if ( !Array.isArray( updateOptions.source ) ) {
           updateOptions.source = [ updateOptions.source ];
         }
-        if ( _mediaType && _mediaType !== "html5" ) {
+        if ( _mediaType && _mediaType !== "HTML5" ) {
           updateOptions.fallback = [ "" ];
         }
         updateOptions.source[ 0 ] = updateOptions.source[ 0 ] || _popcornOptions.source[ 0 ];
+
+        // Bail early to prevent the same video being reloaded due to butteruid.
+        if ( URI.stripUnique( updateOptions.source[ 0 ] ).toString() ===
+             URI.stripUnique( _popcornOptions.source[ 0 ] ).toString() ) {
+          return;
+        }
 
         MediaUtils.getMetaData( updateOptions.source[ 0 ], function( data ) {
           _mediaType = data.type;
           updateOptions.duration = data.duration;
           updateOptions.denied = data.denied;
           updateOptions.title = data.title;
-          if ( _mediaType === "html5" ) {
-            updateOptions.source[ 0 ] = URI.makeUnique( updateOptions.source[ 0 ] ).toString();
-          } else if ( _mediaType === "soundcloud" ) {
+          if ( _mediaType === "SoundCloud" ) {
             videoToggleContainer.classList.add( "butter-hidden" );
             updateOptions.hidden = true;
           } else {
             videoToggleContainer.classList.remove( "butter-hidden" );
             updateOptions.hidden = false;
           }
+
+          updateOptions.source[ 0 ] = URI.makeUnique( updateOptions.source[ 0 ] ).toString();
           trackEvent.update( updateOptions );
         });
       },
@@ -380,9 +415,9 @@ define( [ "util/mediatypes", "editor/editor", "util/time",
 
         _mediaType = MediaUtils.checkUrl( _popcornOptions.source[ 0 ] );
 
-        if ( _mediaType === "html5" ) {
+        if ( _mediaType === "HTML5" ) {
           fallbackContainer.classList.add( "show" );
-        } else if ( _mediaType === "soundcloud" ) {
+        } else if ( _mediaType === "SoundCloud" ) {
           videoToggleContainer.classList.add( "butter-hidden" );
           fallbackContainer.classList.remove( "show" );
         } else {

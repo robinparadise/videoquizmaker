@@ -1,5 +1,5 @@
-define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/tooltip", "util/xhr" ],
-  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, ToolTip, XHR ) {
+define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/textbox", "ui/widget/tooltip" ],
+  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, TextBoxWrapper, ToolTip ) {
 
   return function( butter, options ){
 
@@ -16,7 +16,7 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _projectName = _projectTitle.querySelector( ".butter-project-name" ),
         _clearEvents = _rootElement.querySelector( ".butter-clear-events-btn" ),
         _previewBtn = _rootElement.querySelector( ".butter-preview-btn" ),
-        _shareBtn = _rootElement.querySelector( ".butter-share-btn" ),
+        _projectBtn = _rootElement.querySelector( ".butter-project-btn" ),
         _projectMenu = _rootElement.querySelector( ".butter-project-menu" ),
         _projectMenuControl = _rootElement.querySelector( ".butter-project-menu-control" ),
         _projectMenuList = _projectMenu.querySelector( ".butter-btn-menu" ),
@@ -79,8 +79,18 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       }
     }
 
-    function openShareEditor() {
-      butter.editor.openEditor( "share-properties" );
+    function openProjectEditor() {
+      butter.editor.openEditor( "project-editor" );
+    }
+
+    function toggleProjectButton( on ) {
+      if ( on ) {
+        _projectBtn.classList.remove( "butter-disabled" );
+        _projectBtn.addEventListener( "click", openProjectEditor, false );
+      } else {
+        _projectBtn.classList.add( "butter-disabled" );
+        _projectBtn.removeEventListener( "click", openProjectEditor, false );
+      }
     }
 
     function toggleSaveButton( on ) {
@@ -136,13 +146,16 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       }
     }
 
-    function toggleShareButton( on ) {
-      if ( on ) {
-        _shareBtn.classList.remove( "butter-disabled" );
-        _shareBtn.addEventListener( "click", openShareEditor, false );
+    function toggleProjectNameListeners( state ) {
+      if ( state ) {
+        _projectTitle.addEventListener( "click", projectNameClick, false );
+        _projectTitle.classList.remove( "no-click" );
+        _projectName.addEventListener( "click", projectNameClick, false );
+        _toolTip.hidden = false;
       } else {
-        _shareBtn.classList.add( "butter-disabled" );
-        _shareBtn.removeEventListener( "click", openShareEditor, false );
+        _projectTitle.removeEventListener( "click", projectNameClick, false );
+        _projectName.removeEventListener( "click", projectNameClick, false );
+        _toolTip.hidden = true;
       }
     }
 
@@ -154,8 +167,9 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       input.placeholder = _projectTitlePlaceHolderText;
       input.classList.add( "butter-project-name" );
       input.value = _projectName.textContent !== _projectTitlePlaceHolderText ? _projectName.textContent : "";
+      TextBoxWrapper.applyTo( input );
       _projectTitle.replaceChild( input, _projectName );
-      _projectTitle.removeEventListener( "click", projectNameClick, false );
+      toggleProjectNameListeners( false );
       input.focus();
       input.addEventListener( "blur", onBlur, false );
       input.addEventListener( "keypress", onKeyPress, false );
@@ -175,12 +189,12 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       dirty: function() {
         togglePreviewButton( false );
         toggleSaveButton( true );
-        toggleShareButton( false );
+        toggleProjectButton( false );
       },
       clean: function() {
         togglePreviewButton( true );
         toggleSaveButton( false );
-        toggleShareButton( true );
+        toggleProjectButton( true );
       },
       login: function() {
         var isSaved = butter.project.isSaved;
@@ -190,30 +204,26 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
 
         togglePreviewButton( isSaved );
         toggleSaveButton( !isSaved );
-        toggleShareButton( isSaved );
+        toggleProjectButton( isSaved );
         getquizzesQuizDB(assignQuizmeOptions);
       },
       logout: function() {
         togglePreviewButton( false );
         toggleSaveButton( true );
-        toggleShareButton( false );
+        toggleProjectButton( false );
         _projectTitle.style.display = "none";
         _saveButton.innerHTML = "Sign in to save";
         Butter.QuizOptions = [];
       },
       mediaReady: function() {
-        toggleSaveButton( !butter.project.isSaved );
-        _toolTip.hidden = false;
         _projectTitle.classList.remove( "butter-disabled" );
-        _projectTitle.addEventListener( "click", projectNameClick, false );
-        _projectName.addEventListener( "click", projectNameClick, false );
+        toggleSaveButton( !butter.project.isSaved );
+        toggleProjectNameListeners( true );
       },
       mediaChanging: function() {
-        toggleSaveButton( false );
-        _toolTip.hidden = true;
         _projectTitle.classList.add( "butter-disabled" );
-        _projectTitle.removeEventListener( "click", projectNameClick, false );
-        _projectName.removeEventListener( "click", projectNameClick, false );
+        toggleSaveButton( false );
+        toggleProjectNameListeners( false );
       }
     };
 
@@ -270,17 +280,20 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
 
     function prepare() {
       function afterSave() {
-        butter.editor.openEditor( "share-properties" );
+        butter.editor.openEditor( "project-editor" );
         togglePreviewButton( true );
+        toggleProjectNameListeners( true );
       }
 
       if ( !butter.project.isSaved ) {
         toggleSaveButton( false );
+        _projectTitle.classList.add( "no-click" );
 
         // If saving fails, restore the "Save" button so the user can try again.
         _userData.save( function() { afterSave(); },
                         function() { toggleSaveButton( true );
-                                     togglePreviewButton( false ); } );
+                                     togglePreviewButton( false );
+                                     toggleProjectNameListeners( true ); } );
       } else {
         afterSave();
       }
@@ -335,6 +348,7 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _userData.authenticationRequired( prepare );
       } else {
         nameError();
+        toggleProjectNameListeners( true );
       }
 
       _projectTitle.replaceChild( _projectName, node );
@@ -355,7 +369,6 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       // Disable "Save" button
       _this.views.clean();
       _projectName.textContent = butter.project.name;
-      _projectTitle.addEventListener( "click", projectNameClick, false );
     });
 
     butter.listen( "projectchanged", function() {

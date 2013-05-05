@@ -9,9 +9,10 @@ var express = require('express'),
     jade = require('jade'),
     app = express(),
     lessMiddleware = require('less-middleware'),
+    requirejsMiddleware = require( 'requirejs-middleware' ),
     config = require( './lib/config' ),
-    User = require( './lib/user' )( config.database ),
-    filter = require( './lib/filter' )( User.isDBOnline ),
+    Project = require( './lib/project' )( config.database ),
+    filter = require( './lib/filter' )( Project.isDBOnline ),
     sanitizer = require( './lib/sanitizer' ),
     FileStore = require('./lib/file-store.js'),
     metrics,
@@ -51,10 +52,6 @@ for ( var templateName in VALID_TEMPLATES ) {
   }
 }
 
-app.configure( 'development', function() {
-  app.use( lessMiddleware( WWW_ROOT ));
-});
-
 function setupStore( storeConfig ) {
   var store = FileStore.create( storeConfig.type, storeConfig.options );
   if ( store.requiresFileSystem ) {
@@ -64,9 +61,54 @@ function setupStore( storeConfig ) {
 }
 
 app.configure( function() {
+  var optimize = config.NODE_ENV !== "development",
+      tmpDir = path.normalize( require( "os" ).tmpDir() + "/mozilla.butter/" );
+
+  app.set( "views", __dirname + "/views" );
+
   app.use( express.logger( config.logger ) )
+    .use( express.compress() )
+    .use( lessMiddleware({
+      once: optimize,
+      debug: !optimize,
+      dest: tmpDir,
+      src: WWW_ROOT,
+      compress: optimize,
+      yuicompress: optimize,
+      optimization: optimize ? 0 : 2
+    }))
+    .use( requirejsMiddleware({
+      src: WWW_ROOT,
+      dest: tmpDir,
+      once: optimize,
+      modules: {
+        "/src/butter.js": {
+          include: [ "butter" ],
+          mainConfigFile: WWW_ROOT + "/src/popcorn.js",
+        },
+        "/src/embed.js": {
+          include: [ "embed" ],
+          mainConfigFile: WWW_ROOT + "/src/popcorn.js",
+        },
+        "/src/webmakernav.js": {
+          include: [ "webmakernav" ],
+          mainConfigFile: WWW_ROOT + "/src/webmakernav.js",
+        }
+      },
+      defaults: {
+        baseUrl: WWW_ROOT + "/src/",
+        findNestedDependencies: true,
+        optimize: "none",
+        preserveLicenseComments: false,
+        wrap: {
+          startFile: __dirname + "/tools/wrap.start",
+          endFile: __dirname + "/tools/wrap.end"
+        }
+      }
+    }))
+    .use( express.static( tmpDir, JSON.parse( JSON.stringify( config.staticMiddleware ) ) ) )
     .use( express.static( WWW_ROOT, JSON.parse( JSON.stringify( config.staticMiddleware ) ) ) )
-    .use( express.bodyParser() )
+    .use( express.json() )
     .use( express.cookieParser() )
     .use( express.cookieSession( config.session ) )
     .use( express.csrf() )
@@ -100,15 +142,16 @@ require( 'express-persona' )( app, {
   audience: APP_HOSTNAME
 });
 
-require('./routes')( app, User, filter, sanitizer, stores, utils, metrics );
+var routes = require('./routes');
+routes( app, Project, filter, sanitizer, stores, utils, metrics );
 
 function writeEmbedShell( embedPath, url, data, callback ) {
   if( !writeEmbedShell.templateFn ) {
     writeEmbedShell.templateFn = jade.compile( fs.readFileSync( path.resolve( __dirname, 'views/embed-shell.jade' ), 'utf8' ),
                                           { filename: 'embed-shell.jade', pretty: true } );
   }
-
-  stores.publish.write( embedPath, writeEmbedShell.templateFn( data ), callback );
+  var sanitized = sanitizer.compressHTMLEntities( writeEmbedShell.templateFn( data ) );
+  stores.publish.write( embedPath, sanitized, callback );
 }
 
 function writeEmbed( embedPath, url, data, callback ) {
@@ -116,8 +159,8 @@ function writeEmbed( embedPath, url, data, callback ) {
     writeEmbed.templateFn = jade.compile( fs.readFileSync( path.resolve( __dirname, 'views/embed.jade' ), 'utf8' ),
                                           { filename: 'embed.jade', pretty: true } );
   }
-
-  stores.publish.write( embedPath, writeEmbed.templateFn( data ), callback );
+  var sanitized = sanitizer.compressHTMLEntities( writeEmbed.templateFn( data ) );
+  stores.publish.write( embedPath, sanitized, callback );
 }
 
 function isEmpty(obj) {
@@ -136,7 +179,7 @@ app.post( '/api/publish/:id',
     return;
   }
 
-  User.findProject( email, id, function( err, project ) {
+  Project.find( { id: id, email: email }, function( err, project ) {
     if ( err ) {
       res.json( { error: err }, 500);
       return;
@@ -188,7 +231,7 @@ app.post( '/api/publish/:id',
       baseString = '\n  <base href="' + baseHref + '"/>';
 
       // look for script and link tags with data-butter-exclude in particular (e.g. butter's js script)
-      data = data.replace( /\s*<(script|link)[\.\/='":_\-\w\s]*data-butter-exclude[\.\/='":_\-\w\s]*>(<\/script>)?/g, '' );
+      data = data.replace( /\s*<(script|link|meta)[\.\/='":,_\-\w\s]*data-butter-exclude[\.\/='":_\-\w\s]*>(<\/script>)?/g, '' );
 
       // Adding  to cut out the actual head tag
       headStartTagIndex = data.indexOf( '<head>' ) + 6;
@@ -270,6 +313,7 @@ app.post( '/api/publish/:id',
                          {
                            author: project.author,
                            projectName: project.name,
+                           description: project.description,
                            embedShellSrc: publishUrl,
                            embedSrc: iframeUrl,
                            baseHref: APP_HOSTNAME
@@ -287,6 +331,7 @@ app.post( '/api/publish/:id',
                     id: id,
                     author: project.author,
                     title: project.name,
+                    description: project.description,
                     mediaSrc: attribURL,
                     embedShellSrc: publishUrl,
                     baseHref: baseHref,
@@ -309,7 +354,7 @@ app.get( '/dashboard', filter.isStorageAvailable, function( req, res ) {
     return;
   }
 
-  User.findAllProjects( email, function( err, docs ) {
+  Project.findAll( { email: email }, function( err, docs ) {
     var userProjects = [];
 
     docs.forEach( function( project ) {
@@ -564,6 +609,7 @@ app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
     res.json( { error: 'okay' }, 200 );
   });
 });
+app.get( '/healthcheck', routes.api.healthcheck );
 
 app.listen( config.PORT, function() {
   console.log( 'HTTP Server started on ' + APP_HOSTNAME );

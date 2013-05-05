@@ -266,8 +266,6 @@ function init() {
       "popcorn"
     ],
     function( URI, Controls, TextboxWrapper ) {
-      // cornfield writes out the Popcorn initialization code as popcornDataFn()
-      window.popcornDataFn();
       /**
        * Expose Butter so we can get version info out of the iframe doc's embed.
        * This "butter" is never meant to live in a page with the full "butter".
@@ -276,7 +274,7 @@ function init() {
       var Butter = {
             version: "Butter-Embed-@VERSION@"
           },
-          popcorn = Popcorn.byId( "Butter-Generated" ),
+          popcorn,
           config,
           qs = URI.parse( window.location.href ).queryKey,
           container = document.querySelectorAll( ".container" )[ 0 ];
@@ -291,11 +289,13 @@ function init() {
        *   fullscreen = 1{default}|0    whether to allow fullscreen mode (e.g., hide/show button)
        *   loop       = 1|0{default}    whether to loop when hitting the end
        *   showinfo   = 1{default}|0    whether to show video title, author, etc. before playing
+       *   preload    = auto{default}|none    whether to preload the video, or wait for user action
        **/
       config = {
         autohide: qs.autohide === "1" ? true : false,
         autoplay: qs.autoplay === "1" ? true : false,
         controls: qs.controls === "0" ? false : true,
+        preload: qs.preload !== "none",
         start: qs.start|0,
         end: qs.end|0,
         fullscreen: qs.fullscreen === "0" ? false : (function( document ) {
@@ -321,10 +321,7 @@ function init() {
         showinfo: qs.showinfo === "0" ? false : true
       };
 
-      // Always show controls.  See #2284 and #2298 on supporting
-      // options.controls, options.autohide.
-      popcorn.controls( true );
-      Controls.create( "controls", popcorn, {
+      Controls.create( "controls", {
         onShareClick: function() {
           shareClick( popcorn );
         },
@@ -333,16 +330,51 @@ function init() {
         },
         onFullscreenClick: function() {
           fullscreenClick();
-        }
+        },
+        init: function( setPopcorn ) {
+          // cornfield writes out the Popcorn initialization code as popcornDataFn()
+          window.popcornDataFn();
+          popcorn = Popcorn.byId( "Butter-Generated" );
+          setPopcorn( popcorn );
+          // Always show controls.  See #2284 and #2298 on supporting
+          // options.controls, options.autohide.
+          popcorn.controls( true );
+
+          if ( config.loop ) {
+            popcorn.loop( true );
+          }
+
+          // Either the video is ready, or we need to wait.
+          if ( popcorn.readyState() >= 1 ) {
+            onLoad();
+          } else {
+            popcorn.media.addEventListener( "canplay", onLoad );
+          }
+
+          if ( config.branding ) {
+            setupClickHandlers( popcorn, config );
+            setupEventHandlers( popcorn, config );
+
+            // Wrap textboxes so they click-to-highlight and are readonly
+            TextboxWrapper.applyTo( $( "#share-url" ), { readOnly: true } );
+            TextboxWrapper.applyTo( $( "#share-iframe" ), { readOnly: true } );
+
+            // Write out the iframe HTML necessary to embed this
+            $( "#share-iframe" ).value = buildIFrameHTML();
+
+            // Get the page's canonical URL and put in share URL
+            $( "#share-url" ).value = getCanonicalURL();
+          }
+
+          setupAttribution( popcorn );
+        },
+        preload: config.preload
       });
 
       // Setup UI based on config options
       if ( !config.showinfo ) {
         var embedInfo = document.getElementById( "embed-info" );
         embedInfo.parentNode.removeChild( embedInfo );
-      }
-      if ( config.loop ) {
-        popcorn.loop( true );
       }
 
       // Some config options want the video to be ready before we do anything.
@@ -387,30 +419,6 @@ function init() {
           });
         }
       }
-
-      // Either the video is ready, or we need to wait.
-      if ( popcorn.readyState() >= 1 ) {
-        onLoad();
-      } else {
-        popcorn.media.addEventListener( "canplay", onLoad );
-      }
-
-      if ( config.branding ) {
-        setupClickHandlers( popcorn, config );
-        setupEventHandlers( popcorn, config );
-
-        // Wrap textboxes so they click-to-highlight and are readonly
-        TextboxWrapper.applyTo( $( "#share-url" ), { readOnly: true } );
-        TextboxWrapper.applyTo( $( "#share-iframe" ), { readOnly: true } );
-
-        // Write out the iframe HTML necessary to embed this
-        $( "#share-iframe" ).value = buildIFrameHTML();
-
-        // Get the page's canonical URL and put in share URL
-        $( "#share-url" ).value = getCanonicalURL();
-      }
-
-      setupAttribution( popcorn );
 
       if ( window.Butter && console && console.warn ) {
         console.warn( "Butter Warning: page already contains Butter, removing." );

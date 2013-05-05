@@ -2,7 +2,10 @@
 
 var datauri = require('../lib/datauri');
 
-module.exports = function routesCtor( app, User, filter, sanitizer, stores, utils, metrics ) {
+module.exports = function routesCtor( app, Project, filter, sanitizer,
+                                      stores, utils, metrics ) {
+
+  routesCtor.api = require( "./api" );
 
   var uuid = require( "node-uuid" ),
       // Keep track of whether this is production or development
@@ -23,16 +26,68 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
     } else {
       res.json({
         error: 'unauthorized',
-        csrf: req.session._csrf,
+        csrf: req.session._csrf
       });
     }
+  });
+
+  // Strip away project data, email, etc.
+  function pruneSearchResults( results ) {
+    return results.map( function( result ) {
+      return {
+        id: result.id,
+        name: result.name,
+        description: result.description,
+        author: result.author,
+        remixedFrom: result.remixedFrom,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
+        // Add URLs for embed, embed shell
+        publishUrl: utils.generatePublishUrl( result.id ),
+        iframeUrl: utils.generateIframeUrl( result.id )
+      };
+    });
+  }
+
+  // Setup common recently* API routes--code is identical, save the name.
+  [ 'recentlyCreated',
+    'recentlyUpdated',
+    'recentlyRemixed'
+  ].forEach( function( name ) {
+    var endPoint = '/api/projects/' + name + '/:limit?',
+        projectMethod = 'find' + name[ 0 ].toUpperCase() + name.slice( 1 );
+
+    app.get( endPoint,
+      filter.isStorageAvailable,
+      filter.crossOriginAccessible,
+      function( req, res ) {
+        Project[ projectMethod ]( { limit: req.params.limit }, function( err, projects ) {
+          if ( err ) {
+            res.jsonp( { error: err }, 500 );
+          }
+          res.jsonp( { status: 'okay', results: pruneSearchResults( projects ) } );
+        });
+      }
+    );
+  });
+
+  app.get( '/api/project/:id/remixes',
+    filter.isStorageAvailable,
+    filter.crossOriginAccessible,
+    function( req, res ) {
+      Project.findRemixes( { id: req.params.id }, function( err, projects ) {
+        if ( err ) {
+          res.jsonp( { error: err }, 500 );
+        }
+        res.jsonp( { error: 'okay', results: pruneSearchResults( projects ) } );
+      });
   });
 
   app.get( '/api/project/:id?',
     filter.isLoggedIn, filter.isStorageAvailable,
     function( req, res ) {
 
-    User.findProject( req.session.email, req.params.id, function( err, doc ) {
+    Project.find( { email: req.session.email, id: req.params.id }, function( err, doc ) {
       if ( err ) {
         res.json( { error: err }, 500 );
         return;
@@ -47,11 +102,39 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
       projectJSON.name = doc.name;
       projectJSON.projectID = doc.id;
       projectJSON.author = doc.author;
+      projectJSON.description = doc.description;
       projectJSON.template = doc.template;
       projectJSON.publishUrl = utils.generatePublishUrl( doc.id );
       projectJSON.iframeUrl = utils.generateIframeUrl( doc.id );
       projectJSON.remixedFrom = doc.remixedFrom;
       res.json( projectJSON );
+    });
+  });
+
+  // We have a separate remix API for unsecured and sanitized access to projects
+  app.get( '/api/remix/:id',
+    filter.isStorageAvailable,
+    function( req, res ) {
+
+    Project.find( { id: req.params.id }, function( err, project ) {
+      if ( err ) {
+        res.json( { error: err }, 500 );
+        return;
+      }
+
+      if ( !project ) {
+        res.json( { error: 'project not found' }, 404 );
+        metrics.increment( 'error.remix.project-not-found' );
+        return;
+      }
+
+      var projectJSON = JSON.parse( project.data, sanitizer.reconstituteHTMLinJSON );
+      projectJSON.name = "Remix of " + project.name;
+      projectJSON.template = project.template;
+      projectJSON.remixedFrom = project.id;
+
+      res.json( projectJSON );
+      metrics.increment( 'user.remix' );
     });
   });
 
@@ -66,7 +149,7 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
       return;
     }
 
-    User.deleteProject( req.session.email, req.params.id, function( err, imagesToDestroy ) {
+    Project.delete( { email: req.session.email, id: req.params.id }, function( err, imagesToDestroy ) {
       if ( err ) {
         res.json( { error: 'project not found' }, 404 );
         return;
@@ -93,7 +176,7 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
   });
 
   function linkAndSaveImageFiles( files, projectId, callback ) {
-    User.linkImageFilesToProject( files, projectId, function( err ) {
+    Project.linkImageFilesToProject( { files: files, id: projectId }, function( err ) {
       if ( err ) {
         callback( err );
         return;
@@ -114,7 +197,8 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
     if ( req.body.id ) {
       files = datauri.filterProjectDataURIs( projectData.data, utils.generateDataURIPair );
 
-      User.updateProject( req.session.email, req.body.id, projectData, function( err, doc, imagesToDestroy ) {
+      Project.update( { email: req.session.email, id: req.body.id, data: projectData },
+                      function( err, doc, imagesToDestroy ) {
         if ( err ) {
           res.json( { error: err }, 500 );
           return;
@@ -129,7 +213,7 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
         if ( files && files.length > 0 ) {
           linkAndSaveImageFiles( files, doc.id, function( err ) {
             if ( err ) {
-              res.json( { error: 'Unable to store data-uris.', }, 500 );
+              res.json( { error: 'Unable to store data-uris.' }, 500 );
               return;
             }
             res.json( { error: 'okay', project: doc, imageURLs: files.map( function( file ) { return file.getJSONMetaData(); } ) }, 200 );
@@ -143,7 +227,7 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
     } else {
       files = datauri.filterProjectDataURIs( projectData.data, utils.generateDataURIPair );
 
-      User.createProject( req.session.email, projectData, function( err, doc ) {
+      Project.create( { email: req.session.email, data: projectData }, function( err, doc ) {
         if ( err ) {
           res.json( { error: err }, 500 );
           metrics.increment( 'error.save' );
@@ -153,7 +237,7 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
         if ( files && files.length > 0 ) {
           linkAndSaveImageFiles( files, doc.id, function( err ) {
             if ( err ) {
-              res.json( { error: 'Unable to store data-uris.', }, 500 );
+              res.json( { error: 'Unable to store data-uris.' }, 500 );
               metrics.incremenet( 'error.save.store-data-uris' );
               return;
             }
@@ -172,33 +256,6 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
         }
       });
     }
-  });
-
-  // We have a separate remix API for unsecured and sanitized access to projects
-  app.get( '/api/remix/:id',
-    filter.isStorageAvailable,
-    function( req, res ) {
-
-    User.findById( req.params.id, function( err, project ) {
-      if ( err ) {
-        res.json( { error: err }, 500 );
-        return;
-      }
-
-      if ( !project ) {
-        res.json( { error: 'project not found' }, 404 );
-        metrics.increment( 'error.remix.project-not-found' );
-        return;
-      }
-
-      var projectJSON = JSON.parse( project.data, sanitizer.reconstituteHTMLinJSON );
-      projectJSON.name = "Remix of " + project.name;
-      projectJSON.template = project.template;
-      projectJSON.remixedFrom = project.id;
-
-      res.json( projectJSON );
-      metrics.increment( 'user.remix' );
-    });
   });
 
   function formatDate( d ) {
@@ -231,21 +288,13 @@ module.exports = function routesCtor( app, User, filter, sanitizer, stores, util
   }
 
   function storeData( req, res, store ) {
-    var s = '';
+    var name = generateUniqueName([
+      { name: 'dt', value: formatDate() },
+      { name: 'deployment', value: deploymentType }
+    ]);
 
-    req.addListener( 'data', function( data ) {
-      s += data;
-    });
-
-    req.addListener( 'end', function() {
-      var name = generateUniqueName([
-        { name: 'dt', value: formatDate() },
-        { name: 'deployment', value: deploymentType }
-      ]);
-      store.write( name, s, function() {
-        res.writeHead( 200, { 'content-type': 'text/plain' } );
-        res.end();
-      });
+    store.write( name, JSON.stringify( req.body ), function() {
+      res.send( 200 );
     });
   }
 

@@ -3,7 +3,14 @@
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 /*jshint evil:true*/
 
-define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, EventManager, URI ) {
+define( [
+          "core/logger", "core/eventmanager", "util/uri",
+          "util/warn", "../../external/PluginDetect/PluginDetect_Flash"
+        ],
+        function(
+          Logger, EventManager, URI,
+          Warn, PluginDetect
+        ){
 
   // regex to determine the type of player we need to use based on the provided url
   var __urlRegex = /(?:http:\/\/www\.|http:\/\/|www\.|\.|^)(youtu|vimeo|soundcloud|baseplayer)/;
@@ -14,6 +21,15 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
       PLAYER_WAIT_DURATION = 10000,
       // timeout duration to wait for media to be ready
       MEDIA_WAIT_DURATION = 10000;
+
+  // Hard coded value for now. We need to chat with whoever is in charge of Mozilla's
+  // PFS2 instance to see if we can use the service / what limitations there might be
+  var MIN_FLASH_VERSION = 11,
+
+      FLASH_WARNING_TEXT = "Your web browser has an outdated Flash plugin." +
+        " Flash media may not function as expected. Check your plugin version" +
+        " using <a href=\"https://www.mozilla.org/plugincheck\">Mozilla's plugin" +
+        " checking service</a>. Click <a href=\"#\" class=\"close-button\">here</a> to remove this warning.";
 
   /* The Popcorn-Wrapper wraps various functionality and setup associated with
    * creating, updating, and removing associated data with Popcorn.js.
@@ -31,7 +47,8 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
         _mediaType,
         _interruptLoad = false,
         _this = this,
-        _makeVideoURLsUnique = options.makeVideoURLsUnique;
+        _makeVideoURLsUnique = options.makeVideoURLsUnique,
+        _checkedFlashVersion = false;
 
     /* Destroy popcorn bindings specfically without touching other discovered
      * settings
@@ -86,7 +103,6 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
 
         if ( trackEvent.view ) {
           if ( popcornEvent.toString ) {
-            trackEvent.view.setToolTip( popcornEvent.toString() );
             if ( trackEvent.type === "sequencer" ) {
               if ( !trackEvent.popcornOptions.hidden ) {
                 trackEvent.view.element.classList.add( "sequencer-video" );
@@ -96,8 +112,6 @@ define( [ "core/logger", "core/eventmanager", "util/uri" ], function( Logger, Ev
                 trackEvent.view.element.classList.remove( "sequencer-video" );
               }
             }
-          } else {
-            trackEvent.view.setToolTip( JSON.stringify( options ) );
           }
 
           trackEvent.view.update( trackEvent.popcornOptions );
@@ -229,12 +243,22 @@ console.log("Express");
     function findMediaType( url ){
       var regexResult = __urlRegex.exec( url ),
           // if the regex didn't return anything we know it's an HTML5 source
-          mediaType = "object";
+          mediaType = "object",
+          flashVersion;
       if ( regexResult ) {
+
         mediaType = regexResult[ 1 ];
         // our regex only handles youtu ( incase the url looks something like youtu.be )
         if ( mediaType === "youtu" ) {
           mediaType = "youtube";
+        }
+
+        if ( !_checkedFlashVersion ) {
+          _checkedFlashVersion = true;
+          flashVersion = PluginDetect.getVersion( "Flash" );
+          if ( flashVersion && +flashVersion.split( "," )[ 0 ] < MIN_FLASH_VERSION ) {
+            Warn.showWarning( FLASH_WARNING_TEXT );
+          }
         }
       }
       return mediaType;

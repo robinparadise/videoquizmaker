@@ -25,8 +25,6 @@ window.Butter = {
     return;
   }
 
-  var WARNING_WAIT_TIME = 500;
-
   var ACCEPTED_UA_LIST = {
     "Chrome": 17,
     "Firefox": 10,
@@ -44,7 +42,13 @@ window.Butter = {
     "Firefox OS",
     // For BB Playbook
     "RIM Tablet OS"
-  ];
+  ],
+
+  UA_WARNING_TEXT = "Your web browser may lack some functionality expected" +
+    " by Popcorn Maker to function properly. Please upgrade your browser or" +
+    " <a href=\"https://webmademovies.lighthouseapp.com/projects/65733-popcorn-maker\">" +
+    "file a bug</a> to find out why your browser isn't fully supported. Click " +
+    "<a href=\"#\" class=\"close-button\">here</a> to remove this warning.";
 
   var require = requirejs.config({
     baseUrl: "/src"
@@ -57,7 +61,7 @@ window.Butter = {
             "./modules", "./dependencies", "./dialogs",
             "dialog/dialog", "editor/editor", "ui/ui",
             "util/xhr", "util/lang", "util/tutorial",
-            "text!default-config.json", "text!layouts/ua-warning.html",
+            "util/warn", "text!default-config.json",
             "ui/widget/tooltip", "crashreporter", "core/project",
             "../external/ua-parser/ua-parser"
           ],
@@ -66,8 +70,8 @@ window.Butter = {
             Target, Media,
             Modules, Dependencies, Dialogs,
             Dialog, Editor, UI,
-            XHR, Lang, Tutorial,
-            DEFAULT_CONFIG_JSON, UA_WARNING_LAYOUT,
+            xhr, Lang, Tutorial,
+            Warn, DEFAULT_CONFIG_JSON,
             ToolTip, CrashReporter, Project,
             UAParser
           ){
@@ -78,17 +82,6 @@ window.Butter = {
 
     Butter.ToolTip = ToolTip;
     Butter.QuizOptions = {};
-
-    Butter.showUAWarning = function() {
-      var uaWarningDiv = Lang.domFragment( UA_WARNING_LAYOUT, ".butter-ua-warning" );
-      document.body.appendChild( uaWarningDiv );
-      setTimeout(function() {
-        uaWarningDiv.classList.add( "slide-out" );
-      }, WARNING_WAIT_TIME );
-      uaWarningDiv.getElementsByClassName( "close-button" )[ 0 ].onclick = function () {
-        document.body.removeChild( uaWarningDiv );
-      };
-    };
 
     Butter.init = function( butterOptions ) {
 
@@ -110,7 +103,7 @@ window.Butter = {
       }
 
       if ( !acceptedUA ) {
-        Butter.showUAWarning();
+        Warn.showWarning( UA_WARNING_TEXT );
       }
 
       butterOptions = butterOptions || {};
@@ -806,7 +799,7 @@ window.Butter = {
         // if there are scripts to load, load them
         if( toLoad.length > 0 ){
           for( var i = 0; i < toLoad.length; ++i ){
-            XHR.get( toLoad[ i ].url, toLoad[ i ].onLoad );
+            xhr.get( toLoad[ i ].url, toLoad[ i ].onLoad );
           }
         }
         else{
@@ -830,25 +823,8 @@ window.Butter = {
           responseCallback();
           return;
         }
-        savedDataUrl += "?noCache=" + Date.now();
 
-        XHR.getUntilComplete(
-          savedDataUrl,
-          function() {
-            var savedData;
-            try{
-              savedData = JSON.parse( this.responseText );
-            }
-            catch( e ){
-              _this.dispatch( "loaddataerror", "Saved data not formatted properly." );
-            }
-            responseCallback( savedData );
-          },
-          "application/json",
-          {
-            "If-Modified-Since": "Fri, 01 Jan 1960 00:00:00 GMT"
-          },
-          true );
+        xhr.get( savedDataUrl, responseCallback );
       }
 
       /**
@@ -969,31 +945,10 @@ window.Butter = {
       } //readConfig
 
       if( butterOptions.config && typeof( butterOptions.config ) === "string" ){
-        var xhr = new XMLHttpRequest(),
-          userConfig,
-          url = butterOptions.config + "?noCache=" + Date.now();
-
-        xhr.open( "GET", url, false );
-        if( xhr.overrideMimeType ){
-          // Firefox generates a misleading "syntax" error if we don't have this line.
-          xhr.overrideMimeType( "application/json" );
-        }
-        // Deal with caching
-        xhr.setRequestHeader( "If-Modified-Since", "Fri, 01 Jan 1960 00:00:00 GMT" );
-        xhr.send( null );
-
-        if( xhr.status === 200 || xhr.status === 0 ){
-          try{
-            userConfig = Config.parse( xhr.responseText );
-          }
-          catch( e ){
-            throw new Error( "Butter config file not formatted properly." );
-          }
+        xhr.get( butterOptions.config, function( response ) {
+          var userConfig = Config.reincarnate( response );
           readConfig( userConfig );
-        }
-        else{
-          _this.dispatch( "configerror", _this );
-        } //if
+        });
       }
       else {
         readConfig( Config.reincarnate( butterOptions.config ) );

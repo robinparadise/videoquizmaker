@@ -105,6 +105,8 @@
       margin: 0;
       list-style: none;
       height: @_editorTabs;
+      .selectable( none );
+
       > li {
         float: left;
         margin-right: 3px;
@@ -125,13 +127,21 @@
       }
     }
 
-    h1, .butter-breadcrumbs { // Breadcrumbs
-      color: @green;
+    h1,
+    .butter-breadcrumbs,
+    .editor-title-card > .title {
       font-weight: 700;
       font-size: 16px;
-      text-transform: capitalize;
-      height: @_editorTitle;
       line-height: @_editorTitle;
+      color: @green;
+      text-transform: capitalize;
+      margin: 0;
+    }
+
+    h1,
+    .butter-breadcrumbs,
+    .editor-title-card {
+      height: @_editorTitle;
       margin: 0;
       padding: 0 20px;
       background: #FFF;
@@ -221,6 +231,17 @@
     top: @_editorTitle;
     bottom: 0;
     width: 100%;
+  }
+
+  .image-droparea {
+    border: dashed 2px #ABABAB;
+    text-align: center;
+    height: 170px;
+    background: url( "/resources/watermark.png" ) no-repeat center;
+
+    > .droparea-text {
+      margin-top: 3px;
+    }
   }
 
   .butter-editor-body.butter-tabs-spacing {
@@ -406,7 +427,7 @@
     > input, textarea, select {
       float: left;
       margin-left: 5px;
-      width: @_editorInnerWidth - 85;
+      width: @_editorInnerWidth;
     }
   }
 
@@ -521,7 +542,7 @@
   text-align: center;
   border: 1px solid #CCC;
   box-shadow: 0 5px 6px -5px rgba( 0, 0, 0, .3 );
-  pointer-events: none; /* csslint-ignore: better for browsers that support it, not critical for those that don't */
+  pointer-events: none;
   .transition( opacity 0.3s ease 0 );
 
   &:after,
@@ -555,7 +576,7 @@
 */
 
 .editor-disable-pointer-events {
-  pointer-events: none; /* csslint-ignore: better for browsers that support it, not critical for those that don't */
+  pointer-events: none;
 }
 
 .editor-drag-handle {

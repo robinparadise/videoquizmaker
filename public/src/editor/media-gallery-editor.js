@@ -2,9 +2,9 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 
-define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/editor",
+define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/editor",
  "util/time", "util/dragndrop", "text!layouts/media-editor.html" ],
-  function( LangUtils, XHR, KeysUtils, MediaUtils, Editor, Time, DragNDrop, EDITOR_LAYOUT ) {
+  function( LangUtils, URI, KeysUtils, MediaUtils, Editor, Time, DragNDrop, EDITOR_LAYOUT ) {
 
   var _parentElement =  LangUtils.domFragment( EDITOR_LAYOUT,".media-editor" ),
       _addMediaTitle = _parentElement.querySelector( ".add-new-media" ),
@@ -49,25 +49,27 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
   }
 
   function setBaseDuration( duration ) {
-    if ( duration === "" ) {
+    var durationTimeCode = Time.toTimecode( duration ),
+        durationSeconds = Time.toSeconds( duration );
+
+    // Don't accept empty inputs or negative/zero values for duration.
+    if ( duration === "" || durationSeconds <= 0 ) {
       _durationInput.value = Time.toTimecode( _media.duration );
       return;
     }
-    duration = Time.toTimecode( duration );
-    if ( _durationInput.value !== duration ) {
-      _durationInput.value = Time.toTimecode( duration );
+
+    // If the entered value wasn't in time code format.
+    if ( _durationInput.value !== durationTimeCode ) {
+      _durationInput.value = durationTimeCode;
     }
-    if ( duration !== _media.duration ) {
-      duration = Time.toSeconds( duration );
-    }
-    if ( duration === _media.duration ) {
+
+    // If the seconds version of the duration is already our current duration
+    // bail early.
+    if ( durationSeconds === _media.duration ) {
       return;
     }
-    if ( /[0-9]{1,9}/.test( duration ) ) {
-      _media.url = "#t=," + duration;
-    } else {
-      _media.url = duration;
-    }
+
+    _media.url = "#t=," + durationSeconds;
   }
 
   function onDenied( error ) {
@@ -126,9 +128,10 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     _loadingSpinner.classList.add( "hidden" );
 
     el.querySelector( ".mg-title" ).innerHTML = data.title;
-    el.querySelector( ".mg-type" ).innerHTML = data.type;
+    el.querySelector( ".mg-type" ).classList.add( data.type.toLowerCase() + "-icon" );
+    el.querySelector( ".mg-type-text" ).innerHTML = data.type;
     el.querySelector( ".mg-duration" ).innerHTML = Time.toTimecode( data.duration, 0 );
-    if ( data.type === "html5" ) {
+    if ( data.type === "HTML5" ) {
       thumbnailImg = data.thumbnail;
     } else {
       thumbnailImg = document.createElement( "img" );
@@ -137,7 +140,7 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     thumbnailBtn.appendChild( thumbnailImg );
     thumbnailBtn.src = data.thumbnail;
 
-    el.classList.add( "mg-" + data.type );
+    el.classList.add( "mg-" + data.type.toLowerCase() );
 
     if ( data.denied ) {
       el.querySelector( ".mg-error" ).innerHTML = "Embedding disabled by request";
@@ -146,11 +149,12 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     function addEvent() {
       var start = _butter.currentTime,
           end = start + data.duration,
+          playWhenReady = false,
           trackEvent;
 
       function addTrackEvent() {
         var popcornOptions = {
-          source: data.source,
+          source: URI.makeUnique( data.source ).toString(),
           denied: data.denied,
           start: start,
           end: end,
@@ -166,9 +170,13 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
       if ( end > _media.duration ) {
         _butter.listen( "mediaready", function onMediaReady() {
           _butter.unlisten( "mediaready", onMediaReady );
+          if ( playWhenReady ) {
+            _media.play();
+          }
           addTrackEvent();
         });
 
+        playWhenReady = !_media.paused;
         setBaseDuration( end );
       } else {
         addTrackEvent();
@@ -178,7 +186,10 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
     thumbnailBtn.addEventListener( "click", addEvent, false );
 
     _galleryList.insertBefore( el, _galleryList.firstChild );
-    _this.scrollbar.update();
+
+    if ( _this.scrollbar ) {
+      _this.scrollbar.update();
+    }
     resetInput();
   }
 
@@ -187,7 +198,7 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
         source = data.source;
 
     if ( !_media.clipData[ source ] ) {
-      _media.clipData[ source ] = source;
+      _media.clipData[ source ] = data;
       _butter.dispatch( "mediaclipadded" );
 
       el.classList.add( "new" );
@@ -286,11 +297,21 @@ define( [ "util/lang", "util/xhr", "util/keys", "util/mediatypes", "editor/edito
 
     // We keep track of clips that are in the media gallery for a project once it is saved
     // and every time after it is saved.
-    var clips = _media.clipData;
+    var clips = _media.clipData,
+        clip;
 
     for ( var key in clips ) {
       if ( clips.hasOwnProperty( key ) ) {
-        MediaUtils.getMetaData( clips[ key ], addElements );
+        clip = clips[ key ];
+        if ( typeof clip === "object" ) {
+          addElements( clip );
+        } else if ( typeof clip === "string" ) {
+          // Load projects saved with just the url the old way.
+          // Remove it too, so future saves don't come through here.
+          delete clips[ key ];
+          // Fire an onSuccess so a new, updated clip is added to clipData.
+          MediaUtils.getMetaData( clip, onSuccess );
+        }
       }
     }
 
