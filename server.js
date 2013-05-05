@@ -23,7 +23,7 @@ var express = require('express'),
 
 var templateConfigs = {};
 
-var quizzes = require('quizzes.json');
+var quizzes = require('./quizzes.json');
 var TrueFalse = {"tf": quizzes['tf']};
 var Fill = {"fill": quizzes['fill']};
 var MultiList = {"multiList": quizzes['multiList']};
