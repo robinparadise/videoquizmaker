@@ -1,5 +1,5 @@
-define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/textbox", "ui/widget/tooltip" ],
-  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, TextBoxWrapper, ToolTip ) {
+define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data", "ui/webmakernav/webmakernav", "ui/widget/textbox", "ui/widget/tooltip", "util/xhr" ],
+  function( Dialog, Lang, HEADER_TEMPLATE, UserData, WebmakerBar, TextBoxWrapper, ToolTip, XHR ) {
 
   return function( butter, options ){
 
@@ -47,17 +47,9 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       XHR.get("/api/quizzes/all", callback);
     }
 
-    function assignQuizmeOptions() {
-      if (this.readyState === 4) {
-          try {
-              var response = JSON.parse(this.response);
-          } catch (err) {
-              console.log({ error: "an unknown error occured" });
-              return err;
-          }
-      }
-      if (response) {
-        for(var n in response.all){
+    function assignQuizmeOptions(response) {
+      if (response['all']) {
+        for(var n in response.all) {
           Butter.QuizOptions[response.all[n].name] = JSON.parse(response.all[n].data);
         }
       }

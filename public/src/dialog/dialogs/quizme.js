@@ -44,14 +44,15 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             options: "",
             type: data.type
         }
-        var sdata = JSON.stringify( quiz, null, 4 );
-        XHR.post("/api/updatequiz", sdata, callback, "application/json");
+        XHR.post("/api/updatequiz", quiz, callback, "application/json");
     }
 
     var deleteQuestionsQuizDB = function (id, callback) {
-        var pid = { id: id };
-        var data = JSON.stringify( pid, null, 4 );
-        XHR.post( "/api/deletequiz", data, callback, "application/json" );
+        if ( isNaN(Number(id) ) ) {
+            console.log("Error ID:" + id + " is not a valid Number");
+        }
+        var pid = { id: Number(id) };
+        XHR.post( "/api/deletequiz", pid, callback, "application/json" );
     }
 
     var addquizQuizDB = function (name, data, callback) {
@@ -62,8 +63,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             data: data,
             options: null,
         }
-        var sdata = JSON.stringify( quiz, null, 4 );
-        XHR.post( "/api/savequiz", sdata, callback, "application/json" );
+        XHR.post( "/api/savequiz", quiz, callback, "application/json" );
     }
 
 
@@ -282,22 +282,18 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
     // *** Interaction (callbacks) with BD *** //
 
-    var print_quizzes = function(data) {
-        console.log(" [print_quizzes] " + data);
-        if (this.readyState === 4) {
-            try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-            } catch (err) {
-                console.log({ error: "an unknown error occured" });
-                return err;
-            }
+    var print_quizzes = function(response) {
+        if (!response) {
+            console.log({ error: "an unknown error occured" });
+            return;
         }
-        console.log(" [response] " + response['error']);
-        if (!response) { return }
         if (response['error'] === "unauthorized") {
             dialog.activity( "default-close" );
             dialog = Dialog.spawn( "unauthorized" ).open();
+        }
+        if (response.error !== "okay" && response.error !== undefined) {
+            console.log(response.error);
+            return;
         }
 
         cleanList(quizzes);
@@ -314,10 +310,13 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         cleanFormQuestions();
         okQ.value = "Create Question";
 
-        if (Object.keys( GlobalQuiz[quizzes[quizzes.selectedIndex].innerHTML] ).length === 0) {
-            getquizzesQuizDB(quizzes[quizzes.selectedIndex]['value'], load_Questions);
+        var name = quizzes[quizzes.selectedIndex].innerHTML;
+        var pid = quizzes[quizzes.selectedIndex]['value'];
+
+        if (Object.keys( GlobalQuiz[name] ).length === 0) {
+            getquizzesQuizDB(pid, load_Questions);
         } else {
-            load_List_Questions(quizzes[quizzes.selectedIndex].innerHTML);
+            load_List_Questions(name);
         }
 
     }
@@ -327,7 +326,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         if (data === undefined) {
             data = GlobalQuiz[name];
         }
-        console.log(data);
         for (var type in data) {
             for (var n in data[type]) {
                 questions[questions.length] = new Option(data[type][n].ques, [name, type, n].join('|'));
@@ -335,41 +333,45 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         } 
     }
 
-    var load_Questions = function () {
-        if (this.readyState === 4) {
-            try {
-                var response = JSON.parse(this.response);
-                var data = JSON.parse(JSON.parse(this.response).quiz.data);
-                console.log("RESP:: ", response, this);
-            } catch (err) {
-                console.log({ error: "an unknown error occured" });
-                return err;
-            }
+    var load_Questions = function (response) {
+        if (!response) {
+            console.log({ error: "an unknown error occured" });
+            return;
         }
-        if (!response || !data) { return }
+        if (response.error !== "okay" && response.error !== undefined) {
+            console.log(response.error);
+            return;
+        }
+        try {
+            var data = response.quiz.data;
+            var name = response.quiz.name;
+            if (typeof(data) === "string") {
+                data = JSON.parse(data);
+            }
+        } catch (err) {
+            console.log({ error: "an unknown error occured" }, err);
+            return;
+        } 
         if (!quizzes[quizzes.selectedIndex]) { return }
 
-        GlobalQuiz[response.quiz.name] = data; // Guardamos en local
-        
-        load_List_Questions(response.quiz.name);
+        GlobalQuiz[name] = Object.create(data); // Guardamos en local
+        load_List_Questions(name);
     }
 
-    var reloadQuiz = function () {
-        if (this.readyState === 4) {
-            try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-            } catch (err) {
-                console.log({ error: "an unknown error occured" });
-                return err;
-            }
+    var reloadQuiz = function (response) {
+        if (!response) {
+            console.log({ error: "an unknown error occured" });
+            return;
+        }
+        if (response.error !== "okay" && response.error !== undefined) {
+            console.log(response.error);
+            return;
         }
         if (questions.selectedIndex >= 0) {
             cleanFormQuestions();
         }
 
         GlobalQuiz[response.name] = GlobalDataQuiz;
-
         load_List_Questions(response.name);
     }
 
@@ -382,10 +384,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         
         okQ.value = "Update Question";
         
-        var name   = info[0];
-        var type   = info[1];
-        var n      = info[2];
-        var quiz   = GlobalQuiz[name][type] [n];
+        var name = info[0];
+        var type = info[1];
+        var n    = info[2];
+        var quiz = GlobalQuiz[name][type] [n];
 
         onSelectQ(type);
         
@@ -413,7 +415,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             }
         }
         else {
-            var ans = quiz.ansSel.slice();
+            var ans = quiz.ansSel.slice(0);
             for (k=1; k<inputs.length; k++ ) {
                 if (inputs[k].name == "a") {
                     if (ans.length > 0) {
@@ -522,29 +524,28 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         console.log("SEND ADD QUIZ");
     }
 
-    var addQuizResp = function () {
-        if (this.readyState === 4) {
-            try {
-                var response = JSON.parse(this.response);
-                console.log("RESP:: ", response);
-            } catch (err) {
-                console.log({ error: "an unknown error occured" });
-                return err;
-            }
+    var addQuizResp = function (response) {
+        if (!response) {
+            console.log({ error: "an unknown error occured" });
+            return;
+        }
+        if (response.error !== "okay" && response.error !== undefined) {
+            console.log(response.error);
+            return;
         }
         GlobalQuiz[response.name] = new Object();
         quizzes[quizzes.length] = new Option(response.name, response.id);
         $(quizzes).editableOptions();
     }
 
-    var deleteQuiz = function () {
-        if (this.readyState === 4) {
-            try {
-                var response = JSON.parse(this.response);
-            } catch (err) {
-                console.log({ error: "an unknown error occured" });
-                return err;
-            }
+    var deleteQuiz = function (response) {
+        if (!response) {
+            console.log({ error: "an unknown error occured" });
+            return;
+        }
+        if (response.error !== "okay" && response.error !== undefined) {
+            console.log(response.error);
+            return;
         }
         if (!response || !quizzes[quizzes.selectedIndex]) { return }
 
