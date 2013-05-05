@@ -23,6 +23,14 @@ var express = require('express'),
 
 var templateConfigs = {};
 
+var quizzes = require('quizzes.json');
+var TrueFalse = {"tf": quizzes['tf']};
+var Fill = {"fill": quizzes['fill']};
+var MultiList = {"multiList": quizzes['multiList']};
+var quizTF = {name: "TrueFalse", data: TrueFalse, type: "tf"};
+var quizFILL = {name: "Fill", data: Fill, type: "fill"};
+var quizMultiList = {name: "MultiList", data: MultiList, type: "multiList"};
+
 function readTemplateConfig( templateName, templatedPath ) {
   var configPath = templatedPath.replace( '{{templateBase}}', config.dirs.templates + '/' );
   // Resolve paths relative to server.js, not the cwd
@@ -110,6 +118,10 @@ function writeEmbed( embedPath, url, data, callback ) {
   }
 
   stores.publish.write( embedPath, writeEmbed.templateFn( data ), callback );
+}
+
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
 }
 
 app.post( '/api/publish/:id',
@@ -414,15 +426,36 @@ app.get('/api/quizzes', filter.isStorageAvailable, function(req, res) {
     if ( !docs ) {
       res.json( { error: "quiz not found" }, 404 );
       return;
+    } else if (isEmpty(docs)) {
+      User.createQuiz( email, quizTF, function(err, doc) {
+        if (!err) {
+          docs.push({'id': doc.id, 'name': doc.name})
+        }
+      User.createQuiz( email, quizFILL, function(err, doc){
+        if (!err) {
+          docs.push({'id': doc.id, 'name': doc.name})
+        }
+      User.createQuiz( email, quizMultiList, function(err, doc){
+        if (!err) {
+          docs.push({'id': doc.id, 'name': doc.name})
+        }
+        var aux = new Object();
+        for (var i = 0; i < docs.length; i+=1) {
+          aux[docs[i].id] = docs[i].name;
+        }
+        res.json({ quiz: aux }, 200);
+        return;
+      });
+      });
+      });
+    } else {
+      var aux = new Object();
+      for (var i = 0; i < docs.length; i+=1) {
+        aux[docs[i].id] = docs[i].name;
+      }
+      res.json({ quiz: aux }, 200);
+      return;
     }
-
-    var aux = new Object();
-    for (var i = 0; i < docs.length; i+=1) {
-      aux[docs[i].id] = docs[i].name;
-    }
-
-    res.json({ quiz: aux }, 200);
-    return;
   });
 });
 
