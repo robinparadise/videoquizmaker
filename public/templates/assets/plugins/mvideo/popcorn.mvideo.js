@@ -46,7 +46,7 @@
       }
     },
     /**
-     * @member quizme
+     * @member
      * The setup function will get all of the needed 
      * items in place before the start function is called. 
      */
@@ -84,7 +84,6 @@
      * options variable
      */
     start: function( event, options ){
-      // dont do anything if the information didn't come back from wiki
       $("."+options._container.id).show();
       if ($(".status-button").attr("data-state") == "true") {
         $("."+options._container.id)[0].play();

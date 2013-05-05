@@ -81,6 +81,7 @@
     },
 
     _setup : function( options ) {
+      console.log("[P] setup plugin popcorn quizme");
         
       var target = document.getElementById( options.target );
       
