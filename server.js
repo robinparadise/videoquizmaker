@@ -108,7 +108,7 @@ app.configure( function() {
     }))
     .use( express.static( tmpDir, JSON.parse( JSON.stringify( config.staticMiddleware ) ) ) )
     .use( express.static( WWW_ROOT, JSON.parse( JSON.stringify( config.staticMiddleware ) ) ) )
-    .use( express.json() )
+    .use( express.bodyParser() )
     .use( express.cookieParser() )
     .use( express.cookieSession( config.session ) )
     .use( express.csrf() )
@@ -316,7 +316,8 @@ app.post( '/api/publish/:id',
                            description: project.description,
                            embedShellSrc: publishUrl,
                            embedSrc: iframeUrl,
-                           baseHref: APP_HOSTNAME
+                           baseHref: APP_HOSTNAME,
+                           thumbnail: project.thumbnail
                          },
                          finished );
       }
@@ -338,7 +339,8 @@ app.post( '/api/publish/:id',
                     remixUrl: remixUrl,
                     templateScripts: templateScripts,
                     externalAssets: externalAssetsString,
-                    popcorn: popcornString
+                    popcorn: popcornString,
+                    thumbnail: project.thumbnail
                   },
                   publishEmbedShell );
 
