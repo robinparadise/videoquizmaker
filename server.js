@@ -612,7 +612,7 @@ app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
     res.json( { error: 'okay' }, 200 );
   });
 });
-app.get( '/healthcheck', routes.api.healthcheck );
+//app.get( '/healthcheck', routes.api.healthcheck );
 
 app.listen( config.PORT, function() {
   console.log( 'HTTP Server started on ' + APP_HOSTNAME );
