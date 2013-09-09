@@ -3,7 +3,6 @@ jQuizMe 2.2 - 12/30/10 Programmed and CopyWrited by Larry Battle 2008 - 2010
 */	
 .quiz-el{
 	background: #aaaaaa;
-	font-size: 1.1em;
 	/*font-family: Arial, Verdana, Helvetica, sans-serif;*/
 	position: relative;
 	padding: 0.1em;
@@ -49,7 +48,6 @@ jQuizMe 2.2 - 12/30/10 Programmed and CopyWrited by Larry Battle 2008 - 2010
 .q-probArea{
 	background: #eee;
 	border: thin black solid;
-	font-size: 1.2em;
 	position: relative;
 }
 .q-help-menu{
