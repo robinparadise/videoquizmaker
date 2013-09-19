@@ -5,9 +5,23 @@
 */
 
 define( [], function() {
-	console.log("[TrackNetwork][***###***]");
 
 	function TrackNetwork() {
+
+		//Adds a line in the drawing loop of the background canvas
+		this.addLine = function(start_x, start_y, end_x, end_y, color) {
+			lines.push({
+				start:{
+					x: start_x,
+					y: start_y
+				},
+				end:{
+					x: end_x,
+					y: end_y
+				},
+				'color': color?color:"#"+("000"+(Math.random()*(1<<24)|0).toString(16)).substr(-6)
+			});
+		}
 
 		this.drawLine = function() {
 			console.log("[DrawLine][***###***]");
@@ -16,6 +30,8 @@ define( [], function() {
 
 			var ctx = canvasElem.getContext("2d");
 			var lines = [];
+
+			console.log("[DrawLine][***getContext OK***]");
 
 			ctx.fillStyle="#fff";
 			//Clear the background
