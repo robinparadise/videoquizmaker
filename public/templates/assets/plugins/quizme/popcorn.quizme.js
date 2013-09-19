@@ -86,6 +86,7 @@
       var target = document.getElementById( options.target );
       
       options._container = document.createElement( "div" );
+console.log("[Setup popcorn][options._container]", options._container);
 
       var i;
       for (i = 0;; i+=1) {

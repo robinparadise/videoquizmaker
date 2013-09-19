@@ -175,6 +175,7 @@ window.Butter = {
       }; //getManifest
 
       _this.generateSafeTrackEvent = function( type, popcornOptions, track, position ) {
+console.log("[generateSafeTrackEvent]");
         var trackEvent,
             relativePosition,
             start = popcornOptions.start,
@@ -238,6 +239,7 @@ window.Butter = {
       };
 
       function targetTrackEventRequested( e ) {
+console.log("[targetTrackEventRequested]");
         var trackEvent,
             popcornOptions = {},
             start = _currentMedia.currentTime;
@@ -265,6 +267,7 @@ window.Butter = {
       }
 
       function mediaTrackEventRequested( e ) {
+console.log("[mediaTrackEventRequested]");
         var trackEvent;
         if ( _currentMedia.ready ) {
           trackEvent = _this.generateSafeTrackEvent( e.data.getAttribute( "data-popcorn-plugin-type" ), _currentMedia.currentTime );
@@ -273,6 +276,7 @@ window.Butter = {
       }
 
       function trackEventTimeSortingFunction( a, b ) {
+console.log("[trackEventTimeSortingFunction]");
         return a.popcornOptions.start < b.popcornOptions.start ? 1 : -1;
       }
 
@@ -750,6 +754,7 @@ window.Butter = {
 
         // wrap the load function to remember the script
         function genLoadFunction( script ){
+console.log("[genLoadFunction]");
           return function(){
             // this = XMLHttpRequest object
             if( this.readyState === 4 ){
