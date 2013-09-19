@@ -8,9 +8,13 @@
  * Supports a single event in the Media > Track > TrackEvent model.
  */
 define( [ "./logger", "./eventmanager", "./observer",
-          "util/lang", "util/time", "./views/trackevent-view" ],
+          "util/lang", "util/time", "./views/trackevent-view",
+          "./track-network" ],
   function( Logger, EventManager, Observer,
-            LangUtil, TimeUtil, TrackEventView ) {
+            LangUtil, TimeUtil, TrackEventView,
+            TrackNetwork ) {
+
+var _trackNetwork = new TrackNetwork();
 
   var __guid = 0;
 
@@ -139,6 +143,8 @@ define( [ "./logger", "./eventmanager", "./observer",
      * @throws TrackEventUpdateException: When an update operation failed because of conflicting times or other serious property problems.
      */
     this.update = function( updateOptions ) {
+
+      _trackNetwork.drawLine();
 
       var newStart,
           newEnd,

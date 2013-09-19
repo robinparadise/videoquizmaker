@@ -3023,8 +3023,13 @@ textarea.url {
 }
 .tracks-container {
   padding-bottom: 30px;
-  position: relative;
+  position: absolute !important; /* default relative */
   overflow: hidden;
+}
+
+/* Style for Canvas */
+#tracks-container-canvas {
+  position: absolute !important;
 }
 /*********************************************************
 * Track
