@@ -144,8 +144,6 @@ var _trackNetwork = new TrackNetwork();
      */
     this.update = function( updateOptions ) {
 
-      _trackNetwork.drawLine();
-
       var newStart,
           newEnd,
           manifestOptions,
@@ -248,6 +246,8 @@ var _trackNetwork = new TrackNetwork();
       if ( _popcornWrapper && !preventUpdate ) {
         _popcornWrapper.synchronizeEvent( _this, updateOptions );
       }
+
+      _trackNetwork.calculateLines();
     };
 
     /**
