@@ -8,17 +8,27 @@ define( [], function() {
 
 	function TrackNetwork() {
 
-		var lines, canvas, ctx;
+		var lines, canvas, ctx, stage;
+
+		// Create Layer Canvas
+		this.createCanvas = function() {
+			//if (stage) return;
+			var wrapper = $(".tracks-container-wrapper");
+			stage = new Kinetic.Stage({
+				container: 'tracks-container-canvas',
+				width: wrapper.width(),
+				height: wrapper.height()
+			});
+		}
 
 		// List all tracks and then calculate coords for lines.
 		this.calculateLines = function() {
-			lines = [];
+			this.createCanvas();
+			var layer = new Kinetic.Layer();
 			var tracks = Butter.app.orderedTrackEvents;
-
-			console.log("[calculateLines][***&&&***]");
-			console.log("[calculateLines]", tracks);
-
 			var start, end, start_x, start_y, start_ID, end_x, end_y, end_ID;
+
+			console.log("[calculateLines][***Loop***]");
 			for(var i in tracks) {
 
 				start_ID = tracks[i].popcornOptions.id;
@@ -33,50 +43,20 @@ define( [], function() {
 				end_x = end.position().left;
 				end_y = end.parent().position().top + end.height()/2;
 
-				this.addLine(start_x, start_y, end_x, end_y, "#3FB58E");
+				// Create Kinetic Layer
+				var line = new Kinetic.Line({
+					points: [start_x, start_y, end_x, end_y],
+					stroke: '#3FB58E',
+					strokeWidth: 3,
+					lineCap: 'square',
+					lineJoin: 'square'
+				});
+
+				line.move(0, 0);
+				layer.add(line);
 			}
 			console.log("[calculateLines][***END Loop***]");
-			console.log("[calculateLines][***Lines***]", lines);
-			this.drawLines();
-		}
-
-		//Adds a line in the drawing loop of the background canvas
-		this.addLine = function(start_x, start_y, end_x, end_y, color) {
-			lines.push({
-				start:{
-					x: start_x,
-					y: start_y
-				},
-				end:{
-					x: end_x,
-					y: end_y
-				},
-				'color': color?color:"#"+("000"+(Math.random()*(1<<24)|0).toString(16)).substr(-6)
-			});
-		}
-
-		this.drawLines = function() {
-			console.log("[DrawLine][***###***]");
-
-			canvas = document.getElementById("tracks-container-canvas");
-			if (!canvas) return;
-			ctx = ctx?ctx:canvas.getContext("2d");
-
-			console.log("[DrawLine][***getContext OK***]");
-
-			ctx.fillStyle="#fff";
-			//Clear the background
-			canvas.width = canvas.width;
-
-			for(var i in lines) {
-			//Draw each line in the draw buffer            
-				ctx.beginPath();
-				ctx.lineWidth = 3;//Math.floor((1+Math.random() * 10));
-				ctx.strokeStyle = lines[i].color;
-				ctx.moveTo(lines[i].start.x, lines[i].start.y);
-				ctx.lineTo(lines[i].end.x, lines[i].end.y);
-				ctx.stroke();
-			}	
+			stage.add(layer);
 		}
 	}
 	return TrackNetwork;
