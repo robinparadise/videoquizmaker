@@ -115,6 +115,7 @@ define( [ "util/lang", "text!./webmakernav.html" ],
       personaBtnGroup.parentNode.removeChild( personaBtnGroup );
     }
 
+    options.hideFeedback = true; // force to hide feedback
     if ( options.hideFeedback ) {
       feedbackBtn.parentNode.removeChild( feedbackBtn );
     }

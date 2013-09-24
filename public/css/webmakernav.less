@@ -27,24 +27,24 @@
 */
 .webmaker-nav-container {
   font-family: "Open Sans", sans-serif;
-  color: #FFF;
+  color: rgb(85, 85, 85);
   font-size: @fontsize;
-  border-bottom: 1px solid darken( @darkgrey, 5% );
+  border-bottom: 0px solid darken( #FFF, 5% );
   a {
-    color: #FFF;
+    color: rgb(85, 85, 85);
     &:hover {
       color: @green;
     }
   }
   .h3 {
-    color: #FFF;
+    color: rgb(85, 85, 85);
     margin: 0;
     font-weight: 700;
     font-size: 19px;
   }
 }
 .webmaker-nav-top {
-  background: @darkgrey;
+  background: #FFF;
   height: @webmakerNavHeight;
 }
 .webmaker-nav {
@@ -53,7 +53,7 @@
   list-style: none;
   line-height: @webmakerNavHeight;
   font-size: 1em;
-  color: #FFF;
+  color: rgb(85, 85, 85);
   > li {
     padding: 0;
     margin: 0;
@@ -65,7 +65,7 @@
     position: relative;
     display: block;
     height: 100%;
-    background: @darkgrey;
+    background: #FFF;
     padding: 0 @padding;
     font-weight: 600;
     text-decoration: none;
@@ -73,7 +73,7 @@
     .selectable( none );
     .transition( top 0.1s ease );
     // Default state
-    color: fade( #FFF, 50% );
+    color: fade( rgb(85,85,85), 50% );
     // Hover or always-on state
     &:hover,
     &.on {
@@ -83,11 +83,11 @@
     &.webmaker-btn-active {
       color: #FFF;
       border-bottom-width: 1px;
-      border-top: 1px solid lighten( @darkgrey, 6% );
+      border-top: 1px solid lighten( #FFF, 6% );
       background: @mediumgrey;
       top: 4px;
-      box-shadow: 0 -6px 0 1px darken( @darkgrey, 5% ),
-        1px -8px 10px -2px darken( @darkgrey, 10% );
+      box-shadow: 0 -6px 0 1px darken( #FFF, 5% ),
+        1px -8px 10px -2px darken( #FFF, 10% );
        z-index: 10000;
     }
   }
@@ -98,8 +98,8 @@
   float: left;
   height: @webmakerNavHeight;
   > li {
-    border-right: 1px solid lighten( @darkgrey, 5% );
-    border-left: 1px solid darken( @darkgrey, 5% );
+    border-right: 1px solid lighten( #FFF, 5% );
+    border-left: 1px solid #FFF, 5% );
     margin-left: 0;
 
     .webmaker-expanded & {
@@ -110,7 +110,7 @@
     }
     a {
       &:hover {
-        background: lighten( @darkgrey, 2% );
+        background: lighten( #FFF, 2% );
       }
     }
   }
@@ -148,7 +148,7 @@
 // This is the menu on the right with user info stuff
 .user-info {
   float: right;
-  margin-right: @tabzillaOffset;
+  margin-right: 15px;
   li {
     border-right: none;
   }
@@ -189,16 +189,16 @@
   }
   .login { // usually join
     color: #FFF;
-    line-height: 22px;
-    top: 3px;
+    line-height: 31px;
+    top: 15px;
     display: block;
     position: relative;
-    background: lighten( @darkgrey, 10% );
+    background: lighten( #333, 10% );
     border: 1px solid #333;
-    box-shadow: inset 0 1px 0 0 lighten( @darkgrey, 25% );
+    box-shadow: inset 0 0px 0 0 lighten( #FFF, 25% );
     padding: 0 12px 0 37px;
-    border-radius: 3px;
-    margin-right: 5px;
+    border-radius: 0px;
+    margin-right: 0px;
     overflow: hidden;
     &:after {
       background: url( "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA0AAAAPCAYAAAA/I0V3AAAA4klEQVR42o2RWaqEMBRE3YaCiDjPwQGcd9CrysLv4wTyoLFD90dxqbp1EgdPRB7Kskznea6Zn/aPoKoqUUrJOI5m4l2QBfSyLHKep1zXZSae3An1fS/7vst931bGkzuhaZrsLVbGkzuheZ7lOI6HyJ2QUkqv6yrbtv0LT+6E7G0UrfBfP3lZlpoXH4ZBmHgn5Pv+KwxDfqp0XQdgJp6c/RsUBIGOokiSJDE/s21bACbe5Ozp0TdAHMdSFIXUdS1N01C2wpObPT36HifwCJzI0iX29Oh7XP0E3CB9L01TzM+i/wePv4ZE5RtAngAAAABJRU5ErkJggg==" ) 10px center no-repeat;
@@ -225,7 +225,7 @@
       box-shadow: 1px 0 0 2px fade( #000, 5% );
     }
     &:hover {
-      background: lighten( @darkgrey, 15% );
+      background: lighten( #333, 20% );
     }
   }
 }
@@ -237,7 +237,7 @@
   padding: 0;
   border-radius: 5px;
   margin-top: 8px;
-  border: 5px solid lighten( @darkgrey, 15% );
+  border: 5px solid lighten( #FFF, 15% );
   .box-sizing( border-box );
   opacity: 0.7;
   &:hover {
@@ -246,6 +246,7 @@
 }
 
 .webmaker-nav > .user {
+  top: 15px;
   position: relative;
   > a {
     padding-left: 8px;
@@ -254,7 +255,7 @@
 
 // The user menu
 .tooltip.tooltip-user {
-  background: @darkgrey;
+  background: #FFF;
   border: none;
   color: #FFF;
   margin-top: 0;
@@ -276,7 +277,7 @@
     > li {
       padding: 5px;
       padding-left: 10px;
-      border-bottom: 1px solid lighten( @darkgrey, 10% );
+      border-bottom: 1px solid lighten( #FFF, 10% );
       &:last-child {
         border-bottom: none;
       }
@@ -305,8 +306,8 @@
 }
 
 .webmaker-tab {
-  box-shadow: inset 0 1px 0 0 @darkgreyhighlight,
-    0 -1px 0 0 darken( @darkgrey, 5% );
+  box-shadow: inset 0 1px 0 0 #FFF,
+    0 -1px 0 0 darken( #FFF, 5% );
 }
 
 // This is the menu with subnavigation
@@ -350,7 +351,7 @@
       float: left;
       width: 450px;
       padding: 20px;
-      border-left: 1px solid lighten( @darkgrey, 10% );
+      border-left: 1px solid lighten( #FFF, 10% );
       height: 100%;
       font-size: 15px;
       line-height: 1.3;
@@ -373,7 +374,7 @@
     text-decoration: none;
     width: 250px;
     padding-right: 20px;
-    border-left: 1px solid lighten( @darkgrey, 10% );
+    border-left: 1px solid lighten( #FFF, 10% );
     height: 100%;
 
     &:hover {
@@ -435,7 +436,7 @@
 
 // The user menu
 .butter-tooltip.tooltip-user {
-  background: @darkgrey;
+  background: #FFF;
   border: none;
   color: #FFF;
   margin-top: 0;
@@ -459,7 +460,7 @@
     > li {
       padding: 10px;
       padding-left: 10px;
-      border-bottom: 1px solid lighten( @darkgrey, 10% );
+      border-bottom: 1px solid lighten( #FFF, 10% );
       box-shadow: inset 0 -1px 0 0 fade( #000, 20% );
       &:last-child {
         border-bottom: none;

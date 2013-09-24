@@ -888,33 +888,33 @@ textarea.url {
 */
 .webmaker-nav-container {
   font-family: "Open Sans", sans-serif;
-  color: #FFF;
+  color: rgb(85, 85, 85);
   font-size: 12px;
-  border-bottom: 1px solid #2d2f2f;
+  border-bottom: 0px solid #2d2f2f;
 }
 .webmaker-nav-container a {
-  color: #FFF;
+  color: rgb(85, 85, 85);
 }
 .webmaker-nav-container a:hover {
   color: #3fb58e;
 }
 .webmaker-nav-container .h3 {
-  color: #FFF;
+  color: rgb(85, 85, 85);
   margin: 0;
   font-weight: 700;
   font-size: 19px;
 }
 .webmaker-nav-top {
-  background: #3a3c3c;
-  height: 29px;
+  background: #FFF;
+  height: 62px;
 }
 .webmaker-nav {
   padding: 0;
   margin: 0;
   list-style: none;
-  line-height: 29px;
+  line-height: 62px;
   font-size: 1em;
-  color: #FFF;
+  color: rgb(85, 85, 85);
 }
 .webmaker-nav > li {
   padding: 0;
@@ -927,7 +927,7 @@ textarea.url {
   position: relative;
   display: block;
   height: 100%;
-  background: #3a3c3c;
+  background: #FFF;
   padding: 0 15px;
   font-weight: 600;
   text-decoration: none;
@@ -942,7 +942,7 @@ textarea.url {
   -o-transition: top 0.1s ease;
   -ms-transition: top 0.1s ease;
   transition: top 0.1s ease;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(85, 85, 85, 0.5);
 }
 .webmaker-nav > li > a:hover,
 .webmaker-nav > li > .link:hover,
@@ -952,7 +952,7 @@ textarea.url {
 }
 .webmaker-nav > li > a.webmaker-btn-active,
 .webmaker-nav > li > .link.webmaker-btn-active {
-  color: #FFF;
+  color: rgb(85, 85, 85);
   border-bottom-width: 1px;
   border-top: 1px solid #494c4c;
   background: #3a3c3c;
@@ -1003,7 +1003,7 @@ textarea.url {
 */
 .user-info {
   float: right;
-  margin-right: 150px;
+  margin-right: 15px;
 }
 .user-info li {
   border-right: none;
