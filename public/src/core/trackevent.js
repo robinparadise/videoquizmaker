@@ -197,7 +197,7 @@ define( [ "./logger", "./eventmanager", "./observer",
 
         if ( this.manifest ) {
           // Get names of quizzes
-          if (this.manifest.about.name == "Popcorn jQuizme Plugin") {
+          if (this.manifest.about && this.manifest.about.name == "Popcorn jQuizme Plugin") {
             this.manifest.options.name.options = getNamesQuizzes(Butter.QuizOptions);
           }
           manifestOptions = this.manifest.options;
