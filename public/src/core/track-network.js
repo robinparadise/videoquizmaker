@@ -38,10 +38,12 @@ define( [], function() {
 				end = $(".butter-track-event[data-butter-trackevent-id='"+end_ID+"']");
 
 				//Calculate coords
-				start_x = start.position().left + start.width();
-				start_y = start.parent().position().top + start.height()/2;
-				end_x = end.position().left;
-				end_y = end.parent().position().top + end.height()/2;
+				try {
+					start_x = start.position().left + start.width();
+					start_y = start.parent().position().top + start.height()/2;
+					end_x = end.position().left;
+					end_y = end.parent().position().top + end.height()/2;
+				} catch(ex) {return}
 
 				// Create Kinetic Layer
 				var line = new Kinetic.Line({

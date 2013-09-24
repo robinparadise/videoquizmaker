@@ -5,8 +5,8 @@
 /* Super scrollbar is a scrollbar and a zoom bar in one.
  * It also doubles as a minimap of sorts.
  * Displaying a preview of all the tracks and track events */
-define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
-  function( LangUtils, SUPER_SCROLLBAR_LAYOUT ) {
+define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network" ],
+  function( LangUtils, SUPER_SCROLLBAR_LAYOUT, TrackNetwork ) {
 
   var TRACK_PADDING = 1,          // This padding is pixels between track event visuals.
                                   // This is, in pixels, how close the left and right handles on the
@@ -59,6 +59,9 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
         _inner.classList.remove( ARROW_MIN_WIDTH_CLASS );
       }
     };
+
+    // Track Network
+    var _trackNetwork = new TrackNetwork();
 
     _this.update = function() {
       _rect = _inner.getBoundingClientRect();
@@ -296,6 +299,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
       trackEventVisual.style.width = style.width;
       trackEventVisual.style.left = style.left;
       trackEventVisual.style.top = ( trackEventVisual.offsetHeight + TRACK_PADDING ) * order + "px";
+console.log("[Scrollbar][updateTrackEventVisual][111111]");
     }
 
     _media.listen( "trackeventremoved", function( e ) {
@@ -304,6 +308,8 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
         delete _trackEventVisuals[ e.data.id ];
         trackEvent.parentNode.removeChild( trackEvent );
       }
+console.log("[Scrollbar][trackeventremoved][XXXXX]");
+      _trackNetwork.calculateLines(); // Redraw net tracks
     });
 
     _media.listen( "trackeventupdated", function( e ) {
@@ -313,6 +319,8 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
         trackEvent.style.width = style.width;
         trackEvent.style.left = style.left;
       }
+      _trackNetwork.calculateLines(); // Redraw net tracks
+console.log("[Scrollbar][trackeventremoved][uuuuuu]");
     });
 
     _media.listen( "trackorderchanged", function( e ) {
@@ -332,6 +340,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
 
     _media.listen( "mediatimeupdate", function( e ) {
       _scrubber.style.left = e.data.currentTime / _duration * 100 + "%";
+console.log("[Scrollbar][mediatimeupdate][TTTTT]");
     });
 
     _this.initialize = function() {
@@ -359,8 +368,10 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     });
 
     _this.resize = function() {
+console.log("[Scrollbar][Resize]");
       _this.update();
       _boundsChangedCallback( _viewPort.offsetLeft / _rect.width, _viewPort.offsetWidth / _rect.width );
+      _trackNetwork.calculateLines();
     };
 
     Object.defineProperties( this, {

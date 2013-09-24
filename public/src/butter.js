@@ -754,7 +754,6 @@ console.log("[trackEventTimeSortingFunction]");
 
         // wrap the load function to remember the script
         function genLoadFunction( script ){
-console.log("[genLoadFunction]");
           return function(){
             // this = XMLHttpRequest object
             if( this.readyState === 4 ){

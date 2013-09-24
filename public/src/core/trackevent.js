@@ -8,13 +8,9 @@
  * Supports a single event in the Media > Track > TrackEvent model.
  */
 define( [ "./logger", "./eventmanager", "./observer",
-          "util/lang", "util/time", "./views/trackevent-view",
-          "./track-network" ],
+          "util/lang", "util/time", "./views/trackevent-view" ],
   function( Logger, EventManager, Observer,
-            LangUtil, TimeUtil, TrackEventView,
-            TrackNetwork ) {
-
-var _trackNetwork = new TrackNetwork();
+            LangUtil, TimeUtil, TrackEventView ) {
 
   var __guid = 0;
 
@@ -246,8 +242,6 @@ var _trackNetwork = new TrackNetwork();
       if ( _popcornWrapper && !preventUpdate ) {
         _popcornWrapper.synchronizeEvent( _this, updateOptions );
       }
-
-      _trackNetwork.calculateLines();
     };
 
     /**
@@ -339,6 +333,7 @@ var _trackNetwork = new TrackNetwork();
       resizing: {
         enumerable: true,
         get: function(){
+console.log("[TrackEvent][...resizing...]");
           return _view.resizing;
         }
       },
