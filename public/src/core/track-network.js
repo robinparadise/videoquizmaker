@@ -8,11 +8,10 @@ define( [], function() {
 
 	function TrackNetwork() {
 
-		var lines, canvas, ctx, stage;
+		var lines, stage;
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
-			//if (stage) return;
 			var wrapper = $(".tracks-container-wrapper");
 			stage = new Kinetic.Stage({
 				container: 'tracks-container-canvas',
@@ -26,23 +25,79 @@ define( [], function() {
 			this.createCanvas();
 			var layer = new Kinetic.Layer();
 			var tracks = Butter.app.orderedTrackEvents;
-			var start, end, start_x, start_y, start_ID, end_x, end_y, end_ID;
+			var start, end, prevTrack, setTracks;
 
 			console.log("[calculateLines][***Loop***]");
 			for(var i in tracks) {
 
-				start_ID = tracks[i].popcornOptions.id;
-				if(!tracks[Number(i)+1]) break;
-				end_ID = tracks[Number(i)+1].popcornOptions.id;
+				// Get the current Track(start) and the next Track(end)
+				var start_ID = tracks[i].popcornOptions.id;
 				start = $(".butter-track-event[data-butter-trackevent-id='"+start_ID+"']");
+				if(!tracks[Number(i)+1]) break;
+				var end_ID = tracks[Number(i)+1].popcornOptions.id;
 				end = $(".butter-track-event[data-butter-trackevent-id='"+end_ID+"']");
 
-				//Calculate coords
+				var belongsToSameSet = this.belongsToSameSet(start, end);
+				if (belongsToSameSet) {
+					if (!setTracks) {
+						setTracks = [start]
+					}
+					else {
+						setTracks.push(start)
+					}
+				} else { // Not Keep previous node origin
+					prevTrack = start;
+				}
+
+				if (!belongsToSameSet && setTracks) {
+					setTracks.push(prevTrack);
+					this.drawLines(setTracks, end, layer); 
+					setTracks = undefined;
+				} else if (belongsToSameSet) {
+					this.drawLines(prevTrack, end, layer);
+				} else if (!belongsToSameSet) {
+					this.drawLines(prevTrack, end, layer);
+				}
+			}
+			console.log("[calculateLines][***END Loop***]");
+			stage.add(layer);
+		}
+
+		// Find when tracks are in the same level at time ("belongs to the same track")
+		this.belongsToSameSet = function(start, end) {
+			if (!start || !end) return;
+			try {
+				var line = {
+					start: {
+						left: start.position().left,
+						right: start.position().left + start.width()
+					},
+					end: {
+						left: end.position().left,
+						right: end.position().left + end.width()
+					}
+				}
+			} catch(ex) {return false}
+			if (line.start.left <= line.end.right && line.end.left <= line.start.right) {
+				return true;
+			}
+			return false;
+		}
+
+		// Draw Lines between two points
+		this.drawLines = function(start, end, layer) {
+			var start_x, start_y, end_x, end_y;
+			try {
+				end_x = end.position().left;
+				end_y = end.parent().position().top + end.height()/2;
+			} catch(ex) {return}
+
+			for(var i in start) {
+				start[i] = $(start[i]) // reload jQuery, ugly trick but it works
+				// Calculate coords from prevTrack to end(Track)
 				try {
-					start_x = start.position().left + start.width();
-					start_y = start.parent().position().top + start.height()/2;
-					end_x = end.position().left;
-					end_y = end.parent().position().top + end.height()/2;
+					start_x = start[i].position().left + start[i].width();
+					start_y = start[i].parent().position().top + start[i].height()/2;
 				} catch(ex) {return}
 
 				// Create Kinetic Layer
@@ -57,8 +112,6 @@ define( [], function() {
 				line.move(0, 0);
 				layer.add(line);
 			}
-			console.log("[calculateLines][***END Loop***]");
-			stage.add(layer);
 		}
 	}
 	return TrackNetwork;
