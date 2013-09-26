@@ -473,6 +473,7 @@
 						"wrong": stats.wrongAns,
 						"tried": stats.quesTried,
 						"score": stats.perc(),
+						"rate" : stats.accur(),
 						"total": stats.totalQues,
 						"hasQuit": quit,
 						"quitFunc": ( !quit ) ? quitQuiz : function(){},

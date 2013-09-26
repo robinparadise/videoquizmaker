@@ -359,7 +359,6 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
      * Note that the values assigned to scrollLeft are rounded to prevent jitter.
      */
     _this.followCurrentTime = function() {
-console.log("[followCurrentTime]");
       var p = _media.currentTime / _media.duration,
           currentTimePixel = p * _container.clientWidth,
           halfWidth = _element.clientWidth / 2,

@@ -299,7 +299,6 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
       trackEventVisual.style.width = style.width;
       trackEventVisual.style.left = style.left;
       trackEventVisual.style.top = ( trackEventVisual.offsetHeight + TRACK_PADDING ) * order + "px";
-console.log("[Scrollbar][updateTrackEventVisual][111111]");
     }
 
     _media.listen( "trackeventremoved", function( e ) {
@@ -308,11 +307,12 @@ console.log("[Scrollbar][updateTrackEventVisual][111111]");
         delete _trackEventVisuals[ e.data.id ];
         trackEvent.parentNode.removeChild( trackEvent );
       }
-console.log("[Scrollbar][trackeventremoved][XXXXX]");
+console.log("[Scrollbar][trackeventremoved](calculateLines)");
       _trackNetwork.calculateLines(); // Redraw net tracks
     });
 
     _media.listen( "trackeventupdated", function( e ) {
+console.log("[super-scrollbar][trackeventupdated](calculateLines)");
       var trackEvent = _trackEventVisuals[ e.data.id ],
           style = e.data.view.element.style;
       if ( trackEvent ) {
@@ -320,7 +320,6 @@ console.log("[Scrollbar][trackeventremoved][XXXXX]");
         trackEvent.style.left = style.left;
       }
       _trackNetwork.calculateLines(); // Redraw net tracks
-console.log("[Scrollbar][trackeventremoved][uuuuuu]");
     });
 
     _media.listen( "trackorderchanged", function( e ) {
@@ -367,7 +366,7 @@ console.log("[Scrollbar][trackeventremoved][uuuuuu]");
     });
 
     _this.resize = function() {
-console.log("[Scrollbar][Resize]");
+console.log("[Scrollbar][Resize](calculateLines)");
       _this.update();
       _boundsChangedCallback( _viewPort.offsetLeft / _rect.width, _viewPort.offsetWidth / _rect.width );
       _trackNetwork.calculateLines();

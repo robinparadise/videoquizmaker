@@ -158,28 +158,24 @@ define( [
      * user.
      */
     this.prepare = function( url, target, popcornOptions, callbacks, scripts ){
-console.log("this.prepare");
       var urlsFromString;
 
       _mediaReady = false;
 
       // called when timeout occurs preparing popcorn
       function popcornTimeoutWrapper( e ) {
-console.log("popcornTimeoutWrapper");
         _interruptLoad = true;
         _onTimeout( e );
       }
 
       // called when timeout occurs preparing media
       function mediaTimeoutWrapper( e ) {
-console.log("mediaTimeoutWrapper");
 //return;
         _onTimeout( e );
       }
 
       // called when there's a serious failure in preparing popcorn
       function failureWrapper( e ) {
-console.log("failureWrapper");
         _interruptLoad = true;
         _logger.log( e );
         _onFail( e );
@@ -194,9 +190,7 @@ console.log("failureWrapper");
           throw "URL is invalid: empty array or not a string.";
         }
         else {
-console.log("Express");
           firstUrl = url[ 0 ];
-          console.log(url[0]);
         }
       }
       else if ( url.indexOf( "#t" ) !== 0 && url.indexOf( "," ) > -1 ) {
@@ -277,7 +271,6 @@ console.log("Express");
      * dwell in.
      */
     function constructPlayer( target ){
-console.log("constructPlayer");
       var targetElement = document.getElementById( target );
 
       if ( _mediaType !== "object" && targetElement ) {
@@ -311,7 +304,6 @@ console.log("constructPlayer");
      * insert in a script tag).
      */
     var generatePopcornString = this.generatePopcornString = function( popcornOptions, url, target, method, callbacks, scripts, trackEvents ){
-console.log("generatePopcornString");
       callbacks = callbacks || {};
       scripts = scripts || {};
 
@@ -444,7 +436,6 @@ console.log("generatePopcornString");
      */
     function createPopcorn( popcornString ){
       //popcornString = "Popcorn.player( 'baseplayer' ); var popcorn = Popcorn.baseplayer( '#video');"
-console.log("createPopcorn", "****", popcornString, "****");
       var popcornFunction = new Function( "", popcornString ),
           popcorn = popcornFunction();
       if ( !popcorn ) {
@@ -454,29 +445,24 @@ console.log("createPopcorn", "****", popcornString, "****");
         popcorn = window.Popcorn.instances[ window.Popcorn.instances.length - 1 ];
       }
       _popcorn = popcorn;
-console.log("createPopcorn", _popcorn);
     }
 
     /* Abstract the problem of waiting for some condition to occur with a timeout. Loop on checkFunction,
      * calling readyCallback when it succeeds, or calling timeoutCallback after MEDIA_WAIT_DURATION milliseconds.
      */
     function checkTimeoutLoop( checkFunction, readyCallback, timeoutCallback ){
-console.log("checkTimeoutLoop");
       var ready = false;
 
       // perform one check
       function doCheck(){
 //readyCallback();
         if ( _interruptLoad ) {
-console.log("_interruptLoad");
           return;
         }
 
         // run the check function
 //        ready = checkFunction();
-console.log("Ready", ready);
         if ( ready ) {
-console.log("call the ready callback");
           // if success, call the ready callback
           readyCallback();
         }
@@ -496,7 +482,6 @@ console.log("call the ready callback");
       }, MEDIA_WAIT_DURATION );
 
       //init
-console.log("docheck");
       doCheck();
     }
 
@@ -504,7 +489,6 @@ console.log("docheck");
      * with it (uses checkTimeoutLoop).
      */
     function waitForMedia( readyCallback, timeoutCallback ){
-console.log("***waitForMedia");
       checkTimeoutLoop(function(){
         // Make sure _popcorn still exists (e.g., destroy() hasn't been called),
         // that we're ready, and that we have a duration.

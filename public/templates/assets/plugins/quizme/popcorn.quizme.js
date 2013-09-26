@@ -36,7 +36,8 @@
         name: "Popcorn jQuizme Plugin",
         version: "0.1",
         author: "@robin",
-        website: "jquizme.googlecode.com"
+        website: "jquizme.googlecode.com",
+        keyname: "quizme"
       },
       options:{
         title: {

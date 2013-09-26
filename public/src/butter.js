@@ -82,6 +82,7 @@ window.Butter = {
 
     Butter.ToolTip = ToolTip;
     Butter.QuizOptions = {};
+    Butter.setTracks = [];
 
     Butter.init = function( butterOptions ) {
 
@@ -175,7 +176,6 @@ window.Butter = {
       }; //getManifest
 
       _this.generateSafeTrackEvent = function( type, popcornOptions, track, position ) {
-console.log("[generateSafeTrackEvent]");
         var trackEvent,
             relativePosition,
             start = popcornOptions.start,
@@ -239,7 +239,6 @@ console.log("[generateSafeTrackEvent]");
       };
 
       function targetTrackEventRequested( e ) {
-console.log("[targetTrackEventRequested]");
         var trackEvent,
             popcornOptions = {},
             start = _currentMedia.currentTime;
@@ -267,7 +266,6 @@ console.log("[targetTrackEventRequested]");
       }
 
       function mediaTrackEventRequested( e ) {
-console.log("[mediaTrackEventRequested]");
         var trackEvent;
         if ( _currentMedia.ready ) {
           trackEvent = _this.generateSafeTrackEvent( e.data.getAttribute( "data-popcorn-plugin-type" ), _currentMedia.currentTime );
@@ -276,7 +274,6 @@ console.log("[mediaTrackEventRequested]");
       }
 
       function trackEventTimeSortingFunction( a, b ) {
-console.log("[trackEventTimeSortingFunction]");
         return a.popcornOptions.start < b.popcornOptions.start ? 1 : -1;
       }
 
