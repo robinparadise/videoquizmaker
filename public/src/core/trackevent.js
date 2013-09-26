@@ -333,7 +333,6 @@ define( [ "./logger", "./eventmanager", "./observer",
       resizing: {
         enumerable: true,
         get: function(){
-console.log("[TrackEvent][...resizing...]");
           return _view.resizing;
         }
       },

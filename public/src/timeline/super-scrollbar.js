@@ -340,7 +340,6 @@ console.log("[Scrollbar][trackeventremoved][uuuuuu]");
 
     _media.listen( "mediatimeupdate", function( e ) {
       _scrubber.style.left = e.data.currentTime / _duration * 100 + "%";
-console.log("[Scrollbar][mediatimeupdate][TTTTT]");
     });
 
     _this.initialize = function() {

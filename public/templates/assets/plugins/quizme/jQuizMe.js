@@ -172,7 +172,7 @@
 			title: 'jQuizMe' // title displayed for quiz.
 		};
 		
-	$.fn.jQuizMe = function( wordList, options, doc, innerinfo, op, userLang ){
+	$.fn.jQuizMe = function( wordList, options, callback, userLang ){
 		var settings = $.extend( {}, settings, _settings, options ), 
 			lang = $.extend( true, {}, lang, _lang, userLang );		
 		setLangBtnTxt( lang );
@@ -468,6 +468,14 @@
 				});			
 				$( ".q-del-btn", currQuiz).one( "click", function(){
 					deleteQuiz();
+					if (callback !== undefined) {
+						if (callback.this) {
+							callback.this.play(); // execute callback that it passed throw plugin
+						}
+						if (callback.skipTime) {
+							callback.this.currentTime( callback.skipTime ); // skip to the end
+						}
+					}
 				});
 				$( ".q-help, .q-check-btn, .q-prob, .q-intro, .q-ans", currQuiz).hide();
 				if( settings.review ){
@@ -920,30 +928,30 @@
 				animateThis( $( currQuiz ), 0, function(){
 					$( currQuiz ).remove();
 				});
-                if (typeof(op) == 'undefined')
-                    op = false;
-                if (typeof(doc) != 'undefined') {
-                    var video  = doc.getElementById("ourvideo");
-                    var video2 = doc.getElementById("video2");
-                    var note = doc.getElementById("notetitle");
-                    var infost = doc.getElementById("infoset");
+                // if (typeof(op) == 'undefined')
+                //     op = false;
+                // if (typeof(doc) != 'undefined') {
+                //     var video  = doc.getElementById("ourvideo");
+                //     var video2 = doc.getElementById("video2");
+                //     var note = doc.getElementById("notetitle");
+                //     var infost = doc.getElementById("infoset");
 
-                    if (!op) {
-                        if (typeof(video) != 'undefined') {
-                            video.style.display = "none";
-                        }
-                        if (typeof(video2) != 'undefined') {
-                            video2.play();
-                            video2.style.display = "block";
-                        }
-                    }
-                    else {
-                        video.style.display = "none";
-                        video2.style.display = "none";
-                        note.innerHTML = "<h3>Finished!</h3><br/>";
-                        infost.style.display = "block";
-                    }
-                }
+                //     if (!op) {
+                //         if (typeof(video) != 'undefined') {
+                //             video.style.display = "none";
+                //         }
+                //         if (typeof(video2) != 'undefined') {
+                //             video2.play();
+                //             video2.style.display = "block";
+                //         }
+                //     }
+                //     else {
+                //         video.style.display = "none";
+                //         video2.style.display = "none";
+                //         note.innerHTML = "<h3>Finished!</h3><br/>";
+                //         infost.style.display = "block";
+                //     }
+                // }
 				q = {};
 			},
 			setToBeginningView = function(){

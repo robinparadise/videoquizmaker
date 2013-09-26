@@ -27,14 +27,10 @@
       allRandom: true,
       fxSpeed: "fast",
   };
+  var quiz;
 
-  var DEFAULT_FONT_COLOR = "#000000",
-      DEFAULT_SHADOW_COLOR = "#444444",
-      DEFAULT_BACKGROUND_COLOR = "#888888";
-
-  function newlineToBreak( string ) {
-    // Deal with both \r\n and \n
-    return string.replace( /\r?\n/gm, "<br>" );
+  var startQuiz = function(id, quiz, opt) {
+    
   }
 
   Popcorn.plugin( "quizme", {
@@ -80,23 +76,17 @@
       }
     },
 
-    _setup : function( options ) {
-      console.log("[P] setup plugin popcorn quizme");
-        
+    _setup: function( options ) {
       var target = document.getElementById( options.target );
-      
       options._container = document.createElement( "div" );
-console.log("[Setup popcorn][options._container]", options._container);
 
-      var i;
-      for (i = 0;; i+=1) {
+      for (var i = 0;; i+=1) {
         if (!document.getElementById(options.target + i)) {
             options._container.id = options.target + i;
             break;
         }
       }
       options._container.style.display = "none";
-      // $("#quiz1").jQuizMe( quiz, opt1 );
       if ( !target && Popcorn.plugin.debug ) {
         throw new Error( "target container doesn't exist" );
       }
@@ -112,13 +102,24 @@ console.log("[Setup popcorn][options._container]", options._container);
       else {
         quiz = Default;
       }
-      $("#" + options._container.id).jQuizMe(quiz, opt1);
-
+      var callback = {
+        this: this,
+        skipTime: options.end
+      }
+      $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
     },
 
     start: function( event, options ){
+      var child = $("#"+options._container.id).children();
+      if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
+        var callback = {
+          this: this,
+          skipTime: options.end
+        }
+        $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
+      }
       options._container.style.display = "block";
-        
+      this.pause();
     },
 
     end: function( event, options ){
@@ -126,7 +127,6 @@ console.log("[Setup popcorn][options._container]", options._container);
     },
 
     _teardown: function( options ){
-
       document.getElementById( options.target ) && document.getElementById( options.target ).removeChild( options._container );
     }
   });

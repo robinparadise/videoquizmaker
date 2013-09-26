@@ -53,9 +53,7 @@ define( [], function() {
 					setTracks.push(prevTrack);
 					this.drawLines(setTracks, end, layer); 
 					setTracks = undefined;
-				} else if (belongsToSameSet) {
-					this.drawLines(prevTrack, end, layer);
-				} else if (!belongsToSameSet) {
+				} else {
 					this.drawLines(prevTrack, end, layer);
 				}
 			}
