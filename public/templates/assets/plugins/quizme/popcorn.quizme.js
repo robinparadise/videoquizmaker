@@ -27,11 +27,7 @@
       allRandom: true,
       fxSpeed: "fast",
   };
-  var quiz;
-
-  var startQuiz = function(id, quiz, opt) {
-    
-  }
+  var quiz, callback;
 
   Popcorn.plugin( "quizme", {
 
@@ -102,9 +98,13 @@
       else {
         quiz = Default;
       }
-      var callback = {
+      // Object Callback with functions that jquizme execute when finish
+      callback = {
         this: this,
-        skipTime: options.end
+        skipTime: options.end,
+        quizResult: function(info) {
+          console.log("[QUIZME PLUGIN][quizResult]", info);
+        }
       }
       $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
     },
@@ -112,10 +112,6 @@
     start: function( event, options ){
       var child = $("#"+options._container.id).children();
       if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
-        var callback = {
-          this: this,
-          skipTime: options.end
-        }
         $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
       }
       options._container.style.display = "block";

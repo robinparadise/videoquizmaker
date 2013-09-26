@@ -468,12 +468,25 @@
 				});			
 				$( ".q-del-btn", currQuiz).one( "click", function(){
 					deleteQuiz();
+					var quizInfo = { 
+						"right": stats.rightAns,
+						"wrong": stats.wrongAns,
+						"tried": stats.quesTried,
+						"score": stats.perc(),
+						"total": stats.totalQues,
+						"hasQuit": quit,
+						"quitFunc": ( !quit ) ? quitQuiz : function(){},
+						"nextFunc": ( !quit ) ? changeProb : function(){}
+					};
 					if (callback !== undefined) {
 						if (callback.this) {
-							callback.this.play(); // execute callback that it passed throw plugin
+							callback.this.play(); // resume media throw plugin 
 						}
 						if (callback.skipTime) {
 							callback.this.currentTime( callback.skipTime ); // skip to the end
+						}
+						if (callback.quizResult) {
+							callback.quizResult(quizInfo); // Send quizInfo
 						}
 					}
 				});
@@ -928,31 +941,6 @@
 				animateThis( $( currQuiz ), 0, function(){
 					$( currQuiz ).remove();
 				});
-                // if (typeof(op) == 'undefined')
-                //     op = false;
-                // if (typeof(doc) != 'undefined') {
-                //     var video  = doc.getElementById("ourvideo");
-                //     var video2 = doc.getElementById("video2");
-                //     var note = doc.getElementById("notetitle");
-                //     var infost = doc.getElementById("infoset");
-
-                //     if (!op) {
-                //         if (typeof(video) != 'undefined') {
-                //             video.style.display = "none";
-                //         }
-                //         if (typeof(video2) != 'undefined') {
-                //             video2.play();
-                //             video2.style.display = "block";
-                //         }
-                //     }
-                //     else {
-                //         video.style.display = "none";
-                //         video2.style.display = "none";
-                //         note.innerHTML = "<h3>Finished!</h3><br/>";
-                //         infost.style.display = "block";
-                //     }
-                // }
-				q = {};
 			},
 			setToBeginningView = function(){
 				$( ".q-gameOver, .q-result, .q-review-menu", currQuiz).hide();
