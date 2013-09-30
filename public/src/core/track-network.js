@@ -27,26 +27,31 @@ define( [], function() {
 			var tracks = Butter.app.orderedTrackEvents;
 			var start, end, prevTrack, setTracks;
 
-			console.log("[calculateLines][***Loop***]");
-			for(var i in tracks) {
+			// Set of Tracks
+			var set = 1;
+			if (tracks[0]) tracks[0].setTracks = set; // Init the first track to set=1
 
+			for(var i in tracks) {
 				// Get the current Track(start) and the next Track(end)
+				var j = Number(i) + 1;
 				var start_ID = tracks[i].popcornOptions.id;
 				start = $(".butter-track-event[data-butter-trackevent-id='"+start_ID+"']");
-				if(!tracks[Number(i)+1]) break;
-				var end_ID = tracks[Number(i)+1].popcornOptions.id;
+				if(!tracks[j]) break;
+				var end_ID = tracks[j].popcornOptions.id;
 				end = $(".butter-track-event[data-butter-trackevent-id='"+end_ID+"']");
 
 				var belongsToSameSet = this.belongsToSameSet(start, end);
 				if (belongsToSameSet) {
 					if (!setTracks) {
-						setTracks = [start]
+						setTracks = [start];
 					}
 					else {
-						setTracks.push(start)
+						setTracks.push(start);
 					}
+					tracks[j].setTrack = set; // Belongs to the same set of Tracks before
 				} else { // Not Keep previous node origin
 					prevTrack = start;
+					tracks[j].setTrack = ++set; // New Set of Tracks
 				}
 
 				if (!belongsToSameSet && setTracks) {
@@ -57,7 +62,6 @@ define( [], function() {
 					this.drawLines(prevTrack, end, layer);
 				}
 			}
-			console.log("[calculateLines][***END Loop***]");
 			stage.add(layer);
 		}
 
