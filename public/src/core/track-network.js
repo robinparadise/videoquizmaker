@@ -25,11 +25,11 @@ define( [], function() {
 			this.createCanvas();
 			var layer = new Kinetic.Layer();
 			var tracks = Butter.app.orderedTrackEvents;
-			var start, end, prevTrack, setTracks;
+			var start, end, prevTrack, setMedias;
 
 			// Set of Tracks
 			var set = 1;
-			if (tracks[0]) tracks[0].setTracks = set; // Init the first track to set=1
+			if (tracks[0]) tracks[0].setMedia = set; // Init the first track to set=1
 
 			for(var i in tracks) {
 				// Get the current Track(start) and the next Track(end)
@@ -42,22 +42,22 @@ define( [], function() {
 
 				var belongsToSameSet = this.belongsToSameSet(start, end);
 				if (belongsToSameSet) {
-					if (!setTracks) {
-						setTracks = [start];
+					if (!setMedias) {
+						setMedias = [start];
 					}
 					else {
-						setTracks.push(start);
+						setMedias.push(start);
 					}
-					tracks[j].setTrack = set; // Belongs to the same set of Tracks before
+					tracks[j].setMedia = set; // Belongs to the same set of Tracks before
 				} else { // Not Keep previous node origin
 					prevTrack = start;
-					tracks[j].setTrack = ++set; // New Set of Tracks
+					tracks[j].setMedia = ++set; // New Set of Tracks
 				}
 
-				if (!belongsToSameSet && setTracks) {
-					setTracks.push(prevTrack);
-					this.drawLines(setTracks, end, layer); 
-					setTracks = undefined;
+				if (!belongsToSameSet && setMedias) {
+					setMedias.push(prevTrack);
+					this.drawLines(setMedias, end, layer); 
+					setMedias = undefined;
 				} else {
 					this.drawLines(prevTrack, end, layer);
 				}
