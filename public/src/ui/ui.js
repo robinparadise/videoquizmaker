@@ -310,19 +310,8 @@ define( [ "core/eventmanager", "./toggler",
         // Find when tracks are in the same level at time ("belongs to the same track")
         belongsToSameSet = function(start, end) {
           if (!start || !end) return false;
-          try {
-            var line = {
-              start: {
-                left: start.popcornOptions.start,
-                right: start.popcornOptions.end
-              },
-              end: {
-                left: end.popcornOptions.start,
-                right: end.popcornOptions.end
-              }
-            }
-          } catch(ex) {return false}
-          if (line.start.left <= line.end.right && line.end.left <= line.start.right) {
+          if (start.popcornOptions.start <= end.popcornOptions.end
+            && end.popcornOptions.start <= start.popcornOptions.end) {
             return true;
           }
           return false;
