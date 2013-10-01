@@ -302,15 +302,53 @@ define( [ "core/eventmanager", "./toggler",
       }
     });
 
+    butter.orderedTrackEventsSet = [];
     var orderedTrackEvents = butter.orderedTrackEvents = [],
         sortTrackEvents = function( a, b ) {
-          return a.popcornOptions.start > b .popcornOptions.start;
+          return a.popcornOptions.start > b.popcornOptions.start;
+        },
+        // Find when tracks are in the same level at time ("belongs to the same track")
+        belongsToSameSet = function(start, end) {
+          if (!start || !end) return false;
+          try {
+            var line = {
+              start: {
+                left: start.popcornOptions.start,
+                right: start.popcornOptions.end
+              },
+              end: {
+                left: end.popcornOptions.start,
+                right: end.popcornOptions.end
+              }
+            }
+          } catch(ex) {return false}
+          if (line.start.left <= line.end.right && line.end.left <= line.start.right) {
+            return true;
+          }
+          return false;
+        },
+        sortTrackEventsBySet = function( base ) {
+          var aux = [];
+          aux[0] = [base[0]];
+          for (var i in base) {
+            var j = Number(i) + 1;
+            if (!base[j]) return aux;
+            if (belongsToSameSet(base[i], base[j])) {
+              try {
+                aux[aux.length-1].push(base[j]);
+              } catch(ex) {continue}
+            } else {
+              aux[aux.length] = [base[j]];
+            }
+          }
+          return aux;
         };
 
     butter.listen( "trackeventadded", function( e ) {
       var trackEvent = e.data;
       orderedTrackEvents.push( trackEvent );
       orderedTrackEvents.sort( sortTrackEvents );
+      butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
     }); // listen
 
     butter.listen( "trackeventremoved", function( e ) {
@@ -318,11 +356,13 @@ define( [ "core/eventmanager", "./toggler",
           index = orderedTrackEvents.indexOf( trackEvent );
       if( index > -1 ){
         orderedTrackEvents.splice( index, 1 );
+        butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
       } // if
     }); // listen
 
     butter.listen( "trackeventupdated", function() {
       orderedTrackEvents.sort( sortTrackEvents );
+      butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
     }); // listen
 
     var processKey = {

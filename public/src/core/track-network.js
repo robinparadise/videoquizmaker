@@ -32,13 +32,18 @@ define( [], function() {
 			if (tracks[0]) tracks[0].setMedia = set; // Init the first track to set=1
 
 			for(var i in tracks) {
+
 				// Get the current Track(start) and the next Track(end)
 				var j = Number(i) + 1;
 				var start_ID = tracks[i].popcornOptions.id;
 				start = $(".butter-track-event[data-butter-trackevent-id='"+start_ID+"']");
+				var start_layer = start.parent().attr("data-butter-track-id");
 				if(!tracks[j]) break;
 				var end_ID = tracks[j].popcornOptions.id;
 				end = $(".butter-track-event[data-butter-trackevent-id='"+end_ID+"']");
+				var end_layer = end.parent().attr("data-butter-track-id");
+
+				console.log("[TrackNetwork][start_layer]", start_layer, "[end_layer]", end_layer);
 
 				var belongsToSameSet = this.belongsToSameSet(start, end);
 				if (belongsToSameSet) {
