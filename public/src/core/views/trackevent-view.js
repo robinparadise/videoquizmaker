@@ -271,9 +271,10 @@ define( [ "core/logger", "core/eventmanager", "util/dragndrop",
 
               _element.setAttribute( "data-butter-draggable-type", "trackevent" );
               _element.setAttribute( "data-butter-trackevent-id", _trackEvent.id );
+              var _trackId = _element.parentNode.getAttribute("data-butter-track-id");
+              _element.setAttribute( "data-butter-track-id", _trackId);
 
             }
-
             resetContainer();
           } //if
         } //set

@@ -24,87 +24,45 @@ define( [], function() {
 		this.calculateLines = function() {
 			this.createCanvas();
 			var layer = new Kinetic.Layer();
-			var tracks = Butter.app.orderedTrackEvents;
-			var start, end, prevTrack, setMedias;
-
-			// Set of Tracks
-			var set = 1;
-			if (tracks[0]) tracks[0].setMedia = set; // Init the first track to set=1
+			var tracks = Butter.app.orderedTrackEventsSet;
+			var start, end, prevTrack;
+			$(".on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
-
-				// Get the current Track(start) and the next Track(end)
 				var j = Number(i) + 1;
-				var start_ID = tracks[i].popcornOptions.id;
-				start = $(".butter-track-event[data-butter-trackevent-id='"+start_ID+"']");
-				var start_layer = start.parent().attr("data-butter-track-id");
 				if(!tracks[j]) break;
-				var end_ID = tracks[j].popcornOptions.id;
-				end = $(".butter-track-event[data-butter-trackevent-id='"+end_ID+"']");
-				var end_layer = end.parent().attr("data-butter-track-id");
 
-				console.log("[TrackNetwork][start_layer]", start_layer, "[end_layer]", end_layer);
-
-				var belongsToSameSet = this.belongsToSameSet(start, end);
-				if (belongsToSameSet) {
-					if (!setMedias) {
-						setMedias = [start];
+				if (tracks[i].length === 1) { // Draw from start to all next setTracks
+					start = $(tracks[i][0].view.element);
+					end = tracks[j]; // setTracks
+					this.drawLines(start, end, layer);
+				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
+					for (var k in tracks[i]) {
+						this.drawLineSameTrackId($(tracks[i][k].view.element), tracks[j], layer);
 					}
-					else {
-						setMedias.push(start);
-					}
-					tracks[j].setMedia = set; // Belongs to the same set of Tracks before
-				} else { // Not Keep previous node origin
-					prevTrack = start;
-					tracks[j].setMedia = ++set; // New Set of Tracks
-				}
-
-				if (!belongsToSameSet && setMedias) {
-					setMedias.push(prevTrack);
-					this.drawLines(setMedias, end, layer); 
-					setMedias = undefined;
-				} else {
-					this.drawLines(prevTrack, end, layer);
 				}
 			}
 			stage.add(layer);
 		}
 
-		// Find when tracks are in the same level at time ("belongs to the same track")
-		this.belongsToSameSet = function(start, end) {
-			if (!start || !end) return;
-			try {
-				var line = {
-					start: {
-						left: start.position().left,
-						right: start.position().left + start.width()
-					},
-					end: {
-						left: end.position().left,
-						right: end.position().left + end.width()
-					}
-				}
-			} catch(ex) {return false}
-			if (line.start.left <= line.end.right && line.end.left <= line.start.right) {
-				return true;
-			}
-			return false;
-		}
-
 		// Draw Lines between two points
-		this.drawLines = function(start, end, layer) {
+		// start: jquery element
+		// end_set: Array of objects
+		this.drawLines = function(start, end_set, layer) {
 			var start_x, start_y, end_x, end_y;
-			try {
-				end_x = end.position().left;
-				end_y = end.parent().position().top + end.height()/2;
-			} catch(ex) {return}
 
-			for(var i in start) {
-				start[i] = $(start[i]) // reload jQuery, ugly trick but it works
-				// Calculate coords from prevTrack to end(Track)
-				try {
-					start_x = start[i].position().left + start[i].width();
-					start_y = start[i].parent().position().top + start[i].height()/2;
+			try { // Point Start
+				start_x = start.position().left + start.width();
+				start_y = start.parent().position().top + start.height()/2;
+			} catch(ex) {return}
+			start.addClass("on-flow").removeClass("out-of-flow");
+
+			for(var i in end_set) {
+				var end = $(end_set[i].view.element);
+				end.addClass("on-flow").removeClass("out-of-flow");
+				try { // Point End
+					end_x = end.position().left;
+					end_y = end.parent().position().top + end.height()/2;
 				} catch(ex) {return}
 
 				// Create Kinetic Layer
@@ -118,6 +76,18 @@ define( [], function() {
 
 				line.move(0, 0);
 				layer.add(line);
+			}
+		}
+
+		this.drawLineSameTrackId = function(start, end_set, layer) {
+			var startTrackId = start.attr("data-butter-track-id");
+			for (var i in end_set) {
+				var endTrackId = $(end_set[i].view.element).attr("data-butter-track-id");
+				if (startTrackId === endTrackId) {
+					this.drawLines(start, [end_set[i]], layer);
+				} else if (!$(end_set[i].view.element).hasClass("on-flow")) {
+					$(end_set[i].view.element).addClass("out-of-flow");
+				}
 			}
 		}
 	}
