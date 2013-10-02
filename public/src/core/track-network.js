@@ -30,19 +30,17 @@ define( [], function() {
 
 			for(var i in tracks) {
 				var j = Number(i) + 1;
-				if(!tracks[j]) break;
+				if(!tracks[j]) break; // tracks[j] == Next track media
 
-				if (tracks[i].length === 1) { // Draw line from start to all next setTracks
-					start = $(tracks[i][0].view.element);
-					end = tracks[j]; // setTracks
-					this.drawLines(start, end, layer);
-				} else if (tracks[j].length === 1) { // Draw line from setTracks to next track
+				if (tracks[i].length === 1 || tracks[j].length === 1) { // Draw lines (1-M)(M-1)
 					for (var k in tracks[i]) {
-						this.drawLines($(tracks[i][k].view.element), tracks[j], layer);
+						for (var l in tracks[j]) {
+							this.drawLines(tracks[i][k], tracks[j][l], layer);
+						}
 					}
 				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
 					for (var k in tracks[i]) {
-						this.drawLineSameTrackId($(tracks[i][k].view.element), tracks[j], layer);
+						this.drawLineSameTrack(tracks[i][k], tracks[j], layer);
 					}
 				}
 			}
@@ -50,50 +48,43 @@ define( [], function() {
 		}
 
 		// Draw Lines between two points
-		// start: jquery element
-		// end_set: Array of objects
-		this.drawLines = function(start, end_set, layer) {
-			var start_x, start_y, end_x, end_y;
-
-			try { // Point Start
-				start_x = start.position().left + start.width();
-				start_y = start.parent().position().top + start.height()/2;
+		this.drawLines = function(start_obj, end_obj, layer) {
+			try { // Points (Start , End)
+				var start = $(start_obj.view.element);
+				var end = $(end_obj.view.element);
+				var start_x = start.position().left + start.width();
+				var start_y = start.parent().position().top + start.height()/2;
+				var end_x = end.position().left;
+				var end_y = end.parent().position().top + end.height()/2;
 			} catch(ex) {return}
 			start.addClass("on-flow").removeClass("out-of-flow");
+			end.addClass("on-flow").removeClass("out-of-flow");
 
-			for(var i in end_set) {
-				var end = $(end_set[i].view.element);
-				end.addClass("on-flow").removeClass("out-of-flow");
-				try { // Point End
-					end_x = end.position().left;
-					end_y = end.parent().position().top + end.height()/2;
-				} catch(ex) {return}
+			var line = new Kinetic.Line({ // Create Kinetic Line
+				points: [start_x, start_y, end_x, end_y],
+				stroke: '#3FB58E',
+				strokeWidth: 3,
+				lineCap: 'square',
+				lineJoin: 'square'
+			});
 
-				// Create Kinetic Layer
-				var line = new Kinetic.Line({
-					points: [start_x, start_y, end_x, end_y],
-					stroke: '#3FB58E',
-					strokeWidth: 3,
-					lineCap: 'square',
-					lineJoin: 'square'
-				});
-
-				line.move(0, 0);
-				layer.add(line);
-			}
+			line.move(0, 0);
+			layer.add(line);
 		}
 
-		this.drawLineSameTrackId = function(start, end_set, layer) {
-			var startTrackId = start.attr("data-butter-track-id");
+		// Draw lines which are in the same Layer(Track)
+		this.drawLineSameTrack = function(start, end_set, layer) {
+			var startTrackId = $(start.view.element).attr("data-butter-track-id");
 			for (var i in end_set) {
 				var endTrackId = $(end_set[i].view.element).attr("data-butter-track-id");
 				if (startTrackId === endTrackId) {
-					this.drawLines(start, [end_set[i]], layer);
-				} else if (!$(end_set[i].view.element).hasClass("on-flow")) {
+					this.drawLines(start, end_set[i], layer);
+					continue;
+				} 
+				if (!$(end_set[i].view.element).hasClass("on-flow"))
 					$(end_set[i].view.element).addClass("out-of-flow");
-				} else if (!start.hasClass("on-flow")) {
-					start.addClass("out-of-flow");
-				}
+				if (!$(start.view.element).hasClass("on-flow"))
+					$(start.view.element).addClass("out-of-flow");
 			}
 		}
 	}
