@@ -304,34 +304,42 @@ define( [ "core/eventmanager", "./toggler",
 
     butter.orderedTrackEventsSet = [];
     var orderedTrackEvents = butter.orderedTrackEvents = [],
-        sortTrackEvents = function( a, b ) {
-          return a.popcornOptions.start > b.popcornOptions.start;
-        },
-        // Find when tracks are in the same level at time ("belongs to the same track")
-        belongsToSameSet = function(start, end) {
-          if (!start || !end) return false;
-          if (start.popcornOptions.start <= end.popcornOptions.end
-            && end.popcornOptions.start <= start.popcornOptions.end) {
-            return true;
+      sortTrackEvents = function( a, b ) {
+        return a.popcornOptions.start > b.popcornOptions.start;
+      },
+      // Find when tracks are in the same level at time ("belongs to the same track")
+      belongsToSameSet = function(start, end) {
+        if (!start || !end) return false;
+        if (start.popcornOptions.start <= end.popcornOptions.end
+          && end.popcornOptions.start <= start.popcornOptions.end) {
+          return true;
+        }
+        return false;
+      },
+      sortTrackEventsBySet = function( base ) {
+        var aux = [];
+        aux[0] = [base[0]];
+        $(".trackMediaEvent").removeClass("setMedia mainFlow");
+        for (var i in base) {
+          $(base[i].view.element).addClass("trackMediaEvent");
+          $(base[i].popcornTrackEvent._container).addClass("trackMediaEvent");
+          var j = Number(i) + 1;
+          if (!base[j]) break;
+          if (belongsToSameSet(base[i], base[j])) {
+            try {
+              aux[aux.length-1].push(base[j]);
+            } catch(ex) {continue}
+            $(base[j].view.element).addClass("setMedia");
+            $(base[j].popcornTrackEvent._container).addClass("setMedia");
+            $(base[i].view.element).addClass("setMedia");
+            $(base[i].popcornTrackEvent._container).addClass("setMedia");
+          } else {
+            aux[aux.length] = [base[j]];
           }
-          return false;
-        },
-        sortTrackEventsBySet = function( base ) {
-          var aux = [];
-          aux[0] = [base[0]];
-          for (var i in base) {
-            var j = Number(i) + 1;
-            if (!base[j]) return aux;
-            if (belongsToSameSet(base[i], base[j])) {
-              try {
-                aux[aux.length-1].push(base[j]);
-              } catch(ex) {continue}
-            } else {
-              aux[aux.length] = [base[j]];
-            }
-          }
-          return aux;
-        };
+        }
+        $(".trackMediaEvent:not(.setMedia)").addClass("mainFlow"); //Main Nodes are in mainFlow
+        return aux;
+      };
 
     butter.listen( "trackeventadded", function( e ) {
       var trackEvent = e.data;
