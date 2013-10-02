@@ -32,10 +32,14 @@ define( [], function() {
 				var j = Number(i) + 1;
 				if(!tracks[j]) break;
 
-				if (tracks[i].length === 1) { // Draw from start to all next setTracks
+				if (tracks[i].length === 1) { // Draw line from start to all next setTracks
 					start = $(tracks[i][0].view.element);
 					end = tracks[j]; // setTracks
 					this.drawLines(start, end, layer);
+				} else if (tracks[j].length === 1) { // Draw line from setTracks to next track
+					for (var k in tracks[i]) {
+						this.drawLines($(tracks[i][k].view.element), tracks[j], layer);
+					}
 				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
 					for (var k in tracks[i]) {
 						this.drawLineSameTrackId($(tracks[i][k].view.element), tracks[j], layer);
@@ -87,6 +91,8 @@ define( [], function() {
 					this.drawLines(start, [end_set[i]], layer);
 				} else if (!$(end_set[i].view.element).hasClass("on-flow")) {
 					$(end_set[i].view.element).addClass("out-of-flow");
+				} else if (!start.hasClass("on-flow")) {
+					start.addClass("out-of-flow");
 				}
 			}
 		}
