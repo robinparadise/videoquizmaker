@@ -316,28 +316,33 @@ define( [ "core/eventmanager", "./toggler",
         }
         return false;
       },
+      resetTrackMediaEvents = function() {
+        $("#video-container>:not([data-butter], .butter-iframe-fix), .butter-track-event")
+        .addClass("trackMediaEvent").removeClass("setMedia mainFlow");
+      },
+      addClassTrackPopcorn = function(obj, className) {
+        $(obj.view.element).addClass(className);
+        $(obj.popcornTrackEvent._container).addClass(className);
+      },
       sortTrackEventsBySet = function( base ) {
         var aux = [];
         aux[0] = [base[0]];
-        $(".trackMediaEvent").removeClass("setMedia mainFlow");
+        resetTrackMediaEvents(); //reset TrackMediaEvents
         for (var i in base) {
-          $(base[i].view.element).addClass("trackMediaEvent");
-          $(base[i].popcornTrackEvent._container).addClass("trackMediaEvent");
           var j = Number(i) + 1;
           if (!base[j]) break;
           if (belongsToSameSet(base[i], base[j])) {
             try {
               aux[aux.length-1].push(base[j]);
             } catch(ex) {continue}
-            $(base[j].view.element).addClass("setMedia");
-            $(base[j].popcornTrackEvent._container).addClass("setMedia");
-            $(base[i].view.element).addClass("setMedia");
-            $(base[i].popcornTrackEvent._container).addClass("setMedia");
+            addClassTrackPopcorn(base[i], "setMedia");
+            addClassTrackPopcorn(base[j], "setMedia");
           } else {
             aux[aux.length] = [base[j]];
           }
         }
-        $(".trackMediaEvent:not(.setMedia)").addClass("mainFlow"); //Main Nodes are in mainFlow
+        $(".trackMediaEvent:not(.setMedia)")
+        .addClass("mainFlow").attr("flow", "0"); //Main Nodes are in mainFlow
         return aux;
       };
 

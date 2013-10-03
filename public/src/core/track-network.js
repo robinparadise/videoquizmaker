@@ -26,6 +26,7 @@ define( [], function() {
 			var layer = new Kinetic.Layer();
 			var tracks = Butter.app.orderedTrackEventsSet;
 			var start, end, prevTrack;
+			var flow = 0;
 			$(".on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
@@ -35,7 +36,8 @@ define( [], function() {
 				if (tracks[i].length === 1 || tracks[j].length === 1) { // Draw lines (1-M)(M-1)
 					for (var k in tracks[i]) {
 						for (var l in tracks[j]) {
-							this.drawLines(tracks[i][k], tracks[j][l], layer);
+							this.drawLine(tracks[i][k], tracks[j][l], layer);
+							flow = this.setFlow(flow, tracks[j][l]);
 						}
 					}
 				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
@@ -48,7 +50,7 @@ define( [], function() {
 		}
 
 		// Draw Lines between two points
-		this.drawLines = function(start_obj, end_obj, layer) {
+		this.drawLine = function(start_obj, end_obj, layer) {
 			try { // Points (Start , End)
 				var start = $(start_obj.view.element);
 				var end = $(end_obj.view.element);
@@ -78,7 +80,8 @@ define( [], function() {
 			for (var i in end_set) {
 				var endTrackId = $(end_set[i].view.element).attr("data-butter-track-id");
 				if (startTrackId === endTrackId) {
-					this.drawLines(start, end_set[i], layer);
+					this.drawLine(start, end_set[i], layer);
+					this.setSameFlow(start, end_set[i]);
 					continue;
 				} 
 				if (!$(end_set[i].view.element).hasClass("on-flow"))
@@ -86,6 +89,20 @@ define( [], function() {
 				if (!$(start.view.element).hasClass("on-flow"))
 					$(start.view.element).addClass("out-of-flow");
 			}
+		}
+
+		// set the same Flow for Track Events Media
+		this.setSameFlow = function(prev, track) {
+			var prevFlow = Number( $(prev.view.element).attr("flow") );
+			$(track.view.element).attr("flow", prevFlow);
+			$(track.popcornTrackEvent._container).attr("flow", prevFlow);
+		}
+		// set Flow for each Track Events Media
+		this.setFlow = function(flow, track) {
+			if ($(track.view.element).hasClass("mainFlow")) return flow;
+			$(track.view.element).attr("flow", ++flow);
+			$(track.popcornTrackEvent._container).attr("flow", flow);
+			return flow;
 		}
 	}
 	return TrackNetwork;
