@@ -61,7 +61,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
     };
 
     // Track Network
-    var _trackNetwork = new TrackNetwork();
+    var _trackNetwork = new TrackNetwork(Butter.app);
 
     _this.update = function() {
       _rect = _inner.getBoundingClientRect();

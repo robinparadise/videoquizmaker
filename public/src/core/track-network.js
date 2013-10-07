@@ -6,8 +6,7 @@
 
 define( [], function() {
 
-	function TrackNetwork() {
-
+	function TrackNetwork(app) {
 		var lines, stage;
 
 		// Create Layer Canvas
@@ -23,8 +22,8 @@ define( [], function() {
 		// List all tracks and then calculate coords for lines.
 		this.calculateLines = function() {
 			this.createCanvas();
+			var tracks = app.orderedTrackEventsSet;
 			var layer = new Kinetic.Layer();
-			var tracks = Butter.app.orderedTrackEventsSet;
 			var start, end, prevTrack;
 			var flow = 0;
 			$(".on-flow").removeClass("on-flow");
