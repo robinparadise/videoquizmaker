@@ -33,7 +33,19 @@ define( [], function() {
 				var j = Number(i) + 1;
 				if(!tracks[j]) break; // tracks[j] == Next track media
 
-				if (tracks[i].length === 1 || tracks[j].length === 1) { // Draw lines (1-M)(M-1)
+				if (tracks[i].length === 1) {
+					try { var keyname = tracks[i][0].manifest.about.keyname }
+					catch(ex) {var keyname;}
+					if (keyname === "quizme") { // Then draw lines (1-M)
+						for (var l in tracks[j]) {
+							this.drawLine(tracks[i][0], tracks[j][l], layer);
+							flow = this.setFlow(flow, tracks[j][l]);
+						}
+					} else { // Else draw lines with media in the same Track
+						this.drawLineSameTrack(tracks[i][0], tracks[j], layer);
+					}
+				}
+				if (tracks[j].length === 1) { // Draw lines (M-1)
 					for (var k in tracks[i]) {
 						for (var l in tracks[j]) {
 							this.drawLine(tracks[i][k], tracks[j][l], layer);

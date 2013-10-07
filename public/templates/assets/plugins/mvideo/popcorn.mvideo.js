@@ -75,9 +75,11 @@
      * options variable
      */
     start: function( event, options ){
-      $("."+options._container.id).show();
-      if ($(".status-button").attr("data-state") == "true") {
-        $("."+options._container.id)[0].play();
+      if (!$(options._container).hasClass("hideFlow")) {
+        $("."+options._container.id).show();
+        if ($(".status-button").attr("data-state") == "true") {
+          $("."+options._container.id)[0].play();
+        }
       }
       // this.play();
     },

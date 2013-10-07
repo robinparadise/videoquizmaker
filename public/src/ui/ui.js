@@ -320,12 +320,20 @@ define( [ "core/eventmanager", "./toggler",
         $("#video-container>:not([data-butter], .butter-iframe-fix), .butter-track-event")
         .addClass("trackMediaEvent").removeClass("setMedia mainFlow");
       },
-      addClassTrackPopcorn = function(obj, className) {
-        $(obj.view.element).addClass(className);
-        $(obj.popcornTrackEvent._container).addClass(className);
+      addClassTrackPopcorn = function(obj, className, numberMedia) {
+        try {
+          $(obj.view.element).addClass(className).attr(className, numberMedia);
+          $(obj.popcornTrackEvent._container).addClass(className).attr(className, numberMedia);
+        } catch(ex) {}
+      },
+      addAttrTrackPopcorn = function(obj, attrName, numberMedia) {
+        try {
+          $(obj.popcornTrackEvent._container).attr(attrName, numberMedia);
+        } catch(ex) {}
       },
       sortTrackEventsBySet = function( base ) {
         var aux = [];
+        addAttrTrackPopcorn(base[0], "setMedia", aux.length);
         aux[0] = [base[0]];
         resetTrackMediaEvents(); //reset TrackMediaEvents
         for (var i in base) {
@@ -335,10 +343,11 @@ define( [ "core/eventmanager", "./toggler",
             try {
               aux[aux.length-1].push(base[j]);
             } catch(ex) {continue}
-            addClassTrackPopcorn(base[i], "setMedia");
-            addClassTrackPopcorn(base[j], "setMedia");
+            addClassTrackPopcorn(base[i], "setMedia", aux.length -1);
+            addClassTrackPopcorn(base[j], "setMedia", aux.length -1);
           } else {
             aux[aux.length] = [base[j]];
+            addAttrTrackPopcorn(base[j], "setMedia", aux.length -1);
           }
         }
         $(".trackMediaEvent:not(.setMedia)")

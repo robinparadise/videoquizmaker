@@ -27,7 +27,7 @@
       allRandom: true,
       fxSpeed: "fast",
   };
-  var quiz, callback;
+  var quiz, callback, optionsId, target, tracks;
 
   Popcorn.plugin( "quizme", {
 
@@ -74,12 +74,13 @@
     },
 
     _setup: function( options ) {
-      var target = document.getElementById( options.target );
+      tracks = Butter.app.orderedTrackEventsSet;
+      target = document.getElementById( options.target );
       options._container = document.createElement( "div" );
 
       for (var i = 0;; i+=1) {
         if (!document.getElementById(options.target + i)) {
-            options._container.id = options.target + i;
+            optionsId = options._container.id = options.target + i;
             break;
         }
       }
@@ -104,27 +105,41 @@
         this: this,
         skipTime: options.end,
         quizResult: function(info) {
-          console.log("[QUIZME PLUGIN][quizResult]", info);
+          var optionsId = options._container.id;
+          var setMedia = Number($("#"+optionsId).attr("setmedia"));
+          if ( !(tracks[setMedia +1] && tracks[setMedia +1].length >1) ) return;
+          var firstFlow = $(tracks[setMedia +1][0].view.element).attr("flow");
+          var secondFlow = $(tracks[setMedia +1][1].view.element).attr("flow");
+          if (info.score >= 50) { // Continue with the first flow
+            $(".trackMediaEvent[flow='"+ firstFlow +"']").removeClass("hideFlow");
+            $(".trackMediaEvent[flow='"+ secondFlow +"']").addClass("hideFlow");
+          }
+          else { // Continue with the second flow
+            $(".trackMediaEvent[flow='"+ secondFlow +"']").removeClass("hideFlow");
+            $(".trackMediaEvent[flow='"+ firstFlow +"']").addClass("hideFlow");
+          }
         }
       }
-      $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
+      $("#"+optionsId).jQuizMe(quiz, opt1, callback);
     },
 
     start: function( event, options ){
-      var child = $("#"+options._container.id).children();
+      var child = $("#"+optionsId).children();
       if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
-        $("#"+options._container.id).jQuizMe(quiz, opt1, callback);
+        $("#"+optionsId).jQuizMe(quiz, opt1, callback);
       }
-      options._container.style.display = "block";
+      if (!$(options._container).hasClass("hideFlow")) {
+        options._container.style.display = "block";
+      }
       this.pause();
     },
 
-    end: function( event, options ){
+    end: function( event, options ) {
       options._container.style.display = "none";
     },
 
     _teardown: function( options ){
-      document.getElementById( options.target ) && document.getElementById( options.target ).removeChild( options._container );
+      target && target.removeChild( options._container );
     }
   });
 }( window.Popcorn ));
