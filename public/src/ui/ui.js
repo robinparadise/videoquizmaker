@@ -317,7 +317,7 @@ define( [ "core/eventmanager", "./toggler",
         return false;
       },
       resetTrackMediaEvents = function() {
-        $("#video-container>:not([data-butter], .butter-iframe-fix), .butter-track-event")
+        $(".container-pop>:not([data-butter], .butter-iframe-fix), .butter-track-event")
         .addClass("trackMediaEvent").removeClass("setMedia mainFlow");
       },
       addClassTrackPopcorn = function(obj, className, numberMedia) {

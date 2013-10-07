@@ -58,6 +58,7 @@ define( [], function() {
 				}
 			}
 			stage.add(layer);
+			this.drawLineEventMouse(stage, layer);
 		}
 
 		// Draw Lines between two points
@@ -114,6 +115,49 @@ define( [], function() {
 			$(track.view.element).attr("flow", ++flow);
 			$(track.popcornTrackEvent._container).attr("flow", flow);
 			return flow;
+		}
+
+		// Drawing lines along the cursor path
+		this.drawLineEventMouse = function(stage, layer) {
+			var moving = false, line;
+
+            stage.on("mousedown", function(){
+                if (moving){
+                    moving = false; layer.draw();
+                } else {
+                    var mousePos = stage.getMousePosition();
+                    line = new Kinetic.Line({
+                        points: [0, 0, 50, 50],
+                        strokeWidth: 3,
+                        stroke: "red"
+                    });
+                    layer.add(line);
+                    //start point and end point are the same
+                    line.getPoints()[0].x = mousePos.x;
+                    line.getPoints()[0].y = mousePos.y;
+                    line.getPoints()[1].x = mousePos.x;
+                    line.getPoints()[1].y = mousePos.y;
+
+                    moving = true;    
+                    layer.drawScene();            
+                }
+            });
+
+            stage.on("mousemove", function(){
+                if (moving) {
+                    var mousePos = stage.getMousePosition();
+                    var x = mousePos.x;
+                    var y = mousePos.y;
+                    line.getPoints()[1].x = mousePos.x;
+                    line.getPoints()[1].y = mousePos.y;
+                    moving = true;
+                    layer.drawScene();
+                }
+            });
+
+            stage.on("mouseup", function(){
+                moving = false; 
+            });
 		}
 	}
 	return TrackNetwork;
