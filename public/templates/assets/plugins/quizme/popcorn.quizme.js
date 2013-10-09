@@ -27,7 +27,7 @@
       allRandom: true,
       fxSpeed: "fast",
   };
-  var quiz, callback, target;
+  var quiz, target;
 
   Popcorn.plugin( "quizme", {
 
@@ -99,27 +99,29 @@
       else {
         quiz = Default;
       }
-      var that = this;
+
       // Object Callback with functions that jquizme execute when finish
-      callback = {
+      options.callback = {
         popcorn: this,
         skipTime: options.end,
-        quizResult: function(info) { // Continue with the next Flow
-          this.popcorn.continueFlow(options, info);
+        quizResult: function(info) {
+          this.popcorn.continueFlow(options, info); // Continue with the next Flow
+          this.popcorn.currentTime( this.skipTime ); // skip to the end
+          this.popcorn.play(); // resume media throw plugin
         }
       }
-      $(options._container).jQuizMe(quiz, opt1, callback);
+      $(options._container).jQuizMe(quiz, opt1, options.callback);
     },
 
     start: function( event, options ){
-      var child = $(options._container).children();
-      if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
-        $(options._container).jQuizMe(quiz, opt1, callback);
-      }
       if (!$(options._container).hasClass("hideFlow")) {
+        var child = $(options._container).children();
+        if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
+          $(options._container).jQuizMe(quiz, opt1, options.callback);
+        }
         options._container.style.display = "block";
+        this.pause();
       }
-      this.pause();
     },
 
     end: function( event, options ) {

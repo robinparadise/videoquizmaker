@@ -76,9 +76,9 @@
      */
     start: function( event, options ){
       if (!$(options._container).hasClass("hideFlow")) {
-        $("."+options._container.id).show();
+        $(options._container).show();
         if ($(".status-button").attr("data-state") == "true") {
-          $("."+options._container.id)[0].play();
+          $(options._container)[0].play();
         }
       }
       // this.play();
@@ -91,15 +91,15 @@
     end: function( event, options ){
       // ensure that the data was actually added to the 
       // DOM before removal
-      $("."+options._container.id)[0].pause();
+      $(options._container)[0].pause();
       if (options.block === "No" || !options.block) {
-        $("."+options._container.id).hide();
+        $(options._container).hide();
       }
     },
 
     _teardown: function( options ){
       document.getElementById( options.target ) && document.getElementById( options.target ).removeChild( options._container );
-      $("."+options._container.id).parent().remove();
+      $(options._container).parent().remove();
     }
   });
 
