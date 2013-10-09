@@ -1,4 +1,4 @@
-// PLUGIN: JQUIZME
+// PLUGIN: Media
 
 (function ( Popcorn ) {
   

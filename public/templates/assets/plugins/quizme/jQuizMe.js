@@ -480,11 +480,11 @@
 						"nextFunc": ( !quit ) ? changeProb : function(){}
 					};
 					if (callback !== undefined) {
-						if (callback.this) {
-							callback.this.play(); // resume media throw plugin 
+						if (callback.popcorn) {
+							callback.popcorn.play(); // resume media throw plugin 
 						}
 						if (callback.skipTime) {
-							callback.this.currentTime( callback.skipTime ); // skip to the end
+							callback.popcorn.currentTime( callback.skipTime ); // skip to the end
 						}
 						if (callback.quizResult) {
 							callback.quizResult(quizInfo); // Send quizInfo

@@ -453,7 +453,7 @@ define( [ "./logger", "./eventmanager", "./observer",
 
   }; //TrackEvent
 
-  TrackEvent.MINIMUM_TRACKEVENT_SIZE = 0.02;
+  TrackEvent.MINIMUM_TRACKEVENT_SIZE = 1;
 
   return TrackEvent;
 

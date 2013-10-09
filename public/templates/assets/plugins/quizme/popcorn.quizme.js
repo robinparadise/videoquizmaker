@@ -27,7 +27,7 @@
       allRandom: true,
       fxSpeed: "fast",
   };
-  var quiz, callback, optionsId, target, tracks;
+  var quiz, callback, target;
 
   Popcorn.plugin( "quizme", {
 
@@ -74,13 +74,12 @@
     },
 
     _setup: function( options ) {
-      tracks = Butter.app.orderedTrackEventsSet;
       target = document.getElementById( options.target );
       options._container = document.createElement( "div" );
 
       for (var i = 0;; i+=1) {
         if (!document.getElementById(options.target + i)) {
-            optionsId = options._container.id = options.target + i;
+            options._container.id = options.target + i;
             break;
         }
       }
@@ -100,33 +99,22 @@
       else {
         quiz = Default;
       }
+      var that = this;
       // Object Callback with functions that jquizme execute when finish
       callback = {
-        this: this,
+        popcorn: this,
         skipTime: options.end,
-        quizResult: function(info) {
-          var optionsId = options._container.id;
-          var setMedia = Number($("#"+optionsId).attr("setmedia"));
-          if ( !(tracks[setMedia +1] && tracks[setMedia +1].length >1) ) return;
-          var firstFlow = $(tracks[setMedia +1][0].view.element).attr("flow");
-          var secondFlow = $(tracks[setMedia +1][1].view.element).attr("flow");
-          if (info.score >= 50) { // Continue with the first flow
-            $(".trackMediaEvent[flow='"+ firstFlow +"']").removeClass("hideFlow");
-            $(".trackMediaEvent[flow='"+ secondFlow +"']").addClass("hideFlow");
-          }
-          else { // Continue with the second flow
-            $(".trackMediaEvent[flow='"+ secondFlow +"']").removeClass("hideFlow");
-            $(".trackMediaEvent[flow='"+ firstFlow +"']").addClass("hideFlow");
-          }
+        quizResult: function(info) { // Continue with the next Flow
+          this.popcorn.continueFlow(options, info);
         }
       }
-      $("#"+optionsId).jQuizMe(quiz, opt1, callback);
+      $(options._container).jQuizMe(quiz, opt1, callback);
     },
 
     start: function( event, options ){
-      var child = $("#"+optionsId).children();
+      var child = $(options._container).children();
       if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
-        $("#"+optionsId).jQuizMe(quiz, opt1, callback);
+        $(options._container).jQuizMe(quiz, opt1, callback);
       }
       if (!$(options._container).hasClass("hideFlow")) {
         options._container.style.display = "block";

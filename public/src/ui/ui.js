@@ -320,29 +320,34 @@ define( [ "core/eventmanager", "./toggler",
         $(".container-pop>:not([data-butter], .butter-iframe-fix), .butter-track-event")
         .addClass("trackMediaEvent").removeClass("setMedia mainFlow");
       },
-      addClassTrackPopcorn = function(obj, className, numberMedia) {
+      addClassTrackPopcorn = function(obj, className, data) {
         try {
-          $(obj.view.element).addClass(className).attr(className, numberMedia);
-          $(obj.popcornTrackEvent._container).addClass(className).attr(className, numberMedia);
+          $(obj.view.element).addClass(className).attr(className, data);
+          $(obj.popcornTrackEvent._container).addClass(className).attr(className, data);
+          obj.popcornTrackEvent.setMedia = data;
         } catch(ex) {}
       },
-      addAttrTrackPopcorn = function(obj, attrName, numberMedia) {
+      addAttrTrackPopcorn = function(obj, attr, data) {
         try {
-          $(obj.popcornTrackEvent._container).attr(attrName, numberMedia);
+          $(obj.popcornTrackEvent._container).attr(attr, data);
+          obj.popcornTrackEvent.setMedia = data;
         } catch(ex) {}
       },
       sortTrackEventsBySet = function( base ) {
-        var aux = [];
-        addAttrTrackPopcorn(base[0], "setMedia", aux.length);
-        aux[0] = [base[0]];
+        var aux = [[base[0]]];
+        addAttrTrackPopcorn(base[0], "setMedia", aux.length -1);
         resetTrackMediaEvents(); //reset TrackMediaEvents
         for (var i in base) {
+          try { // Getter ordered track events by Set
+            base[i].popcornTrackEvent.getOrderedBySet = function() {
+              return butter.orderedTrackEventsSet;
+            }
+          } catch(ex) {}
+
           var j = Number(i) + 1;
           if (!base[j]) break;
           if (belongsToSameSet(base[i], base[j])) {
-            try {
-              aux[aux.length-1].push(base[j]);
-            } catch(ex) {continue}
+            try { aux[aux.length-1].push(base[j]) } catch(ex) { continue }
             addClassTrackPopcorn(base[i], "setMedia", aux.length -1);
             addClassTrackPopcorn(base[j], "setMedia", aux.length -1);
           } else {
@@ -350,8 +355,7 @@ define( [ "core/eventmanager", "./toggler",
             addAttrTrackPopcorn(base[j], "setMedia", aux.length -1);
           }
         }
-        $(".trackMediaEvent:not(.setMedia)")
-        .addClass("mainFlow").attr("flow", "0"); //Main Nodes are in mainFlow
+        $(".trackMediaEvent:not(.setMedia)").addClass("mainFlow"); //Main Nodes = mainFlow
         return aux;
       };
 

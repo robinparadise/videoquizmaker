@@ -24,7 +24,7 @@ define( [], function() {
 			this.createCanvas();
 			var tracks = app.orderedTrackEventsSet;
 			var layer = new Kinetic.Layer();
-			var start, end, prevTrack;
+			var start, end;
 			var flow = 0;
 			$(".on-flow").removeClass("on-flow");
 
@@ -91,7 +91,7 @@ define( [], function() {
 			var startTrackId = $(start.view.element).attr("data-butter-track-id");
 			for (var i in end_set) {
 				var endTrackId = $(end_set[i].view.element).attr("data-butter-track-id");
-				if (startTrackId === endTrackId) {
+				if (startTrackId === endTrackId) { // Then draw line between tracks in the same layer
 					this.drawLine(start, end_set[i], layer);
 					this.setSameFlow(start, end_set[i]);
 					continue;
@@ -109,11 +109,16 @@ define( [], function() {
 			$(track.view.element).attr("flow", prevFlow);
 			$(track.popcornTrackEvent._container).attr("flow", prevFlow);
 		}
+
 		// set Flow for each Track Events Media
 		this.setFlow = function(flow, track) {
-			if ($(track.view.element).hasClass("mainFlow")) return flow;
-			$(track.view.element).attr("flow", ++flow);
-			$(track.popcornTrackEvent._container).attr("flow", flow);
+			if ($(track.view.element).hasClass("mainFlow")) {
+				$(track.view.element).attr("flow", "0");
+				$(track.popcornTrackEvent._container).attr("flow", "0");
+			} else {
+				$(track.view.element).attr("flow", ++flow);
+				$(track.popcornTrackEvent._container).attr("flow", flow);
+			}
 			return flow;
 		}
 
@@ -121,43 +126,43 @@ define( [], function() {
 		this.drawLineEventMouse = function(stage, layer) {
 			var moving = false, line;
 
-            stage.on("mousedown", function(){
-                if (moving){
-                    moving = false; layer.draw();
-                } else {
-                    var mousePos = stage.getMousePosition();
-                    line = new Kinetic.Line({
-                        points: [0, 0, 50, 50],
-                        strokeWidth: 3,
-                        stroke: "red"
-                    });
-                    layer.add(line);
-                    //start point and end point are the same
-                    line.getPoints()[0].x = mousePos.x;
-                    line.getPoints()[0].y = mousePos.y;
-                    line.getPoints()[1].x = mousePos.x;
-                    line.getPoints()[1].y = mousePos.y;
+		stage.on("mousedown", function(){
+			if (moving){
+				moving = false; layer.draw();
+			} else {
+				var mousePos = stage.getMousePosition();
+				line = new Kinetic.Line({
+					points: [0, 0, 50, 50],
+					strokeWidth: 3,
+					stroke: "red"
+				});
+				layer.add(line);
+				//start point and end point are the same
+				line.getPoints()[0].x = mousePos.x;
+				line.getPoints()[0].y = mousePos.y;
+				line.getPoints()[1].x = mousePos.x;
+				line.getPoints()[1].y = mousePos.y;
 
-                    moving = true;    
-                    layer.drawScene();            
-                }
-            });
+				moving = true;    
+				layer.drawScene();            
+			}
+		});
 
-            stage.on("mousemove", function(){
-                if (moving) {
-                    var mousePos = stage.getMousePosition();
-                    var x = mousePos.x;
-                    var y = mousePos.y;
-                    line.getPoints()[1].x = mousePos.x;
-                    line.getPoints()[1].y = mousePos.y;
-                    moving = true;
-                    layer.drawScene();
-                }
-            });
+		stage.on("mousemove", function(){
+			if (moving) {
+				var mousePos = stage.getMousePosition();
+				var x = mousePos.x;
+				var y = mousePos.y;
+				line.getPoints()[1].x = mousePos.x;
+				line.getPoints()[1].y = mousePos.y;
+				moving = true;
+				layer.drawScene();
+			}
+		});
 
-            stage.on("mouseup", function(){
-                moving = false; 
-            });
+		stage.on("mouseup", function(){
+			moving = false; 
+		});
 		}
 	}
 	return TrackNetwork;
