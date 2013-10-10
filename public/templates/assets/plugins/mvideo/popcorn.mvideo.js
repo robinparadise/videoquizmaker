@@ -50,7 +50,7 @@
      * The setup function will get all of the needed 
      * items in place before the start function is called. 
      */
-    _setup : function( options ) {  
+    _setup : function( options ) { 
       var target = document.getElementById( options.target );
       options._container = document.createElement( "div" );
 
@@ -60,14 +60,16 @@
               break;
           }
       }
-      $("."+options._container.id).hide();
+      $(options._container).hide();
 
       if ( !target && Popcorn.plugin.debug ) {
           throw new Error( "target container doesn't exist" );
       }
       target && target.appendChild( options._container );
       
-      options._container.innerHTML = '<video class='+options._container.id+' data-butter="media" controls width=380px><source src='+options.name+'></video>';
+      options._video = document.createElement("video");
+      $(options._video).attr({'src': options.name, 'controls': 'controls', 'data-butter': 'media', 'width': '380px'});
+      $(options._container).append(options._video);
     },
     /**
      * The start function will be executed when the currentTime 
@@ -78,10 +80,10 @@
       if (!$(options._container).hasClass("hideFlow")) {
         $(options._container).show();
         if ($(".status-button").attr("data-state") == "true") {
-          $(options._container)[0].play();
+          //$(options._video)[0].currentTime = options.videoStart;
+          $(options._video)[0].play();
         }
       }
-      // this.play();
     },
     /**
      * The end function will be executed when the currentTime 
@@ -91,8 +93,11 @@
     end: function( event, options ){
       // ensure that the data was actually added to the 
       // DOM before removal
-      $(options._container)[0].pause();
-      if (options.block === "No" || !options.block) {
+      if ($(options._video)) {
+        $(options._video)[0].pause();
+        $(options._video)[0].currentTime = 0 //options.videoStart;
+      }
+      if (!options.block || options.block === "No") {
         $(options._container).hide();
       }
     },

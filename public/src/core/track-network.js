@@ -34,7 +34,7 @@ define( [], function() {
 
 				if (tracks[i].length === 1) {
 					try { var keyname = tracks[i][0].manifest.about.keyname }
-					catch(ex) {var keyname;}
+					catch(ex) { var keyname }
 					if (keyname === "quizme") { // Then draw lines (1-M)
 						for (var l in tracks[j]) {
 							this.drawLine(tracks[i][0], tracks[j][l], layer);

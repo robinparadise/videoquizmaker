@@ -115,8 +115,7 @@
 
     start: function( event, options ){
       if (!$(options._container).hasClass("hideFlow")) {
-        var child = $(options._container).children();
-        if (!child.hasClass("quiz-el")) { //Create again 'cause was deleted
+        if (!$(options._container).children().hasClass("quiz-el")) { //Create again 'cause was deleted
           $(options._container).jQuizMe(quiz, opt1, options.callback);
         }
         options._container.style.display = "block";
