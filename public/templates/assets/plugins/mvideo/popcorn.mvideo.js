@@ -35,6 +35,17 @@
           type: "text",
           label: "Out"
         },
+        source: {
+          elem: "input", 
+          type: "text", 
+          label: "Source"
+        },
+        videoStart: {
+          elem: "input", 
+          type: "text", 
+          label: "Video Start",
+          "default": 0,
+        },
         block: {
           elem: "select",
           options: ["No", "Yes"],
@@ -66,10 +77,16 @@
           throw new Error( "target container doesn't exist" );
       }
       target && target.appendChild( options._container );
-      
-      options._video = document.createElement("video");
-      $(options._video).attr({'src': options.name, 'controls': 'controls', 'data-butter': 'media', 'width': '380px'});
-      $(options._container).append(options._video);
+
+      var video_source;
+      if (options.source && options.source !== '') {
+        video_source = options.source;
+      } else {
+        video_source = options.name;
+      }
+
+      options._video = Popcorn.smart( options._container, video_source );
+      $(options._container).find("video").attr({'controls': 'controls', 'data-butter': 'media', 'width': '380px'});
     },
     /**
      * The start function will be executed when the currentTime 
@@ -80,8 +97,8 @@
       if (!$(options._container).hasClass("hideFlow")) {
         $(options._container).show();
         if ($(".status-button").attr("data-state") == "true") {
-          //$(options._video)[0].currentTime = options.videoStart;
-          $(options._video)[0].play();
+          options._video.currentTime(Number(options.videoStart));
+          options._video.play();
         }
       }
     },
@@ -90,12 +107,14 @@
      * of the video  reaches the end time provided by the 
      * options variable
      */
-    end: function( event, options ){
+    end: function( event, options ) {
       // ensure that the data was actually added to the 
       // DOM before removal
-      if ($(options._video)) {
-        $(options._video)[0].pause();
-        $(options._video)[0].currentTime = 0 //options.videoStart;
+      if (options._video) {
+        try {
+          options._video.pause();
+          options._video.currentTime(Number(options.videoStart));
+        } catch(ex) {}
       }
       if (!options.block || options.block === "No") {
         $(options._container).hide();

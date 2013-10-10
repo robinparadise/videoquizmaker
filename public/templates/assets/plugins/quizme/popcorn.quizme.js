@@ -108,6 +108,7 @@
           this.popcorn.continueFlow(options, info); // Continue with the next Flow
           this.popcorn.currentTime( this.skipTime ); // skip to the end
           this.popcorn.play(); // resume media throw plugin
+          //this.popcorn.skipToNextPlugin(options);
         }
       }
       $(options._container).jQuizMe(quiz, opt1, options.callback);
