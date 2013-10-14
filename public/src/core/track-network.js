@@ -108,6 +108,7 @@ define( [], function() {
 			var prevFlow = Number( $(prev.view.element).attr("flow") );
 			$(track.view.element).attr("flow", prevFlow);
 			$(track.popcornTrackEvent._container).attr("flow", prevFlow);
+			track.popcornTrackEvent.flow = prevFlow;
 		}
 
 		// set Flow for each Track Events Media
@@ -115,9 +116,11 @@ define( [], function() {
 			if ($(track.view.element).hasClass("mainFlow")) {
 				$(track.view.element).attr("flow", "0");
 				$(track.popcornTrackEvent._container).attr("flow", "0");
+				track.popcornTrackEvent.flow = 0;
 			} else {
 				$(track.view.element).attr("flow", ++flow);
 				$(track.popcornTrackEvent._container).attr("flow", flow);
+				track.popcornTrackEvent.flow = flow;
 			}
 			return flow;
 		}

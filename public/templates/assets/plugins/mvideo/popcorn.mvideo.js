@@ -86,7 +86,11 @@
       }
 
       options._video = Popcorn.smart( options._container, video_source );
-      $(options._container).find("video").attr({'controls': 'controls', 'data-butter': 'media', 'width': '380px'});
+      $(options._container).find("video").attr({
+        'controls': 'controls',
+        'data-butter': 'media',
+        'width': '380px' // *We need to use fitVid.js to resize videos
+      });
     },
     /**
      * The start function will be executed when the currentTime 
@@ -97,7 +101,7 @@
       if (!$(options._container).hasClass("hideFlow")) {
         $(options._container).show();
         if ($(".status-button").attr("data-state") == "true") {
-          options._video.currentTime(Number(options.videoStart));
+          options._video.currentTime(options.videoStart);
           options._video.play();
         }
       }
@@ -113,7 +117,7 @@
       if (options._video) {
         try {
           options._video.pause();
-          options._video.currentTime(Number(options.videoStart));
+          options._video.currentTime(options.videoStart);     
         } catch(ex) {}
       }
       if (!options.block || options.block === "No") {
