@@ -105,7 +105,6 @@
         popcorn: this,
         quizResult: function(info) {
           this.popcorn.continueFlow(options, info); // Continue with the next Flow
-          this.popcorn.play(); // resume media throw plugin
         }
       }
       $(options._container).jQuizMe(quiz, opt1, options.callback);
