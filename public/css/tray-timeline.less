@@ -149,7 +149,7 @@
     width: 18px;
     top: 5px;
     opacity: 0;
-    background: @_trackEventColor;
+    /*background: @_trackEventColor;*/
     .transition( all 0.1s ease );
     &:after {
       content: "";
@@ -202,12 +202,14 @@
       left: 0;
     }
     .left-handle {
+      opacity: 0; /* Hide arrows */
       left: -16px;
       &:after {
         left: -2px;
       }
     }
     .right-handle {
+      opacity: 0; /* Hide arrows */
       right: -16px;
       &:after {
         right: -2px;

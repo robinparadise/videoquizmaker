@@ -51,3 +51,51 @@
     background-color: lavender;
 }
 
+/* Handle points */
+.butter-track-event .handle-point {
+    position: absolute;
+    background-color: rgba(51, 199, 38, 0.43);
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    border: white 1px solid;
+    z-index: 100;
+    top: 6px;
+    overflow: hidden;
+    transition: all 0.1s ease;
+    -webkit-transition: all 0.1s ease;
+    display: none;
+}
+
+.butter-track-event .handle-point:hover {
+    cursor: crosshair;
+}
+
+.butter-track-event .left-handle-line {
+    left: -13px;
+}
+.butter-track-event.trackevent-small .left-handle-line {
+    left: -20px;
+}
+
+.right-handle-line {
+    right: -13px;
+}
+.butter-track-event.trackevent-small .right-handle-line {
+    right: -20px;
+}
+
+/* Show handle points on hover for every track */
+.butter-track-event {
+    overflow: visible;
+}
+.butter-track-event:hover .handle-point {
+    transition: all 0.1s ease;
+    -webkit-transition: all 0.1s ease;
+    display: block;
+}
+
+/* Highlight box */
+.butter-track-event.highlight {
+    border-color: rgb(5, 41, 56);
+}
