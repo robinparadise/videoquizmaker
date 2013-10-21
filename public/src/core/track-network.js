@@ -26,7 +26,7 @@ define( [], function() {
 			var layer = new Kinetic.Layer();
 			var start, end;
 			var flow = 0;
-			$(".on-flow").removeClass("on-flow");
+			$(".trackMediaEvent.on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
 				var j = Number(i) + 1;
@@ -78,8 +78,8 @@ define( [], function() {
 				points: [start_x, start_y, end_x, end_y],
 				stroke: '#3FB58E',
 				strokeWidth: 3,
-				lineCap: 'square',
-				lineJoin: 'square'
+				lineCap: 'round',
+				lineJoin: 'round'
 			});
 
 			line.move(0, 0);
@@ -125,46 +125,81 @@ define( [], function() {
 			return flow;
 		}
 
+		// Reset all events
+		this.offEvents = function() {
+			$(".butter-track-event .left-handle-line").off();
+			$(".butter-track-event .right-handle-line").off();
+			$(".butter-track-event").off();
+		}
+
 		// Drawing lines along the cursor path
 		this.drawLineEventMouse = function(stage, layer) {
-			var moving = false, line;
+			this.offEvents();
+			var drawing = false, line;
 
-			stage.on("mousedown", function(){
-				if (moving){
-					moving = false; layer.draw();
+			// EventListener for handle pointers
+			$(".left-handle-line, .right-handle-line").on("mousedown", function(e) {
+				e.stopPropagation();
+				if (drawing) {
+					drawing = false;
+					layer.draw();
 				} else {
+					var that = $(this);
+					var wrapper = that.parent().parent();
 					var mousePos = stage.getMousePosition();
 					line = new Kinetic.Line({
 						points: [0, 0, 50, 50],
 						strokeWidth: 3,
-						stroke: "red"
+						stroke: "red",
+						lineCap: 'round',
+						lineJoin: 'round'
 					});
 					layer.add(line);
 					//start point and end point are the same
-					line.getPoints()[0].x = mousePos.x;
-					line.getPoints()[0].y = mousePos.y;
-					line.getPoints()[1].x = mousePos.x;
-					line.getPoints()[1].y = mousePos.y;
+					line.getPoints()[0].x = that.parent().position().left + that.position().left;
+					line.getPoints()[0].y = wrapper.position().top + that.outerHeight()/2 + that.position().top +1.5;
+					line.getPoints()[1].x = line.getPoints()[0].x;
+					line.getPoints()[1].y = line.getPoints()[0].y;
 
-					moving = true;    
+					drawing = true;    
 					layer.drawScene();            
 				}
+				return false;
 			});
 
-			stage.on("mousemove", function(){
-				if (moving) {
-					var mousePos = stage.getMousePosition();
-					var x = mousePos.x;
-					var y = mousePos.y;
-					line.getPoints()[1].x = mousePos.x;
-					line.getPoints()[1].y = mousePos.y;
-					moving = true;
+			$(".tracks-container-wrapper").on("mousemove", function(e) {
+				if (drawing) {
+					e.stopPropagation();
+					var src = $(e.srcElement);
+					// If track-event is hovered then calculate 'end-point-line'
+					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
+						var parent = $(e.srcElement).parents(".butter-track-event");
+						if (src.hasClass("butter-track-event")) parent = src;
+						line.getPoints()[1].x = parent.position().left;
+						line.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
+					} else {
+						line.getPoints()[1].x = e.offsetX;
+						line.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
+					}
+					
 					layer.drawScene();
+					return false;
 				}
 			});
 
-			stage.on("mouseup", function(){
-				moving = false; 
+			$(".tracks-container-wrapper").on("mouseup", function() {
+				if (drawing) {
+					drawing = false;
+					return false;
+				}
+			});
+
+			// When mouse drawing highlight track-event box
+			$(".butter-track-event").hover(function() {
+				if (drawing)
+					$(this).addClass("highlight");
+			}, function() {
+				$(this).removeClass("highlight");
 			});
 		}
 	}
