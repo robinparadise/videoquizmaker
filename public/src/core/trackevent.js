@@ -70,7 +70,7 @@ define( [ "./logger", "./eventmanager", "./observer",
 
     function getNamesQuizzes(obj) {
       var aux = ["Default"];
-      for (name in obj) {
+      for (var name in obj) {
         aux.push(name);
       }
       return aux;

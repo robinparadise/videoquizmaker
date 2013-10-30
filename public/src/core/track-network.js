@@ -7,25 +7,41 @@
 define( [], function() {
 
 	function TrackNetwork(app) {
-		var lines, stage;
+		var lines, stage, layer;
+		var GREEN = "#3FB58E";
+		var GREY = "CCC";
+		var RED = "red";
+
+		// Return an object's keys as an array
+		this.getKeys = function(obj) {
+			var aux = [];
+			for (var name in obj) {
+				aux.push(name);
+			}
+			return aux;
+		}
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
 			var wrapper = $(".tracks-container-wrapper");
-			stage = new Kinetic.Stage({
-				container: 'tracks-container-canvas',
-				width: wrapper.width(),
-				height: wrapper.height()
-			});
+			if (!stage) {
+				stage = new Kinetic.Stage({
+					container: 'tracks-container-canvas'
+				});
+				layer = new Kinetic.Layer();
+				stage.add(layer);
+			} else {
+				layer.children.splice(0);
+			}
+			stage.setWidth(wrapper.width());
+			stage.setHeight(wrapper.height());
 		}
 
 		// List all tracks and then calculate coords for lines.
 		this.calculateLines = function() {
 			this.createCanvas();
 			var tracks = app.orderedTrackEventsSet;
-			var layer = new Kinetic.Layer();
-			var start, end;
-			var flow = 0;
+			var flow = 0, line;
 			$(".trackMediaEvent.on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
@@ -33,6 +49,7 @@ define( [], function() {
 				if(!tracks[j]) break; // tracks[j] == Next track media
 
 				if (tracks[i].length === 1) {
+// *** tracks[i][0] *** draw manual lines
 					try { var keyname = tracks[i][0].manifest.about.keyname }
 					catch(ex) { var keyname }
 					if (keyname === "quizme") { // Then draw lines (1-M)
@@ -41,11 +58,15 @@ define( [], function() {
 							flow = this.setFlow(flow, tracks[j][l]);
 						}
 					} else { // Else draw lines with media in the same Track
-						this.drawLineSameTrack(tracks[i][0], tracks[j], layer);
+						var drew = this.drawManualLines(tracks[i][0], layer);
+						if (!drew) {
+							this.drawLineSameTrack(tracks[i][0], tracks[j], layer);
+						}
 					}
 				}
 				if (tracks[j].length === 1) { // Draw lines (M-1)
 					for (var k in tracks[i]) {
+// *** tracks[i][k] *** Do Nothing ;)
 						for (var l in tracks[j]) {
 							this.drawLine(tracks[i][k], tracks[j][l], layer);
 							flow = this.setFlow(flow, tracks[j][l]);
@@ -53,37 +74,70 @@ define( [], function() {
 					}
 				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
 					for (var k in tracks[i]) {
-						this.drawLineSameTrack(tracks[i][k], tracks[j], layer);
+						var drew = this.drawManualLines(tracks[i][k], layer);
+						if (!drew) {
+							this.drawLineSameTrack(tracks[i][k], tracks[j], layer);
+						}
+// *** tracks[i][k] *** draw manual lines
 					}
 				}
 			}
-			stage.add(layer);
-			this.drawLineEventMouse(stage, layer);
+			if (tracks.length > 0) {
+				layer.draw();
+				this.drawLineEventMouse(stage, layer);
+			}
 		}
 
 		// Draw Lines between two points
-		this.drawLine = function(start_obj, end_obj, layer) {
+		this.drawLine = function(start_obj, end_obj, layer, options) {
+			if (start_obj.linesTo && start_obj.linesTo[end_obj.id] === "removed") return; // Lines removed
+			if (options === undefined) options = {};
+
+			start = $(start_obj.view.element);
+			end = $(end_obj.view.element);
+
 			try { // Points (Start , End)
-				var start = $(start_obj.view.element);
-				var end = $(end_obj.view.element);
 				var start_x = start.position().left + start.width();
 				var start_y = start.parent().position().top + start.height()/2;
 				var end_x = end.position().left;
 				var end_y = end.parent().position().top + end.height()/2;
 			} catch(ex) {return}
-			start.addClass("on-flow").removeClass("out-of-flow");
-			end.addClass("on-flow").removeClass("out-of-flow");
 
-			var line = new Kinetic.Line({ // Create Kinetic Line
-				points: [start_x, start_y, end_x, end_y],
-				stroke: '#3FB58E',
-				strokeWidth: 3,
-				lineCap: 'round',
-				lineJoin: 'round'
-			});
+			// Look if there is a line
+			if (start_obj.linesTo && start_obj.linesTo[end_obj.id]) {
+				var line = start_obj.linesTo[end_obj.id];
+				line.getPoints()[0].x = start_x;
+				line.getPoints()[0].y = start_y;
+				line.getPoints()[1].x = end_x;
+				line.getPoints()[1].y = end_y;
+				if (options.manual && options.color) {
+					line.attrs.stroke = options.color;
+				}
+			}
+			else { // New line
+				// start.addClass("on-flow").removeClass("out-of-flow");
+				// end.addClass("on-flow").removeClass("out-of-flow");
+				if (!options.color) options.color = GREY; // Default color gray
+
+				var line = new Kinetic.Line({ // Create Kinetic Line
+					points: [start_x, start_y, end_x, end_y],
+					stroke: options.color,
+					strokeWidth: 3,
+					lineCap: 'round',
+					lineJoin: 'round'
+				});
+			}
+			// When the user define the line -> manual == True
+			if (options.manual) {
+				line.manual = true;
+			}
+
+			// Save line into the object start_obj
+			this.saveLineTo(start_obj, end_obj.id, line);
 
 			line.move(0, 0);
 			layer.add(line);
+			return true;
 		}
 
 		// Draw lines which are in the same Layer(Track)
@@ -96,11 +150,69 @@ define( [], function() {
 					this.setSameFlow(start, end_set[i]);
 					continue;
 				} 
-				if (!$(end_set[i].view.element).hasClass("on-flow"))
-					$(end_set[i].view.element).addClass("out-of-flow");
-				if (!$(start.view.element).hasClass("on-flow"))
-					$(start.view.element).addClass("out-of-flow");
+				// if (!$(end_set[i].view.element).hasClass("on-flow"))
+				//	$(end_set[i].view.element).addClass("out-of-flow");
+				// if (!$(start.view.element).hasClass("on-flow"))
+				//	$(start.view.element).addClass("out-of-flow");
 			}
+		}
+
+		// Draw manual lines from first track to the last track
+		this.drawLineFromFirst = function(objA, objB, layer, options) {
+			if ( !objA.jquery || !objB.jquery ) return;
+
+			var trackA = app.getTrackEvents( "id", objA.attr('data-butter-trackevent-id') )[0];
+			var trackB = app.getTrackEvents( "id", objB.attr('data-butter-trackevent-id') )[0];
+			if (!trackA || !trackB) return;
+
+			if (trackA.popcornOptions.start <= trackB.popcornOptions.start) {
+				this.drawLine(trackA, trackB, layer, options);
+			} else {
+				this.drawLine(trackB, trackA, layer, options);
+			}
+		}
+
+		// Draw manual lines
+		this.drawManualLines = function(trackEventA, layer) {
+			var drew = false, aux;
+			for (var id in trackEventA.linesTo) {
+				if (trackEventA.linesTo[id].manual) {
+					var trackEventB = app.getTrackEvents( "id", id )[0];
+					if (trackEventB) {
+						aux = this.drawLine(trackEventA, trackEventB, layer, {'manual': true});
+						if (aux) drew = true;
+					}
+				}
+			}
+			return drew;
+		}
+
+		// Save line into object track event
+		this.saveLineTo = function(obj, id, line) {
+			if (obj.jquery) { //get object trackEvent with ID
+				var start = app.getTrackEvents( "id", obj.attr('data-butter-trackevent-id') );
+			} else {
+				var start = obj;
+			}
+			if ($.isEmptyObject(start.linesTo)) {
+				start.linesTo = {}
+			} else {
+				// if it is not a trackEvent quizme then remove all lines before
+				try { 
+					var keyname = obj.manifest.about.keyname }
+				catch(ex) {
+					var keyname
+				}
+				if (keyname !== "quizme") {
+					for (var trackID in start.linesTo) {
+						if (id !== trackID) {
+							start.linesTo[trackID].remove();
+							delete start.linesTo[trackID]; // Remove all lines
+						}
+					}
+				}
+			}
+			start.linesTo[id] = line; // Add new line
 		}
 
 		// set the same Flow for Track Events Media
@@ -135,7 +247,8 @@ define( [], function() {
 		// Drawing lines along the cursor path
 		this.drawLineEventMouse = function(stage, layer) {
 			this.offEvents();
-			var drawing = false, line;
+			var trackNetwork = this;
+			var drawing = false, trackEventStart, line;
 
 			// EventListener for handle pointers
 			$(".left-handle-line, .right-handle-line").on("mousedown", function(e) {
@@ -144,13 +257,14 @@ define( [], function() {
 					drawing = false;
 					layer.draw();
 				} else {
+					trackEventStart = $(this).parent();
 					var that = $(this);
 					var wrapper = that.parent().parent();
 					var mousePos = stage.getMousePosition();
 					line = new Kinetic.Line({
 						points: [0, 0, 50, 50],
 						strokeWidth: 3,
-						stroke: "red",
+						stroke: RED,
 						lineCap: 'round',
 						lineJoin: 'round'
 					});
@@ -161,8 +275,8 @@ define( [], function() {
 					line.getPoints()[1].x = line.getPoints()[0].x;
 					line.getPoints()[1].y = line.getPoints()[0].y;
 
-					drawing = true;    
-					layer.drawScene();            
+					drawing = true;
+					layer.draw();
 				}
 				return false;
 			});
@@ -182,20 +296,36 @@ define( [], function() {
 						line.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
 					}
 					
-					layer.drawScene();
+					layer.draw();
 					return false;
 				}
 			});
 
-			$(".tracks-container-wrapper").on("mouseup", function() {
+			$(".tracks-container-wrapper").on("mouseup", function(e) {
 				if (drawing) {
+					e.stopPropagation();
 					drawing = false;
+					// we modify the orderedTrackEventsSet
+					var src = $(e.srcElement);
+					line.remove();
+					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
+						var parent = $(e.srcElement).parents(".butter-track-event");
+						if (src.hasClass("butter-track-event")) {
+							parent = src;
+						}
+						console.log("[MouseUP]");
+						line = trackNetwork.drawLineFromFirst(trackEventStart, parent, layer, {
+							'color': GREEN,
+							'manual': true
+						});
+					}
+					layer.draw();
 					return false;
 				}
 			});
 
 			// When mouse drawing highlight track-event box
-			$(".butter-track-event").hover(function() {
+			$(".butter-track-event").hover(function(e) {
 				if (drawing)
 					$(this).addClass("highlight");
 			}, function() {
