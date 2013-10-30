@@ -30,6 +30,8 @@
 /* Style for Canvas */
 #tracks-container-canvas {
   position: absolute !important;
+  top: 0;
+  z-index: 0;
 }
 
 /* Compensate for the header */
@@ -86,6 +88,7 @@
 /* Show handle points on hover for every track */
 .butter-track-event {
     overflow: visible;
+    z-index: 1;
 }
 .butter-track-event:hover .handle-point {
     display: block;

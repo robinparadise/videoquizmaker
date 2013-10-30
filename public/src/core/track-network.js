@@ -126,6 +126,12 @@ define( [], function() {
 					lineCap: 'round',
 					lineJoin: 'round'
 				});
+
+				// Create event popup dialog for line
+				line.on('click', function (ev) {
+					console.log("[line clicked]");
+					
+				});
 			}
 			// When the user define the line -> manual == True
 			if (options.manual) {
