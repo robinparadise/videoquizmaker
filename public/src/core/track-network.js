@@ -4,22 +4,13 @@
 	* Used on trackevent.js
 */
 
-define( [], function() {
+define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
-	function TrackNetwork(app) {
-		var lines, stage, layer;
+	function TrackNetwork(app, ev) {
+		var lines, stage, layer, dialog;
 		var GREEN = "#3FB58E";
 		var GREY = "CCC";
 		var RED = "red";
-
-		// Return an object's keys as an array
-		this.getKeys = function(obj) {
-			var aux = [];
-			for (var name in obj) {
-				aux.push(name);
-			}
-			return aux;
-		}
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
@@ -39,9 +30,9 @@ define( [], function() {
 
 		// List all tracks and then calculate coords for lines.
 		this.calculateLines = function() {
-			this.createCanvas();
 			var tracks = app.orderedTrackEventsSet;
 			var flow = 0, line;
+			this.createCanvas();
 			$(".trackMediaEvent.on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
@@ -49,7 +40,6 @@ define( [], function() {
 				if(!tracks[j]) break; // tracks[j] == Next track media
 
 				if (tracks[i].length === 1) {
-// *** tracks[i][0] *** draw manual lines
 					try { var keyname = tracks[i][0].manifest.about.keyname }
 					catch(ex) { var keyname }
 					if (keyname === "quizme") { // Then draw lines (1-M)
@@ -58,6 +48,7 @@ define( [], function() {
 							flow = this.setFlow(flow, tracks[j][l]);
 						}
 					} else { // Else draw lines with media in the same Track
+						// Draw Manual Lines
 						var drew = this.drawManualLines(tracks[i][0], layer);
 						if (!drew) {
 							this.drawLineSameTrack(tracks[i][0], tracks[j], layer);
@@ -66,7 +57,6 @@ define( [], function() {
 				}
 				if (tracks[j].length === 1) { // Draw lines (M-1)
 					for (var k in tracks[i]) {
-// *** tracks[i][k] *** Do Nothing ;)
 						for (var l in tracks[j]) {
 							this.drawLine(tracks[i][k], tracks[j][l], layer);
 							flow = this.setFlow(flow, tracks[j][l]);
@@ -74,11 +64,11 @@ define( [], function() {
 					}
 				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
 					for (var k in tracks[i]) {
+						// Draw Manual Lines
 						var drew = this.drawManualLines(tracks[i][k], layer);
 						if (!drew) {
 							this.drawLineSameTrack(tracks[i][k], tracks[j], layer);
 						}
-// *** tracks[i][k] *** draw manual lines
 					}
 				}
 			}
@@ -86,6 +76,12 @@ define( [], function() {
 				layer.draw();
 				this.drawLineEventMouse(stage, layer);
 			}
+		}
+
+		// Remove Listeners
+		this.onDialogClose = function(ev) {
+			console.log("[Dinamig Dialoge Close]", ev);
+			dialog.close();
 		}
 
 		// Draw Lines between two points
@@ -122,7 +118,7 @@ define( [], function() {
 				var line = new Kinetic.Line({ // Create Kinetic Line
 					points: [start_x, start_y, end_x, end_y],
 					stroke: options.color,
-					strokeWidth: 3,
+					strokeWidth: 4,
 					lineCap: 'round',
 					lineJoin: 'round'
 				});
@@ -130,7 +126,10 @@ define( [], function() {
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
 					console.log("[line clicked]");
-					
+					var lineRule = "Bleo";
+					dialog = Dialog.spawn( "dinamic", { data: lineRule } );
+					dialog.open( false );
+					console.log("[Dialog]", dialog);
 				});
 			}
 			// When the user define the line -> manual == True
@@ -155,7 +154,7 @@ define( [], function() {
 					this.drawLine(start, end_set[i], layer);
 					this.setSameFlow(start, end_set[i]);
 					continue;
-				} 
+				}
 				// if (!$(end_set[i].view.element).hasClass("on-flow"))
 				//	$(end_set[i].view.element).addClass("out-of-flow");
 				// if (!$(start.view.element).hasClass("on-flow"))
@@ -248,6 +247,7 @@ define( [], function() {
 			$(".butter-track-event .left-handle-line").off();
 			$(".butter-track-event .right-handle-line").off();
 			$(".butter-track-event").off();
+			$(".butter-tray").off();
 		}
 
 		// Drawing lines along the cursor path
@@ -255,6 +255,12 @@ define( [], function() {
 			this.offEvents();
 			var trackNetwork = this;
 			var drawing = false, trackEventStart, line;
+
+			$(".butter-tray").on("mousedown", function(e) {
+				try {
+					if (dialog) dialog.close();
+				} catch(ex) {}
+			});
 
 			// EventListener for handle pointers
 			$(".left-handle-line, .right-handle-line").on("mousedown", function(e) {

@@ -1,0 +1,51 @@
+<!-- This Source Code Form is subject to the terms of the MIT license
+If a copy of the MIT license was not distributed with this file, you can
+obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
+
+<!-- This is just a placeholder, really -->
+<div class="butter-dinamic-dialog butter-dialog">
+    <!-- <div class="butter-logo"></div> -->
+    <div class="butter-dialog-offset">
+    <div class="butter-dialog-body dinamic-body">
+        <div class="butter-dialog-title">
+            <h2><strong>Popup</strong></h2>
+        </div>
+
+        <div class="popup-tab-header">
+            <ul>
+                <li class="popup-tab-header-li">
+                    <a class="butter-btn butter-active">Score</a>
+                </li>
+                <li class="popup-tab-header-li">
+                    <a class="butter-btn">Questions</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="popup-tab-body">
+
+            <div class="popup-tab-score">
+                <fieldset class="trackevent-property-popup select">
+                    <label class="property-name">Assured by score</label>
+                    <select>
+                        <option value="more">More than</option>
+                        <option value="more-equal" selected>More than or equal to</option>
+                        <option value="less-equal">Less than or equal to</option>
+                        <option value="less">Less than</option>
+                        <option value="equal">Equal to</option>
+                    </select>
+                </fieldset>
+                <fieldset class="trackevent-property default input">
+                    <label class="property-name">Percent</label>
+                    <input class="value" type="number" placeholder="50" step="1" data-manifest-key="zoom">
+                </fieldset>
+            </div>
+
+            <div class="popup-tab-questions">
+                
+            </div>
+        </div>
+
+    </div>
+    <a class="close-button"><span class="icon icon-white icon-x"></span></a>
+</div>

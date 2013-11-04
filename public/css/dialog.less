@@ -71,7 +71,7 @@
 
 }
 
-// Edited by Me
+// Style for Quizmanager
 .quizmanager {
   margin-left:auto;
   margin-right:auto;
@@ -80,6 +80,77 @@
   background-color: #fff;
   border: 1px solid #eee;
   border-radius: 0px;
+}
+
+// Style for dialog dinamic (popup for lines)
+.butter-dinamic-dialog {
+  margin: 100px;
+  width: 300px;
+  padding: 0px;
+  .trackevent-property,
+  fieldset {
+    margin: 6px !important;
+  }
+  .dinamic-body {
+    margin: 0px;
+    padding: 0 0 20px 0;
+  }
+  .butter-dialog-title {
+    position: relative;
+    top: 0;
+    right: 0;
+    left: 0px;
+    border-bottom: 0px;
+    height: @_editorHeaderHeight;
+    line-height: @_editorHeaderHeight;
+    background: @baseDark;
+    color: white;
+    padding: 0px 10px;
+    margin: 0px;
+  }
+  .popup-tab-header {
+    position: relative;
+    right: 0;
+    left: 0px;
+    border-bottom: @_editorHeaderBorder solid @green;
+    height: @_editorHeaderHeight;
+    background: white;
+    > ul {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      list-style: none;
+
+      > .popup-tab-header-li {
+        float: left;
+        position: relative;
+        top: 0;
+      }
+    }
+  }
+  .popup-tab-header .butter-btn {
+    background: none;
+    border: none;
+    color: #000;
+    font-size: 14px;
+    padding: 0 10px;
+    border-radius: 0;
+    height: @_editorHeaderHeight;
+    line-height: @_editorHeaderHeight;
+    &.butter-active {
+      background: @green;
+      color: #FFF;
+    }
+    &.butter-editor-btn-disabled {
+      color: rgba( 255, 255, 255, 0.3 );
+      > .icon {
+        opacity: 0.3;
+      }
+    }
+  } // .butter-btn
+
+  .popup-tab-body {
+  }
 }
 
 .butter-feedback-form {

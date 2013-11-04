@@ -60,9 +60,12 @@ define( [ "util/lang", "core/eventmanager", "./modal" ],
        * @param {Event} e: Standard DOM Event from a keydown occurrence
        */
       function onKeyDown( e ) {
-        e.stopPropagation();
+          e.stopPropagation();
         if ( __keyboardAvoidElements.indexOf( e.target.nodeName ) === -1 ) {
-          e.preventDefault();
+console.log("[__keyboardAvoidElements]");
+          if (name !== "dinamic") {
+            e.preventDefault();
+          }
           if (  _enterKeyActivity &&
                 ( e.which === 13 || e.keyCode === 13 ) ) {
             _activities[ _enterKeyActivity ]( e );
