@@ -244,7 +244,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             if (a[i] == '') {
                 break;
             }
-            for (j=0; j<i; j++) {
+            for (var j=0; j<i; j++) {
                 if (a[i] == a[j]) {
                     ax[i].focus();
                     return false;

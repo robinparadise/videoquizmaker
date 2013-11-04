@@ -35,12 +35,16 @@ define( [ "util/dragndrop", "util/lang", "editor/editor", "text!layouts/plugin-l
 
       DragNDrop.helper( element, {
         start: function() {
+          console.log("++++++++++++++++++++");
+          $(".butter-track").css({'z-index': 1});
           for ( var i = 0, l = _targets.length; i < l; ++i ) {
             _targets[ i ].view.blink();
             _iframeCovers[ i ].style.display = "block";
           }
         },
         stop: function() {
+          console.log("-------------------- ");
+          $(".butter-track").css({'z-index': ''});
           butter.currentMedia.pause();
           for ( var i = 0, l = _targets.length; i < l; ++i ) {
             _iframeCovers[ i ].style.display = "none";
