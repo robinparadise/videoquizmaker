@@ -18,7 +18,10 @@ define( [], function(){
       var _element = document.createElement( "div" );
 
       _element.classList.add( "butter-modal-overlay" );
-      if ( createOverlay || createOverlay === undefined ) {
+      if ( createOverlay && createOverlay === "empty" ) {
+        _element.classList.add( "butter-modal-overlay-empty" );
+      }
+      else if ( createOverlay || createOverlay === undefined ) {
         _element.classList.add( "butter-modal-overlay-dark-bg" );
       }
       __container.appendChild( _element );
