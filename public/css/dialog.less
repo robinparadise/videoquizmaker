@@ -80,13 +80,22 @@
   background-color: #fff;
   border: 1px solid #eee;
   border-radius: 0px;
+  .select-size16 {
+    height: 300px;
+  }
 }
 
 // Style for dialog dinamic (popup for lines)
 .butter-dinamic-dialog {
-  margin: 100px;
+  left: 200px;
+  top: 20px;
   width: 300px;
   padding: 0px;
+  margin: 0;
+  border-radius: 6px;
+  -moz-box-shadow: 0 0 4px rgba(0,0,0,0.8);
+  -webkit-filter: drop-shadow(0 0 4px rgba(0,0,0,.8));
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.8));
   .trackevent-property,
   fieldset {
     margin: 6px !important;
@@ -149,9 +158,28 @@
     }
   } // .butter-btn
 
-  .popup-tab-body {
+  &.butter-modal-overlay {
+    height: 0;
+    width: 0;
   }
 }
+.butter-dinamic-dialog:after {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  /*pointer-events: none;*/
+}
+.butter-dinamic-dialog:after {
+  border-color: rgba(136, 183, 213, 0);
+  border-top-color: #FFF;
+  border-width: 30px;
+  left: 50%;
+  margin-left: -30px;
+}
+// Dialog Dinamic
 
 .butter-feedback-form {
   padding: 0;

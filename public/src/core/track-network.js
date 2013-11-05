@@ -125,11 +125,17 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
-					console.log("[line clicked]");
-					var lineRule = "Bleo";
-					dialog = Dialog.spawn( "dinamic", { data: lineRule } );
-					dialog.open( false );
-					console.log("[Dialog]", dialog);
+					console.log("[click Line]", ev);
+					var options = {
+						'position': {
+							'left': ev.offsetX,
+							'top': ev.screenY,
+							},
+						'score': ["more-equal", 50],
+						'rule': 'score'
+					};
+					dialog = Dialog.spawn( "dinamic", {'data': options} );
+					dialog.open( "empty" );
 				});
 			}
 			// When the user define the line -> manual == True
