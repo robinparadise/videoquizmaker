@@ -2,95 +2,73 @@
       If a copy of the MIT license was not distributed with this file, you can
       obtain one at http://www.mozillapopcorn.org/butter-license.txt -->
 
-<div class="butter-dialog quizmanager">
-  <h1><span class="title"></span>Quiz Manager</h1>
-  <div class="container hbox center">
-    <div class="vbox center">
-    <table align="center"><tr align="top" VALIGN="top">
-    
-        <td align="center">
-            </p><b><center>Quizzes</center></b></p>
-            <select class="quizzes select-size16" size="16"></select><br/>
-            <input value="+" type="button" class="butter-btn btn-green addQz"></input>
-            <input value="-" type="button" class="butter-btn btn-red delQz"></input>
-        </td>
-        
-        <td><table class="showQuestion">
-          <tr id="Questions">
-            <td><p><b><center>Questions</center></b></p></td></td>
-          </tr>
-          
-          <tr id="Questions">
-            <td align=center>
-                <select class="questions select-size16" size="16" style="width:330px"></select><br/>
-                <input value="Add Question" type="button" class="butter-btn btn-green addQ"></input>
-                <input value="Delete" type="button" class="butter-btn btn-red delQ"></input> 
-            </td>
-          </tr>   
-        </table></td>
-        
-        <td><table class="addQuestions">
-        
-            <tr id="addQuestions" class="titleAddQuestion">
-                <td colspan=2><p><b><center>Question</center></b></p></td></td>
-            </tr>
-            
-            <tr id="addQuestions">
-                <td>Type</td>
-                <td align="left">
-                    <select class="butter-btn btn-light selectQ" size="1">
-                        <option id="multiList" selected>Multilist
-                        <option id="multi">List
-                        <option id="tf">True False
-                        <option id="fill">Fill
-                        <option id="cards">Cards
+<div class="butter-dialog quizmanager mediamanager">
+    <h1><span class="title"></span>Quiz Manager</h1>
+    <ul class="manager-list">
+
+        <li class="list-quizzes">
+            <div class="manager-header list-quizzes-header">Quizzes</div>
+            <ul class="manager-sublist quizzes"></ul>
+            <input class="add-new-quiz" type="text" placeholder="Type name of quiz...">
+            <div class="wrapper-icon"><span class="icon icon-white icon-plus add-quiz"></span></div>
+        </li>
+
+        <li class="list-questions">
+            <div class="manager-header list-questions-header">Questions</div>
+            <ul class="manager-sublist questions"></ul>
+            <div class="wrapper-icon"><span class="icon icon-white icon-plus add-question"></span></div>
+        </li>
+
+        <li class="list-question-edit">
+            <div class="manager-header list-question-edit-header">Question</div>
+            <ul class="manager-sublist question-edit">
+                <fieldset>
+                    <textarea placeholder="Type a question here..." class="question-input"></textarea>
+                </fieldset>
+                <fieldset>
+                    <label class="property-name">Type of answers</label>
+                    <select class="select-type-answer">
+                        <option typequiz="tf" class="type-tf" value="type-tf" selected>True False</option>
+                        <option typequiz="multiList" class="type-multiList" value="type-multiList">Multilist</option>
+                        <option typequiz="multi" class="type-multi" value="type-multi">List</option>
+                        <option typequiz="fill" class="type-fill" value="type-fill">Fill</option>
+                        <option typequiz="cards" class="type-cards" value="type-cards">Cards</option>
                     </select>
-                </td>
-            </tr>
-            
-            <tr id="addQuestions">
-                <td align="left">Question</td>
-                <td align="left"><textarea name="q" cols="30" rows="3" resize=horizontal max-width=400px></textarea></td>
-                <td width="30px"></td>
-            </tr>
-            <tr id="fill">
-                <td align="left">Ans</td>
-                <td align="left"><input type="text" name="f" size="24"></td>
-            </tr>
-            <tr id="tf">
-                <td align="left">Ans A</td>
-                <td align="left"><input type="radio" name="ctf"> <input value="true" style="display:none" name="atf">True</td>
-            </tr>
-            <tr id="tf">
-                <td align="left">Ans B</td>
-                <td align="left"><input type="radio" name="ctf"> <input value="false" style="display:none" name="atf">False</td>
-            </tr>
-            <tr id="multiList">
-                <td align="left">Ans 1</td>
-                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24"></td>
-            </tr>
-            <tr id="multiList">
-                <td align="left">Ans 2</td>
-                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24"></td>
-            </tr>
-            <tr id="multiList">
-                <td align="left">Ans 3</td>
-                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24"></td>
-            </tr>
-            <tr id="multiList" class="show">
-                <td align="left">Ans 4</td>
-                <td align="left"><input type="radio" name="c"> <input type="text" name="a" size="24">
-            </tr>
-            <tr id="addQuestions">
-                <td></td>
-                <td align="center">
-                    <br/><input value="Ok" type="button" class="butter-btn btn-green okQ"></input>
-                </td>
-            </tr>            
-        </table></td>        
-    </tr></table> 
-    
-    </div>
-  </div>
+                </fieldset>
+                <fieldset>
+                    <label class="property-name">Answers</label>
+                    <div class="butter-form-radio">
+                        <input class="answer truefalse value-true" type="radio" name="tf">
+                        <label class="answer truefalse"><strong>True</strong></label>
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer truefalse value-false" type="radio" name="tf">
+                        <label class="answer truefalse"><strong>False</strong></label>
+                    </div>
+                    <input class="answer ans-fill" type="text" placeholder="Type the answer here...">
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an answer here...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an answer here...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an optional answer...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an optional answer...">
+                    </div>
+                    <div class="butter-form-align-center add-update-question-wrapper">
+                        <input value="Add" type="button" class="butter-btn btn-green add-update-question">
+                        <span class="delete-question">Delete</span>
+                    </div>
+                </fieldset>
+            </ul>
+        </li>
+    </ul>
   <a class="close-button"><span class="icon icon-only icon-x"></span></a>
 </div>

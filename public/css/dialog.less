@@ -71,8 +71,8 @@
 
 }
 
-// Style for Quizmanager
-.quizmanager {
+// Style for Media Manager
+.mediamanager {
   margin-left:auto;
   margin-right:auto;
   width: 900px;
@@ -80,8 +80,83 @@
   background-color: #fff;
   border: 1px solid #eee;
   border-radius: 0px;
-  .select-size16 {
-    height: 300px;
+  fieldset {
+    margin: 0 !important;
+  }
+  .butter-form-align-center {
+    padding-top: 30px;
+    text-align: center;
+  }
+  .butter-btn {
+    width: auto;
+    height: auto;
+    padding: 0 10px;
+  }
+  .add-update-question[value=Add] {
+    display: inline-block !important;
+  }
+  .delete-question {
+    display: none;
+    cursor: pointer;
+  }
+  .wrapper-icon {
+    width: 100%;
+    text-align: center;
+  }
+  .icon-plus {
+    background-color: @greyGreen;
+    border-radius: 7px;
+    margin: 10px;
+    -webkit-transform: scale(1.2);
+    -moz-transform: scale(1.2);
+    transform: scale(1.2);
+    cursor: pointer;
+  }
+  .icon-plus.add-quiz {
+    background-color: @green;
+  }
+  ul {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  .manager-list > li {
+    text-align: left;
+    float: left;
+    min-width: 150px;
+    display: block;
+    list-style: none;
+    padding: 1%;
+  }
+  .manager-sublist.questions {
+    width: 350px;
+  }
+  .manager-sublist.question-edit {
+    width: 250px;
+  }
+  .manager-sublist > li {
+    margin-left: 0;
+    padding-left: 0;
+    list-style: none;
+    text-align: left;
+    border: 1px solid #DDD;
+    background: #FFF;
+    box-shadow: rgba(0, 0, 0, .1) 1px 5px 2px -3px;
+    color: rgb(85, 85, 85);
+    font-size: 13px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    height: auto;
+    line-height: inherit;
+    padding: 5px;
+  }
+  .manager-sublist.quizzes > li.selected {
+    background: @green;
+    color: white;
+  }
+  .manager-sublist.questions > li.selected {
+    background: @greyGreen;
+    color: white;
   }
 }
 

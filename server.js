@@ -437,8 +437,6 @@ app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
     res.json( { error: "ID was not a number" }, 500 );
     return;
   }
-  var type = req.body.type;
-  delete req.body.type;
 
   Project.updateQuiz( email, req.body.id, req.body, function( err, doc ) {
     if ( err ) {
@@ -447,7 +445,7 @@ app.post('/api/updatequiz', filter.isStorageAvailable, function( req, res ) {
     }
     else {
       // Send back the newly added row's ID
-      res.json( { error: 'okay', id: doc.id, name: doc.name, type: type }, 200 );
+      res.json( { error: 'okay', id: doc.id, name: doc.name }, 200 );
       return;
     }
 
