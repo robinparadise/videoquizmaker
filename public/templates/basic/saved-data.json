@@ -12,11 +12,37 @@
         "duration": 30,
         "controls": false,
         "tracks": [{
-            "name": "Layer 0",
+            "name": "Layer",
             "id": "0",
-            "trackEvents": []
+            "trackEvents": [{
+                "id": "TrackEvent0",
+                "type": "quizme",
+                "popcornOptions": {
+                    "start": 1,
+                    "end": 6,
+                    "target": "video-container",
+                    "title": "Simple statements",
+                    "name": "TrueFalse",
+                    "block": "No"
+                },
+                "track": "Layer0",
+                "name": "TrackEvent0"
+            }, {
+                "id": "TrackEvent1",
+                "type": "quizme",
+                "popcornOptions": {
+                    "start": 9,
+                    "end": 14,
+                    "target": "video-container",
+                    "title": "Simple statements",
+                    "name": "Fill",
+                    "block": "No"
+                },
+                "track": "Layer0",
+                "name": "TrackEvent1"
             }]
+        }]
     }],
     "name": "My new project",
-    "template": "basic"
+    "template": "test"
 }

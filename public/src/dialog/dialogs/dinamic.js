@@ -42,7 +42,6 @@ console.log("[Click for dinamic dialog]", _options);
             $list.append($elem);
         }
 
-
         var togglePopupTab = function(keyrule) {
             if (!keyrule) keyrule = _options.keyrule;
             if (keyrule === "score") {

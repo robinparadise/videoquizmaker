@@ -22,6 +22,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         $deleteQues    = $rootElement.find( ".delete-question" ),
         $addQuestion   = $rootElement.find( ".add-question" ),
         $addQuiz       = $rootElement.find( ".add-quiz" ),
+        $inputNewQuiz  = $rootElement.find( ".add-new-quiz" ),
         GlobalQuiz     = this.Butter.QuizOptions,
         TempDataQuiz   = new Object();
 
@@ -49,6 +50,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 options.attrClass = "pulse animated-half";
             } else if (options.mode === "delete") {
                 options.attrClass = "pulse animated-half";
+            } else if (options.mode === "focus-red") {
+                options.attrClass = "focus-red";
             } else { // default
                 options.duration  = 1100;
                 options.attrClass = "pulse focus-red animated-one";
@@ -114,6 +117,19 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
             }
             else if (data.error && data.error !== "okay") {
                 console.log(data.error);
+            }
+            else if (TempDataQuiz && Object.keys(TempDataQuiz).length > 0) {
+console.log("[receiveQuizzes]", data);
+                var name = Object.keys(TempDataQuiz)[0];
+                TempDataQuiz = undefined;
+                if (!GlobalQuiz[name]) {
+                    GlobalQuiz[name] = new Object();
+                }
+                appendToList($quizzes, name, { // append just this one
+                    "quizname": name,
+                    "quizId": data.id
+                });
+                $inputNewQuiz.val("");
             }
             else {
                 quizzes.innerHTML = ""; // clean quizzes list
@@ -389,7 +405,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         $questions.find(".selected").removeClass("selected");
         manager.cleanQuestionEdit("smart");
         questionInput.focus();
-    })
+    });
 
     $deleteQues.click(function(ev) {
         var $deleted = $questions.find(".selected").addClass("deleted");
@@ -523,6 +539,39 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         addUpdateQues.value === "Update" && $addUpdateQues.show();
     });
 
+    // Button add Quiz : show the input for the new Quiz
+    $addQuiz.click(function() {
+        $inputNewQuiz.show();
+        $inputNewQuiz[0].focus();
+    });
+    // Live test if the new name exits
+    $inputNewQuiz.on("input", function(ev) {
+        if (!!GlobalQuiz[this.value]) {
+            $inputNewQuiz.addClass("focus-red");
+        } else {
+            $inputNewQuiz.removeClass("focus-red");
+        }
+    });
+    // Input to enter the new name of the Quiz
+    $inputNewQuiz.keypress(function(ev) {
+        var code = event.keyCode ? event.keyCode : event.which;
+        if (code == 13) {
+            console.log("[keypress][enter]");
+            if (!GlobalQuiz[this.value]) {
+                TempDataQuiz = {};
+                TempDataQuiz[this.value] = {};
+                quizDB.savequiz(this.value, {}, manager.receiveQuizzes);
+            }
+            return false;
+        }
+    });
+    // When the inputNewQuiz lose the focus then hide it
+    $inputNewQuiz.focusout(function(ev) {
+        setTimeout(function() {
+            $inputNewQuiz.hide("slow");
+        }, 100);
+    });
+
 
     manager.changeTypeAnswer("type-tf");       // by default answer quiz is true-false
     quizDB.getquizzes(manager.receiveQuizzes); // On start dialog load quizzes
@@ -553,10 +602,6 @@ quizDB.deletequiz(3, testFunc);*/
             return false;
         }
         return false;
-    }
-    
-    var nameExist = function (obj, newname) {
-        return obj[newname] !== undefined;
     }
 
 /*

@@ -107,13 +107,11 @@
     },
 
     start: function( event, options ) {
-      if (!options.disable) {
-        if (!$(options._container).children().hasClass("quiz-el")) { // Create again 'cause was deleted
-          $(options._container).jQuizMe(options.quiz, opt1, options.callback);
-        }
-        options._container.style.display = "block";
-        this.pause();
+      if (!$(options._container).children().hasClass("quiz-el")) { // Create again 'cause was deleted
+        $(options._container).jQuizMe(options.quiz, opt1, options.callback);
       }
+      options._container.style.display = "block";
+      this.pause();
     },
 
     end: function( event, options ) {

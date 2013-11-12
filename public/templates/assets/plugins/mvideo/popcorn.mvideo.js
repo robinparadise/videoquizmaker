@@ -97,13 +97,11 @@
      * of the video  reaches the start time provided by the 
      * options variable
      */
-    start: function( event, options ){
-      if (!$(options._container).hasClass("hideFlow")) {
-        $(options._container).show();
-        if ($(".status-button").attr("data-state") == "true") {
-          options._video.currentTime(options.videoStart);
-          options._video.play();
-        }
+    start: function( event, options ) {
+      $(options._container).show();
+      if ($(".status-button").attr("data-state") == "true") {
+        options._video.currentTime(options.videoStart);
+        options._video.play();
       }
     },
     /**
@@ -125,7 +123,7 @@
       }
     },
 
-    _teardown: function( options ){
+    _teardown: function( options ) {
       document.getElementById( options.target ) && document.getElementById( options.target ).removeChild( options._container );
       $(options._container).parent().remove();
     }
