@@ -528,17 +528,16 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
     quizDB.getquizzes(manager.receiveQuizzes); // On start dialog load quizzes
 
     // Test
-/*   
-    var testFunc = function(response) {
+
+/*    var testFunc = function(response) {
        console.log("[testFunc][response]", response);
-   }
-*/
+   }*/
 //    quizDB.getquiz("Fill", testFunc);
 //
 
-//quizDB.deletequiz(1, testFunc);
-//quizDB.deletequiz(2, testFunc);
-//quizDB.deletequiz(3, testFunc);
+/*quizDB.deletequiz(1, testFunc);
+quizDB.deletequiz(2, testFunc);
+quizDB.deletequiz(3, testFunc);*/
 
 
 
@@ -589,27 +588,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         $(quizzes).editableOptions();
     }
 */
-    
-
-    // Listener
-    /*quizzes.addEventListener( "change", onChangeQuizzes, false );
-    questions.addEventListener( "change", editQuestion, false );
-
-    delQuestion.addEventListener( "click", deleteQuestionLocal, false );
-    delQuiz.addEventListener( "click", deleteQuizLocal, false );
-    
-    addQuiz.addEventListener( "click", sendAddQuiz, false );
-    addQuestion.addEventListener( "click", function () {
-        cleanFormQuestions();
-        questions.selectedIndex = -1;
-        okQ.value = "Create Question";
-        thisform.getElementsByTagName("textarea")[0].focus();
-    }, false );
-
-    selectQ.addEventListener( "change", onSelectQ, false );*/
-    
-    // Main
-    //onSelectQ("tf");
     
   });
   

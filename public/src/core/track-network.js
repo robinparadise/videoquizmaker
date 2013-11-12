@@ -6,34 +6,40 @@
 
 define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
-	function TrackNetwork(app, ev) {
-		var lines, stage, layer, dialog;
+	function TrackNetwork(app) {
+		var lines, stage, layer, dialog, $wrapper;
 		var GREEN = "#3FB58E";
 		var GREY = "CCC";
 		var RED = "red";
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
-			var wrapper = $(".tracks-container-wrapper");
 			if (!stage) {
-				stage = new Kinetic.Stage({
-					container: 'tracks-container-canvas'
-				});
-				layer = new Kinetic.Layer();
-				stage.add(layer);
+				try {
+					$wrapper = $(".tracks-container-wrapper");
+					stage = new Kinetic.Stage({
+						container: 'tracks-container-canvas'
+					});
+					layer = new Kinetic.Layer();
+					stage.add(layer);
+				} catch(err) {
+					stage = undefined;
+					return false
+				}
 			} else {
 				layer.children.splice(0);
 			}
-			stage.setWidth(wrapper.width());
-			stage.setHeight(wrapper.height());
+			stage.setWidth($wrapper.width());
+			stage.setHeight($wrapper.height());
+			return true;
 		}
 
 		// List all tracks and then calculate coords for lines.
-		this.calculateLines = function() {
+		this.calculateLines = function(ev) {
+			if (!this.createCanvas()) return;
 			var tracks = app.orderedTrackEventsSet;
 			var flow = 0, line;
-			this.createCanvas();
-			$(".trackMediaEvent.on-flow").removeClass("on-flow");
+			//$(".trackMediaEvent.on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
 				var j = Number(i) + 1;
@@ -88,15 +94,22 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		this.drawLine = function(start_obj, end_obj, layer, options) {
 			if (start_obj.linesTo && start_obj.linesTo[end_obj.id] === "removed") return; // Lines removed
 			if (options === undefined) options = {};
+			try {
+				var keyname  = start_obj.manifest.about.keyname;
+				var quizname = start_obj.popcornOptions.name;
+			}
+			catch(ex) {
+				var keyname, namequiz;
+			}
 
-			start = $(start_obj.view.element);
-			end = $(end_obj.view.element);
+			$start = $(start_obj.view.element);
+			$end = $(end_obj.view.element);
 
 			try { // Points (Start , End)
-				var start_x = start.position().left + start.width();
-				var start_y = start.parent().position().top + start.height()/2;
-				var end_x = end.position().left;
-				var end_y = end.parent().position().top + end.height()/2;
+				var start_x = $start.position().left + $start.width();
+				var start_y = $start.parent().position().top + $start.height()/2;
+				var end_x   = $end.position().left;
+				var end_y   = $end.parent().position().top + $end.height()/2;
 			} catch(ex) {return}
 
 			// Look if there is a line
@@ -123,18 +136,24 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 					lineJoin: 'round'
 				});
 
+				if (keyname === "quizme") {
+					line.popup = {
+						pass: "true",
+						score: ["more-equal", 50],
+						questions: [quizname],
+						keyrule: 'score' // by Default
+					}
+				} else { // others plugins
+					line.popup = {
+						'pass': "true",
+						'keyrule': 'pass' // by Default
+					}
+				}
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
-					console.log("[click Line]", ev);
-					var options = {
-						'position': {
-							'left': ev.offsetX,
-							'top': ev.screenY,
-							},
-						'score': ["more-equal", 50],
-						'rule': 'score'
-					};
-					dialog = Dialog.spawn( "dinamic", {'data': options} );
+					this.popup.left = ev.offsetX,
+					this.popup.top  = ev.screenY,
+					dialog = Dialog.spawn( "dinamic", {'data': this.popup} );
 					dialog.open( "empty" );
 				});
 			}
@@ -143,8 +162,8 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				line.manual = true;
 			}
 
-			// Save line into the object start_obj
-			this.saveLineTo(start_obj, end_obj.id, line);
+			this.saveTo(start_obj, "linesTo", end_obj.id, line); // Save line into the object start_obj
+			this.saveTo(start_obj.popcornTrackEvent, "rulesTo", end_obj.id, line.popup); // save Rule
 
 			line.move(0, 0);
 			layer.add(line);
@@ -199,14 +218,14 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		}
 
 		// Save line into object track event
-		this.saveLineTo = function(obj, id, line) {
-			if (obj.jquery) { //get object trackEvent with ID
+		this.saveTo = function(obj, key, id, data) {
+			if (obj.jquery) { // get object trackEvent with ID
 				var start = app.getTrackEvents( "id", obj.attr('data-butter-trackevent-id') );
 			} else {
 				var start = obj;
 			}
-			if ($.isEmptyObject(start.linesTo)) {
-				start.linesTo = {}
+			if ($.isEmptyObject(start[key])) {
+				start[key] = {}
 			} else {
 				// if it is not a trackEvent quizme then remove all lines before
 				try { 
@@ -215,15 +234,15 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 					var keyname
 				}
 				if (keyname !== "quizme") {
-					for (var trackID in start.linesTo) {
-						if (id !== trackID) {
-							start.linesTo[trackID].remove();
-							delete start.linesTo[trackID]; // Remove all lines
+					for (var trackID in start[key]) {
+						if (!!start[key][trackID].remove && id !== trackID) { // type of line
+							!!start[key][trackID].remove && start[key][trackID].remove();
+							delete start[key][trackID]; // Remove all lines
 						}
 					}
 				}
 			}
-			start.linesTo[id] = line; // Add new line
+			start[key][id] = data; // Add new line
 		}
 
 		// set the same Flow for Track Events Media
@@ -254,6 +273,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 			$(".butter-track-event .right-handle-line").off();
 			$(".butter-track-event").off();
 			$(".butter-tray").off();
+			$wrapper.off();
 		}
 
 		// Drawing lines along the cursor path
@@ -299,7 +319,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				return false;
 			});
 
-			$(".tracks-container-wrapper").on("mousemove", function(e) {
+			$wrapper.on("mousemove", function(e) {
 				if (drawing) {
 					e.stopPropagation();
 					var src = $(e.srcElement);
@@ -319,7 +339,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				}
 			});
 
-			$(".tracks-container-wrapper").on("mouseup", function(e) {
+			$wrapper.on("mouseup", function(e) {
 				if (drawing) {
 					e.stopPropagation();
 					drawing = false;

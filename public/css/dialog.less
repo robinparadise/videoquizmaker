@@ -71,6 +71,37 @@
 
 }
 
+/* Lists */
+.manager-list, .manager-sublist {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.manager-list > li {
+  text-align: left;
+  float: left;
+  min-width: 150px;
+  display: block;
+  list-style: none;
+  padding: 1%;
+}
+.manager-sublist > li {
+  margin-left: 0;
+  padding-left: 0;
+  list-style: none;
+  text-align: left;
+  border: 1px solid #DDD;
+  background: #FFF;
+  box-shadow: rgba(0, 0, 0, .1) 1px 5px 2px -3px;
+  color: rgb(85, 85, 85);
+  font-size: 13px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  height: auto;
+  line-height: inherit;
+  padding: 5px;
+}
+
 // Style for Media Manager
 .mediamanager {
   margin-left:auto;
@@ -115,40 +146,11 @@
   .icon-plus.add-quiz {
     background-color: @green;
   }
-  ul {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-  }
-  .manager-list > li {
-    text-align: left;
-    float: left;
-    min-width: 150px;
-    display: block;
-    list-style: none;
-    padding: 1%;
-  }
   .manager-sublist.questions {
     width: 350px;
   }
   .manager-sublist.question-edit {
     width: 250px;
-  }
-  .manager-sublist > li {
-    margin-left: 0;
-    padding-left: 0;
-    list-style: none;
-    text-align: left;
-    border: 1px solid #DDD;
-    background: #FFF;
-    box-shadow: rgba(0, 0, 0, .1) 1px 5px 2px -3px;
-    color: rgb(85, 85, 85);
-    font-size: 13px;
-    margin-bottom: 2px;
-    cursor: pointer;
-    height: auto;
-    line-height: inherit;
-    padding: 5px;
   }
   .manager-sublist.quizzes > li.selected {
     background: @green;
@@ -160,11 +162,12 @@
   }
 }
 
-// Style for dialog dinamic (popup for lines)
+// Style for dinamic dialog (popup for lines)
 .butter-dinamic-dialog {
   left: 200px;
   top: 20px;
   width: 300px;
+  height: 340px;
   padding: 0px;
   margin: 0;
   border-radius: 6px;
@@ -238,21 +241,25 @@
     width: 0;
   }
 }
-.butter-dinamic-dialog:after {
-  top: 100%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  /*pointer-events: none;*/
+.butter-dinamic-dialog {
+  &:after, &:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    /*pointer-events: none;*/
+  }
 }
-.butter-dinamic-dialog:after {
-  border-color: rgba(136, 183, 213, 0);
-  border-top-color: #FFF;
-  border-width: 30px;
-  left: 50%;
-  margin-left: -30px;
+.butter-dinamic-dialog {
+  &:after, &:before {
+    border-color: rgba(136, 183, 213, 0);
+    border-top-color: #FFF;
+    border-width: 30px;
+    left: 50%;
+    margin-left: -30px;
+  }
 }
 // Dialog Dinamic
 

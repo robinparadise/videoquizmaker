@@ -2,32 +2,33 @@
 If a copy of the MIT license was not distributed with this file, you can
 obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
 
-<!-- This is just a placeholder, really -->
 <div class="butter-dinamic-dialog butter-dialog">
-    <!-- <div class="butter-logo"></div> -->
     <div class="butter-dialog-offset">
     <div class="butter-dialog-body dinamic-body">
         <div class="butter-dialog-title">
-            <h2><strong>Popup</strong></h2>
+            <h2><strong>Assured</strong></h2>
         </div>
 
         <div class="popup-tab-header">
             <ul>
                 <li class="popup-tab-header-li">
-                    <a class="butter-btn butter-active">Score</a>
+                    <a class="butter-btn butter-active header-score">Score</a>
                 </li>
                 <li class="popup-tab-header-li">
-                    <a class="butter-btn">Questions</a>
+                    <a class="butter-btn header-questions">Questions</a>
+                </li>
+                <li class="popup-tab-header-li">
+                    <a class="butter-btn header-pass">Pass</a>
                 </li>
             </ul>
         </div>
 
         <div class="popup-tab-body">
 
-            <div class="popup-tab-score">
+            <div class="popup-tab popup-score">
                 <fieldset class="trackevent-property-popup select">
                     <label class="property-name">Assured by score</label>
-                    <select>
+                    <select class="assured-score">
                         <option value="more">More than</option>
                         <option value="more-equal" selected>More than or equal to</option>
                         <option value="less-equal">Less than or equal to</option>
@@ -35,15 +36,26 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
                         <option value="equal">Equal to</option>
                     </select>
                 </fieldset>
-                <fieldset class="trackevent-property default input">
+                <fieldset class="trackevent-property">
                     <label class="property-name">Percent</label>
-                    <input class="value" type="number" value="50" placeholder="50" step="1" data-manifest-key="zoom">
+                    <input class="score" type="number" placeholder="50" step="10" data-manifest-key="zoom">
                 </fieldset>
             </div>
 
-            <div class="popup-tab-questions">
-                
+            <div class="popup-tab popup-questions">
+                <ul class="manager-sublist questions"></ul>
             </div>
+
+            <div class="popup-tab popup-pass">
+                <fieldset class="trackevent-property-popup select">
+                    <label class="property-name">Assure pass</label>
+                    <select class="assured-pass">
+                        <option value="true">Assured pass</option>
+                        <option value="false" selected>Denied pass</option>
+                    </select>
+                </fieldset>
+            </div>
+            
         </div>
 
     </div>

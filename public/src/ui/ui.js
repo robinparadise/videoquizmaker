@@ -338,12 +338,6 @@ define( [ "core/eventmanager", "./toggler",
         addAttrTrackPopcorn(base[0], "setMedia", aux.length -1);
         resetTrackMediaEvents(); //reset TrackMediaEvents
         for (var i in base) {
-          try { // Getter ordered track events by Set
-            base[i].popcornTrackEvent.getOrderedBySet = function() {
-              return butter.orderedTrackEventsSet;
-            }
-          } catch(ex) {}
-
           var j = Number(i) + 1;
           if (!base[j]) break;
           if (belongsToSameSet(base[i], base[j])) {

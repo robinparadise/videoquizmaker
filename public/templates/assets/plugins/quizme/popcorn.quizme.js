@@ -49,9 +49,9 @@
         },
         name: {
           elem: "select", 
-          options: ["Default"], 
+          options: [], 
           label: "Quiz",
-          "default": "Default",
+          "default": "TrueFalse",
         },
         start: {
           elem: "input", 
@@ -89,16 +89,12 @@
       }
       target && target.appendChild( options._container );
 
-      if (!!options.title && options.title !== opt1.title) {
-        opt1["title"] = options.title;
+      if (!!options.name) {
+        options.quiz = Butter.QuizOptions[options.name];
+      } else {
+        options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
       }
-
-      if (options.name !== "Default") {     
-        quiz = Butter.QuizOptions[options.name];
-      }
-      else {
-        quiz = Default;
-      }
+      !!options.title && !!(options.title = opt1.title);
 
       // Object Callback with functions that jquizme execute when finish
       options.callback = {
@@ -107,13 +103,13 @@
           this.popcorn.continueFlow(options, info); // Continue with the next Flow
         }
       }
-      $(options._container).jQuizMe(quiz, opt1, options.callback);
+      $(options._container).jQuizMe(options.quiz, opt1, options.callback);
     },
 
-    start: function( event, options ){
-      if (!$(options._container).hasClass("hideFlow")) {
-        if (!$(options._container).children().hasClass("quiz-el")) { //Create again 'cause was deleted
-          $(options._container).jQuizMe(quiz, opt1, options.callback);
+    start: function( event, options ) {
+      if (!options.disable) {
+        if (!$(options._container).children().hasClass("quiz-el")) { // Create again 'cause was deleted
+          $(options._container).jQuizMe(options.quiz, opt1, options.callback);
         }
         options._container.style.display = "block";
         this.pause();
