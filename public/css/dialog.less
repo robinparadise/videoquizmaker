@@ -76,6 +76,7 @@
   margin: 0;
   padding: 0;
   width: 100%;
+  position: relative;
 }
 .manager-list > li {
   text-align: left;
@@ -102,6 +103,28 @@
   padding: 5px;
 }
 
+/* Scrollbars */
+.scrollbar-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.scrollbar-outer, .scrollbar-inner {
+  position: absolute;
+  top: 0;
+  right: 15px;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+  height: 100%;
+}
+.butter-scroll-bar.butter-scroll-bar-v {
+  top: 0;
+  right: 2px;
+  width: 10px;
+  bottom: 0;
+}
+
 // Style for Media Manager
 .mediamanager {
   margin-left:auto;
@@ -111,6 +134,9 @@
   background-color: #fff;
   border: 1px solid #eee;
   border-radius: 0px;
+  .manager-list {
+    height: 80%;
+  }
   fieldset {
     margin: 0 !important;
   }
@@ -126,7 +152,7 @@
   .add-update-question[value=Add] {
     display: inline-block !important;
   }
-  .delete-question {
+  .delete-question, .add-new-quiz {
     display: none;
     cursor: pointer;
   }
@@ -146,12 +172,14 @@
   .icon-plus.add-quiz {
     background-color: @green;
   }
-  .add-new-quiz {
-    display: none;
-
+  .scrollbar-container.quizzes-container {
+    width: 162px;
   }
-  .manager-sublist.questions {
+  .scrollbar-container.questions-container, .list-questions {
     width: 350px;
+  }
+  .quizzes-container, .questions-container {
+    top: 30px;
   }
   .manager-sublist.question-edit {
     width: 250px;
@@ -185,6 +213,17 @@
   .dinamic-body {
     margin: 0px;
     padding: 0 0 20px 0;
+  }
+  .popup-tab-body {
+    position: absolute;
+    height: 240px;
+    width: 300px;
+    .popup-tab {
+      width: 100%;
+      .questions {
+        width: 287px;
+      }
+    }
   }
   .butter-dialog-title {
     position: relative;

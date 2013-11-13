@@ -2,8 +2,8 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at http://www.mozillapopcorn.org/butter-license.txt */
 
-define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
-  function( LAYOUT_SRC, Dialog, XHR ) {
+define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", "util/xhr" ],
+  function( LAYOUT_SRC, Dialog, Scrollbars, XHR ) {
 
   Dialog.register( "quizme", LAYOUT_SRC, function( dialog ) {
 
@@ -73,14 +73,17 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
 
         if (action === "add") { // Create element, Append last and Animate
             focus = !!( $elem = $(document.createElement( "li" )) );
-        } else if (action === "update") { // Update selected and Animate
+        }
+        else if (action === "update") { // Update selected and Animate
             focus = !!( $elem = $list.find(".selected") );
-        } else if (action && action.animate === "update all") {
+        }
+        else if (action && action.animate === "update all") {
             $elem = $(document.createElement( "li" ));
             if (attrs[action.attr] === action.question) { // Then animate and select
                 focus = !!( $elem.addClass("selected") );
             }
-        } else { // else just append element
+        }
+        else { // else just append element
             $elem = $(document.createElement( "li" ));
         }
 
@@ -91,6 +94,25 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         action !== "update" && $list.append($elem);
         focus  === true     && $elem.fancyAnimate({mode:action});
     }
+
+    var addScrollbar = function( scrollbarContainer, place ) {
+        var scrollbarInner = scrollbarContainer.querySelector( ".scrollbar-inner" );
+        var scrollbarOuter = scrollbarContainer.querySelector( ".scrollbar-outer" );
+
+        var options = options || scrollbarInner && {
+            inner: scrollbarInner,
+            outer: scrollbarOuter || scrollbarInner.parentNode,
+            appendTo: scrollbarContainer || rootElement
+        };
+        if ( !options ) return;
+
+        dialog[place] = new Scrollbars.Vertical( options.outer, options.inner );
+        options.appendTo.appendChild( dialog[place].element );
+
+        dialog[place].update();
+
+        return dialog[place];
+    };
 
     var stripBlanks = function (field) {
         var result = "";
@@ -143,6 +165,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 }
                 manager.isFirstStart && manager.firstStart();
             }
+            dialog["quizzes"].update();
         },
         receiveQuiz: function (data) {
             var action;
@@ -199,6 +222,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 }
                 !!action && action.animate === "delete" && manager.cleanQuestionEdit();
             }
+            dialog["questions"].update();
         },
         getQuiz: function (name) {
             if (Object.keys( GlobalQuiz[name] ).length === 0) {
@@ -571,7 +595,14 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
         }, 100);
     });
 
+    // Resize Dialog
+    $(window).resize(function() {
+        dialog["quizzes"].update();
+        dialog["questions"].update();
+    });
 
+    addScrollbar($quizzes.parents(".scrollbar-container")[0], "quizzes");
+    addScrollbar($questions.parents(".scrollbar-container")[0], "questions");
     manager.changeTypeAnswer("type-tf");       // by default answer quiz is true-false
     quizDB.getquizzes(manager.receiveQuizzes); // On start dialog load quizzes
 

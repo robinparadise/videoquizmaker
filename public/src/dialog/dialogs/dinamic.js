@@ -2,8 +2,8 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 
-define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog" ],
-  function( LAYOUT_SRC, Dialog ) {
+define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars" ],
+  function( LAYOUT_SRC, Dialog, Scrollbars ) {
     Dialog.register( "dinamic", LAYOUT_SRC, function ( dialog, _options ) {
         dialog.assignEscapeKey( "default-close" );
         dialog.assignButton( ".close-button", "close" );
@@ -32,6 +32,23 @@ console.log("[Click for dinamic dialog]", _options);
         // Quizzes
         GlobalQuiz       = this.Butter.QuizOptions;
 
+        var addScrollbar = function( scrollbarContainer ) {
+            var scrollbarInner = scrollbarContainer.querySelector( ".scrollbar-inner" );
+            var scrollbarOuter = scrollbarContainer.querySelector( ".scrollbar-outer" );
+
+            var options = options || scrollbarInner && {
+                inner: scrollbarInner,
+                outer: scrollbarOuter || scrollbarInner.parentNode,
+                appendTo: scrollbarContainer || rootElement
+            };
+            if ( !options ) return;
+
+            dialog.scrollbar = new Scrollbars.Vertical( options.outer, options.inner );
+            options.appendTo.appendChild( dialog.scrollbar.element );
+
+            dialog.scrollbar.update();
+            return dialog.scrollbar;
+        };
 
         var appendToList = function($list, text, attrs) {
             $elem = $(document.createElement( "li" ));
@@ -55,9 +72,9 @@ console.log("[Click for dinamic dialog]", _options);
                 $headerPass.click();
             }
             // Desactive the undefined keyrules
-            !_options.score     && !!$headerScore.hide()     && !!$popupScore.hide();
-            !_options.questions && !!$headerQuestions.hide() && !!$popupQuestions.hide();
-            !_options.pass      && !!$headerPass.hide()      && !!$popupPass.hide();
+            !_options.score     && !!$headerScore.hide();
+            !_options.questions && !!$headerQuestions.hide();
+            !_options.pass      && !!$headerPass.hide();
         }
 
         var setScore = function(score) {
@@ -132,6 +149,7 @@ console.log("[Click for dinamic dialog]", _options);
                     $popupTab.hide();
                     $popupQuestions.show();
                     setQuestions();
+                    dialog.scrollbar.update();
                 });
             }
 
@@ -151,6 +169,7 @@ console.log("[Click for dinamic dialog]", _options);
                 });
             }
 
+            addScrollbar($popupQuestions[0]);
             togglePopupTab();
             // Position of the popup
             $rootElement.show("fast", reloadPopup);

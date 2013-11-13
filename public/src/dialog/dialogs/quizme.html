@@ -8,15 +8,25 @@
 
         <li class="list-quizzes">
             <div class="manager-header list-quizzes-header">Quizzes</div>
-            <ul class="manager-sublist quizzes"></ul>
-            <input class="add-new-quiz" type="text" placeholder="Type name of quiz...">
-            <div class="wrapper-icon"><span class="icon icon-white icon-plus add-quiz"></span></div>
+            <div class="scrollbar-container quizzes-container">
+                <div class="scrollbar-outer scrollbar-inner">
+                    <ul class="manager-sublist quizzes"></ul>
+                    <input class="add-new-quiz" type="text" placeholder="Type name of quiz...">
+                    <div class="wrapper-icon"><span class="icon icon-white icon-plus add-quiz"></span></div>
+                </div>
+            </div>
         </li>
 
         <li class="list-questions">
             <div class="manager-header list-questions-header">Questions</div>
-            <ul class="manager-sublist questions"></ul>
-            <div class="wrapper-icon"><span class="icon icon-white icon-plus add-question"></span></div>
+            <div class="scrollbar-container questions-container">
+                <div class="scrollbar-outer scrollbar-inner">
+                    <ul class="manager-sublist questions"></ul>
+                    <div class="wrapper-icon">
+                        <span class="icon icon-white icon-plus add-question"></span>
+                    </div>
+                </div>
+            </div>
         </li>
 
         <li class="list-question-edit">

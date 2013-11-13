@@ -41,7 +41,6 @@ define( [ "core/eventmanager", "util/scrollbars", "ui/widget/tooltip", "ui/widge
      * @param {DOMElement} parentElement: The element to which the editor's root will be attached
      */
     extendObject.open = function( parentElement ) {
-console.log("[base-editor][open]");
 
       extendObject.parentElement = parentElement;
 
