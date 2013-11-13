@@ -7,10 +7,11 @@
 define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
 	function TrackNetwork(app) {
-		var lines, stage, layer, dialog, $wrapper;
+		var lines, stage, layer, dialog, $wrapper, lineMouse, trackEventStart;
 		var GREEN = "#3FB58E";
 		var GREY = "CCC";
 		var RED = "red";
+		var drawing = false;
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
@@ -26,6 +27,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 					stage = undefined;
 					return false
 				}
+				this.drawLineEventMouse(stage, layer);
 			} else {
 				layer.children.splice(0);
 			}
@@ -38,7 +40,8 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		this.calculateLines = function(ev) {
 			if (!this.createCanvas()) return;
 			var tracks = app.orderedTrackEventsSet;
-			var flow = 0, line;
+console.log("calculateLines [tracks]", tracks);
+			var flow = 0;
 			//$(".trackMediaEvent.on-flow").removeClass("on-flow");
 
 			for(var i in tracks) {
@@ -80,14 +83,8 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 			}
 			if (tracks.length > 0) {
 				layer.draw();
-				this.drawLineEventMouse(stage, layer);
 			}
-		}
-
-		// Remove Listeners
-		this.onDialogClose = function(ev) {
-			console.log("[Dinamig Dialoge Close]", ev);
-			dialog.close();
+			this.mouseDownDrawing(stage, layer);
 		}
 
 		// Draw Lines between two points
@@ -131,7 +128,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				var line = new Kinetic.Line({ // Create Kinetic Line
 					points: [start_x, start_y, end_x, end_y],
 					stroke: options.color,
-					strokeWidth: 4,
+					strokeWidth: 5,
 					lineCap: 'round',
 					lineJoin: 'round'
 				});
@@ -172,9 +169,12 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
 		// Draw lines which are in the same Layer(Track)
 		this.drawLineSameTrack = function(start, end_set, layer) {
-			var startTrackId = $(start.view.element).attr("data-butter-track-id");
+console.log("[drawLineSameTrack]", start, start.track);
+			if (!!!start.track) return;
+			var startTrackId = start.track.id;
 			for (var i in end_set) {
-				var endTrackId = $(end_set[i].view.element).attr("data-butter-track-id");
+				if (!!!end_set[i].track) continue;
+				var endTrackId = end_set[i].track.id;
 				if (startTrackId === endTrackId) { // Then draw line between tracks in the same layer
 					this.drawLine(start, end_set[i], layer);
 					this.setSameFlow(start, end_set[i]);
@@ -188,11 +188,11 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		}
 
 		// Draw manual lines from first track to the last track
-		this.drawLineFromFirst = function(objA, objB, layer, options) {
-			if ( !objA.jquery || !objB.jquery ) return;
+		this.drawLineFromFirst = function($objA, $objB, layer, options) {
+			if ( !$objA.jquery || !$objB.jquery ) return;
 
-			var trackA = app.getTrackEvents( "id", objA.attr('data-butter-trackevent-id') )[0];
-			var trackB = app.getTrackEvents( "id", objB.attr('data-butter-trackevent-id') )[0];
+			var trackA = app.getTrackEvents( "id", $objA.attr('data-butter-trackevent-id') )[0];
+			var trackB = app.getTrackEvents( "id", $objB.attr('data-butter-trackevent-id') )[0];
 			if (!trackA || !trackB) return;
 
 			if (trackA.popcornOptions.start <= trackB.popcornOptions.start) {
@@ -236,7 +236,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				if (keyname !== "quizme") {
 					for (var trackID in start[key]) {
 						if (!!start[key][trackID].remove && id !== trackID) { // type of line
-							!!start[key][trackID].remove && start[key][trackID].remove();
+							start[key][trackID].remove();
 							delete start[key][trackID]; // Remove all lines
 						}
 					}
@@ -247,49 +247,28 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 
 		// set the same Flow for Track Events Media
 		this.setSameFlow = function(prev, track) {
-			var prevFlow = Number( $(prev.view.element).attr("flow") );
-			$(track.view.element).attr("flow", prevFlow);
-			$(track.popcornTrackEvent._container).attr("flow", prevFlow);
-			track.popcornTrackEvent.flow = prevFlow;
+			track.popcornTrackEvent.flow = prev.popcornTrackEvent.flow;
 		}
-
 		// set Flow for each Track Events Media
 		this.setFlow = function(flow, track) {
 			if ($(track.view.element).hasClass("mainFlow")) {
-				$(track.view.element).attr("flow", "0");
-				$(track.popcornTrackEvent._container).attr("flow", "0");
 				track.popcornTrackEvent.flow = 0;
 			} else {
-				$(track.view.element).attr("flow", ++flow);
-				$(track.popcornTrackEvent._container).attr("flow", flow);
-				track.popcornTrackEvent.flow = flow;
+				track.popcornTrackEvent.flow = ++flow;
 			}
 			return flow;
 		}
 
-		// Reset all events
-		this.offEvents = function() {
-			$(".butter-track-event .left-handle-line").off();
-			$(".butter-track-event .right-handle-line").off();
-			$(".butter-track-event").off();
-			$(".butter-tray").off();
-			$wrapper.off();
-		}
-
-		// Drawing lines along the cursor path
-		this.drawLineEventMouse = function(stage, layer) {
-			this.offEvents();
-			var trackNetwork = this;
-			var drawing = false, trackEventStart, line;
-
-			$(".butter-tray").on("mousedown", function(e) {
-				try {
-					if (dialog) dialog.close();
-				} catch(ex) {}
-			});
+		// Reset all events and then bind the events again (cause live events seen dont works)
+		this.mouseDownDrawing = function(stage, layer) {
+			var $butterTrackEv = $wrapper.find(".butter-track-event");
+			$butterTrackEv.find(".left-handle-line, .right-handle-line").off();
+			$butterTrackEv.off();
 
 			// EventListener for handle pointers
-			$(".left-handle-line, .right-handle-line").on("mousedown", function(e) {
+			$butterTrackEv.find(".left-handle-line, .right-handle-line")
+			.on("mousedown" ,  function(e) {
+				console.log("[mousedown Live]");
 				e.stopPropagation();
 				if (drawing) {
 					drawing = false;
@@ -299,19 +278,23 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 					var that = $(this);
 					var wrapper = that.parent().parent();
 					var mousePos = stage.getMousePosition();
-					line = new Kinetic.Line({
+					lineMouse = new Kinetic.Line({
 						points: [0, 0, 50, 50],
 						strokeWidth: 3,
 						stroke: RED,
 						lineCap: 'round',
-						lineJoin: 'round'
+						lineJoin: 'round',
+						shadowColor: '#DDD',
+						shadowBlur: 6,
+						shadowOffset: 4,
+						shadowOpacity: 0.5
 					});
-					layer.add(line);
+					layer.add(lineMouse);
 					//start point and end point are the same
-					line.getPoints()[0].x = that.parent().position().left + that.position().left;
-					line.getPoints()[0].y = wrapper.position().top + that.outerHeight()/2 + that.position().top +1.5;
-					line.getPoints()[1].x = line.getPoints()[0].x;
-					line.getPoints()[1].y = line.getPoints()[0].y;
+					lineMouse.getPoints()[0].x = that.parent().position().left + that.position().left;
+					lineMouse.getPoints()[0].y = wrapper.position().top + that.outerHeight()/2 + that.position().top +1.5;
+					lineMouse.getPoints()[1].x = lineMouse.getPoints()[0].x;
+					lineMouse.getPoints()[1].y = lineMouse.getPoints()[0].y;
 
 					drawing = true;
 					layer.draw();
@@ -319,57 +302,67 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 				return false;
 			});
 
-			$wrapper.on("mousemove", function(e) {
-				if (drawing) {
+			// When mouse drawing highlight track-event box
+			$butterTrackEv.hover(function(e) {
+				if (drawing) $(this).addClass("highlight");
+			}, function() {
+				$(this).removeClass("highlight");
+			});
+		}
+
+		// Drawing lines along the cursor path
+		this.drawLineEventMouse = function(stage, layer) {
+			var trackNetwork = this, $wrapper;
+			$(function() {
+				$wrapper = $(".tracks-container-wrapper");
+
+				// Try to close dialog when blur
+				$(".butter-tray").on("mousedown", function(e) {
+					try{ dialog.close() } catch(err){}
+				});
+
+				$wrapper.on("mousemove", function(e) {
+					if (!drawing) return true;
 					e.stopPropagation();
 					var src = $(e.srcElement);
 					// If track-event is hovered then calculate 'end-point-line'
 					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
 						var parent = $(e.srcElement).parents(".butter-track-event");
 						if (src.hasClass("butter-track-event")) parent = src;
-						line.getPoints()[1].x = parent.position().left;
-						line.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
+						lineMouse.getPoints()[1].x = parent.position().left;
+						lineMouse.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
 					} else {
-						line.getPoints()[1].x = e.offsetX;
-						line.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
+						lineMouse.getPoints()[1].x = e.offsetX;
+						lineMouse.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
 					}
 					
 					layer.draw();
 					return false;
-				}
-			});
+				});
 
-			$wrapper.on("mouseup", function(e) {
-				if (drawing) {
+				$wrapper.on("mouseup", function(e) {
+					if (!drawing) return true;
 					e.stopPropagation();
 					drawing = false;
 					// we modify the orderedTrackEventsSet
 					var src = $(e.srcElement);
-					line.remove();
+					lineMouse.remove();
 					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
 						var parent = $(e.srcElement).parents(".butter-track-event");
-						if (src.hasClass("butter-track-event")) {
-							parent = src;
-						}
-						console.log("[MouseUP]");
-						line = trackNetwork.drawLineFromFirst(trackEventStart, parent, layer, {
+						src.hasClass("butter-track-event") && !!(parent = src);
+						lineMouse = trackNetwork.drawLineFromFirst(trackEventStart, parent, layer, {
 							'color': GREEN,
 							'manual': true
 						});
 					}
 					layer.draw();
 					return false;
-				}
-			});
+				});
 
-			// When mouse drawing highlight track-event box
-			$(".butter-track-event").hover(function(e) {
-				if (drawing)
-					$(this).addClass("highlight");
-			}, function() {
-				$(this).removeClass("highlight");
+
+
 			});
 		}
 	}
 	return TrackNetwork;
-})
+});

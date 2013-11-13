@@ -13,10 +13,10 @@ console.log("[Click for dinamic dialog]", _options);
 
         var $rootElement = $( dialog.rootElement );
         // Headers
-        $headers         = $rootElement.find(".popup-tab-header"),
-        $headerScore     = $rootElement.find(".header-score"),
-        $headerQuestions = $rootElement.find(".header-questions"),
-        $headerPass      = $rootElement.find(".header-pass"),
+        $headers         = $rootElement.find("a.popup-tab-header-a"),
+        $headerScore     = $headers.filter(".header-score"),
+        $headerQuestions = $headers.filter(".header-questions"),
+        $headerPass      = $headers.filter(".header-pass"),
         // Tabs
         $popupTab        = $rootElement.find(".popup-tab"),
         $popupScore      = $popupTab.filter(".popup-score"),
@@ -44,6 +44,7 @@ console.log("[Click for dinamic dialog]", _options);
 
         var togglePopupTab = function(keyrule) {
             if (!keyrule) keyrule = _options.keyrule;
+            // show the keyrule tab
             if (keyrule === "score") {
                 $headerScore.click();
             } else if (keyrule === "questions") {
@@ -53,6 +54,10 @@ console.log("[Click for dinamic dialog]", _options);
             } else if (keyrule === "pass") {
                 $headerPass.click();
             }
+            // Desactive the undefined keyrules
+            !_options.score     && !!$headerScore.hide()     && !!$popupScore.hide();
+            !_options.questions && !!$headerQuestions.hide() && !!$popupQuestions.hide();
+            !_options.pass      && !!$headerPass.hide()      && !!$popupPass.hide();
         }
 
         var setScore = function(score) {
@@ -64,7 +69,6 @@ console.log("[Click for dinamic dialog]", _options);
 
         var setQuestions = function(questions) {
             if (!questions) questions = _options.questions;
-            console.log("[setQuestions]", questions);
             var name = questions[0];
             var data = GlobalQuiz[name];
             $questions.text("");
@@ -95,51 +99,62 @@ console.log("[Click for dinamic dialog]", _options);
                     "left": _options.left - offsetGlobalX,
                     "top": _options.top - height - offsetGlobalY
                 });
-                $rootElement.addClass("pulse animated-half");
             }
         }
 
-        $headerScore.click(function() {
-            $headers.find(".butter-btn").removeClass("butter-active");
-            $headerScore.addClass("butter-active");
-            $popupTab.hide();
-            $popupScore.show();
-            setScore();
-        });
-        $headerQuestions.click(function() {
-            $headers.find(".butter-btn").removeClass("butter-active");
-            $headerQuestions.addClass("butter-active");
-            $popupTab.hide();
-            $popupQuestions.show();
-            setQuestions();
-        });
-        $headerPass.click(function() {
-            $headers.find(".butter-btn").removeClass("butter-active");
-            $headerPass.addClass("butter-active");
-            $popupTab.hide();
-            $popupPass.show();
-            setPass();
-        });
+        $(function() {
+            // Score Changes
+            if (_options.score) {
+                $headerScore.click(function() {
+                    if ( $(this).hasClass(".butter-active") ) return;
+                    $headers.removeClass("butter-active");
+                    $headerScore.addClass("butter-active");
+                    $popupTab.hide();
+                    $popupScore.show();
+                    setScore();
+                });
+                $assuredScore.change(function(ev) {
+                    _options.score[0] = $assuredScore.find(":selected").attr("value");
+                    _options.keyrule = "score";
+                });
+                $score.change(function() {
+                    _options.score[1] = this.value;
+                    _options.keyrule = "score";
+                });
+            }
 
-        // Score Changes
-        $assuredScore.change(function(ev) {
-            _options.score[0] = $assuredScore.find(":selected").attr("value");
-            _options.keyrule = "score";
-        });
-        $score.change(function() {
-            _options.score[1] = this.value;
-            _options.keyrule = "score";
-        });
-        // Pass Changes
-        $assuredPass.change(function() {
-            _options.score = $assuredPass.find(":selected").val();
-            _options.keyrule = "pass";
-        });
+            // Questions
+            if (_options.questions) {
+                $headerQuestions.click(function() {
+                    if ( $(this).hasClass(".butter-active") ) return;
+                    $headers.removeClass("butter-active");
+                    $headerQuestions.addClass("butter-active");
+                    $popupTab.hide();
+                    $popupQuestions.show();
+                    setQuestions();
+                });
+            }
 
+            // Pass Changes
+            if (_options.pass) {
+                $headerPass.click(function() {
+                    if ( $(this).hasClass(".butter-active") ) return;
+                    $headers.removeClass("butter-active");
+                    $headerPass.addClass("butter-active");
+                    $popupTab.hide();
+                    $popupPass.show();
+                    setPass();
+                });
+                $assuredPass.change(function() {
+                    _options.pass = $assuredPass.find(":selected").val();
+                    _options.keyrule = "pass";
+                });
+            }
 
-        togglePopupTab();
-        // Position of the popup
-        $rootElement.show("10", reloadPopup);
+            togglePopupTab();
+            // Position of the popup
+            $rootElement.show("fast", reloadPopup);
+        });
 
     });
 });

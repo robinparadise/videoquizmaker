@@ -119,7 +119,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/xhr" ],
                 console.log(data.error);
             }
             else if (TempDataQuiz && Object.keys(TempDataQuiz).length > 0) {
-console.log("[receiveQuizzes]", data);
                 var name = Object.keys(TempDataQuiz)[0];
                 TempDataQuiz = undefined;
                 if (!GlobalQuiz[name]) {
@@ -588,9 +587,6 @@ console.log("[receiveQuizzes]", data);
 quizDB.deletequiz(2, testFunc);
 quizDB.deletequiz(3, testFunc);*/
 
-
-
-    
     
     var changeNameQuiz = function(obj, name, newname) {
         if (name != newname) {
@@ -603,36 +599,6 @@ quizDB.deletequiz(3, testFunc);*/
         }
         return false;
     }
-
-/*
-
-    var sendAddQuiz = function () {
-        var name0 = "New quiz";
-        var name = name0;
-        var i = 0;
-        while (nameExist(GlobalQuiz, name)) {
-            i += 1;
-            name = name0 +" ("+i+")";
-        }
-        console.log("BEFORE SEND ADD QUIZ");
-        addquizQuizDB(name, {}, addQuizResp);
-        console.log("SEND ADD QUIZ");
-    }
-
-    var addQuizResp = function (response) {
-        if (!response) {
-            console.log({ error: "an unknown error occured" });
-            return;
-        }
-        if (response.error !== "okay" && response.error !== undefined) {
-            console.log(response.error);
-            return;
-        }
-        GlobalQuiz[response.name] = new Object();
-        quizzes[quizzes.length] = new Option(response.name, response.id);
-        $(quizzes).editableOptions();
-    }
-*/
     
   });
   

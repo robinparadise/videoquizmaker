@@ -308,7 +308,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
         trackEvent.parentNode.removeChild( trackEvent );
       }
 console.log("[Scrollbar][trackeventremoved](calculateLines)");
-      _trackNetwork.calculateLines(); // Redraw net tracks
+      _trackNetwork.calculateLines("trackeventremoved"); // Redraw net tracks
     });
 
     _media.listen( "trackeventupdated", function( e ) {
@@ -319,7 +319,7 @@ console.log("[super-scrollbar][trackeventupdated](calculateLines)");
         trackEvent.style.width = style.width;
         trackEvent.style.left = style.left;
       }
-      _trackNetwork.calculateLines(); // Redraw net tracks
+      _trackNetwork.calculateLines("trackeventupdated"); // Redraw net tracks
     });
 
     _media.listen( "trackorderchanged", function( e ) {
@@ -369,7 +369,7 @@ console.log("[super-scrollbar][trackeventupdated](calculateLines)");
 console.log("[Scrollbar][Resize](calculateLines)");
       _this.update();
       _boundsChangedCallback( _viewPort.offsetLeft / _rect.width, _viewPort.offsetWidth / _rect.width );
-      _trackNetwork.calculateLines();
+      _trackNetwork.calculateLines("resize");
     };
 
     Object.defineProperties( this, {
