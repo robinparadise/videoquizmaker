@@ -316,45 +316,27 @@ define( [ "core/eventmanager", "./toggler",
         }
         return false;
       },
-      resetTrackMediaEvents = function() {
-        $(".container-pop>:not([data-butter], .butter-iframe-fix), .butter-track-event")
-        .addClass("trackMediaEvent").removeClass("setMedia mainFlow");
-      },
-      addClassTrackPopcorn = function(obj, className, data) {
-        try {
-          $(obj.view.element).addClass(className).attr(className, data);
-          $(obj.popcornTrackEvent._container).addClass(className).attr(className, data);
-          obj.popcornTrackEvent.setMedia = data;
-        } catch(ex) {}
-      },
-      addAttrTrackPopcorn = function(obj, attr, data) {
-        try {
-          $(obj.popcornTrackEvent._container).attr(attr, data);
-          obj.popcornTrackEvent.setMedia = data;
-        } catch(ex) {}
-      },
       sortTrackEventsBySet = function( base ) {
         var aux = [[base[0]]];
-        addAttrTrackPopcorn(base[0], "setMedia", aux.length -1);
-        resetTrackMediaEvents(); //reset TrackMediaEvents
+        !!base[0].popcornTrackEvent && !!(base[0].popcornTrackEvent.setMedia = aux.length -1);
         for (var i in base) {
           var j = Number(i) + 1;
-          if (!base[j]) break;
-          if (belongsToSameSet(base[i], base[j])) {
-            try { aux[aux.length-1].push(base[j]) } catch(ex) { continue }
-            addClassTrackPopcorn(base[i], "setMedia", aux.length -1);
-            addClassTrackPopcorn(base[j], "setMedia", aux.length -1);
+          if ( !base[j] ) break;
+          if ( belongsToSameSet(base[i], base[j]) ) {
+            aux[aux.length-1].push(base[j]);
+            !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
+            !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
           } else {
             aux[aux.length] = [base[j]];
-            addAttrTrackPopcorn(base[j], "setMedia", aux.length -1);
+            !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
           }
         }
-        $(".trackMediaEvent:not(.setMedia)").addClass("mainFlow"); //Main Nodes = mainFlow
         return aux;
       };
 
     butter.listen( "trackeventadded", function( e ) {
       var trackEvent = e.data;
+      !trackEvent.$element && !(trackEvent.$element = $(trackEvent.view.element));
       orderedTrackEvents.push( trackEvent );
       orderedTrackEvents.sort( sortTrackEvents );
       butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
@@ -372,6 +354,7 @@ define( [ "core/eventmanager", "./toggler",
     butter.listen( "trackeventupdated", function() {
       orderedTrackEvents.sort( sortTrackEvents );
       butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
+      !!butter.trackNetwork && butter.trackNetwork.calculateLines("trackeventupdated");
     }); // listen
 
     var processKey = {
@@ -521,6 +504,8 @@ define( [ "core/eventmanager", "./toggler",
             selectedEvent = selectedEvents[ 0 ];
             butter.editor.closeTrackEventEditor( selectedEvent );
             selectedEvent.track.removeTrackEvent( selectedEvent );
+//Delete completely: redraw lines
+butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
             return;
           }
 
@@ -533,6 +518,8 @@ define( [ "core/eventmanager", "./toggler",
                   selectedEvent = selectedEvents[ i ];
                   butter.editor.closeTrackEventEditor( selectedEvent );
                   selectedEvent.track.removeTrackEvent( selectedEvent );
+//Delete completely: redraw lines
+butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
                 }
                 dialog.close();
               },

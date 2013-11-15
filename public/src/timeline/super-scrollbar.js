@@ -5,8 +5,8 @@
 /* Super scrollbar is a scrollbar and a zoom bar in one.
  * It also doubles as a minimap of sorts.
  * Displaying a preview of all the tracks and track events */
-define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network" ],
-  function( LangUtils, SUPER_SCROLLBAR_LAYOUT, TrackNetwork ) {
+define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
+  function( LangUtils, SUPER_SCROLLBAR_LAYOUT ) {
 
   var TRACK_PADDING = 1,          // This padding is pixels between track event visuals.
                                   // This is, in pixels, how close the left and right handles on the
@@ -21,7 +21,7 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
       ARROW_MIN_WIDTH = 50,       // The arrows have to change position at this point.
       ARROW_MIN_WIDTH_CLASS = "super-scrollbar-small";
 
-  return function( outerElement, innerElement, boundsChangedCallback, media ) {
+  return function( butter, outerElement, innerElement, boundsChangedCallback, media ) {
     var _outer = LangUtils.domFragment( SUPER_SCROLLBAR_LAYOUT, "#butter-super-scrollbar-outer-container" ),
         _inner = _outer.querySelector( "#butter-super-scrollbar-inner-container" ),
         _rect, _duration,
@@ -59,9 +59,6 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
         _inner.classList.remove( ARROW_MIN_WIDTH_CLASS );
       }
     };
-
-    // Track Network
-    var _trackNetwork = new TrackNetwork(Butter.app);
 
     _this.update = function() {
       _rect = _inner.getBoundingClientRect();
@@ -307,19 +304,15 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html", "core/track-network"
         delete _trackEventVisuals[ e.data.id ];
         trackEvent.parentNode.removeChild( trackEvent );
       }
-console.log("[Scrollbar][trackeventremoved](calculateLines)");
-      _trackNetwork.calculateLines("trackeventremoved"); // Redraw net tracks
     });
 
     _media.listen( "trackeventupdated", function( e ) {
-console.log("[super-scrollbar][trackeventupdated](calculateLines)");
       var trackEvent = _trackEventVisuals[ e.data.id ],
           style = e.data.view.element.style;
       if ( trackEvent ) {
         trackEvent.style.width = style.width;
         trackEvent.style.left = style.left;
       }
-      _trackNetwork.calculateLines("trackeventupdated"); // Redraw net tracks
     });
 
     _media.listen( "trackorderchanged", function( e ) {
@@ -366,10 +359,9 @@ console.log("[super-scrollbar][trackeventupdated](calculateLines)");
     });
 
     _this.resize = function() {
-console.log("[Scrollbar][Resize](calculateLines)");
       _this.update();
       _boundsChangedCallback( _viewPort.offsetLeft / _rect.width, _viewPort.offsetWidth / _rect.width );
-      _trackNetwork.calculateLines("resize");
+      butter.trackNetwork.updateLinesOfLayer();
     };
 
     Object.defineProperties( this, {

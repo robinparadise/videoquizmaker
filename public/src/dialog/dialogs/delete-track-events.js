@@ -11,6 +11,7 @@ define([ "text!dialog/dialogs/delete-track-events.html", "dialog/dialog" ],
     dialog.registerActivity( "ok", function(){
       butter.currentMedia.clear();
       butter.currentMedia.addTrack();
+      butter.trackNetwork.clearLayer();
       dialog.send( "ok" );
       dialog.activity( "default-close" );
     });

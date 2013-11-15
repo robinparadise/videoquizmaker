@@ -68,14 +68,6 @@ define( [ "./logger", "./eventmanager", "./observer",
       return item.type === "number" ? 0 : "";
     }
 
-    function getNamesQuizzes(obj) {
-      var aux = ["Default"];
-      for (var name in obj) {
-        aux.push(name);
-      }
-      return aux;
-    }
-
     if ( !_type ){
       _logger.log( "Warning: " + _id + " has no type." );
     }
@@ -198,7 +190,7 @@ define( [ "./logger", "./eventmanager", "./observer",
         if ( this.manifest ) {
           // Get names of quizzes
           if (this.manifest.about && this.manifest.about.name == "Popcorn jQuizme Plugin") {
-            this.manifest.options.name.options = getNamesQuizzes(Butter.QuizOptions);
+            this.manifest.options.name.options = Object.keys(Butter.QuizOptions);
           }
           manifestOptions = this.manifest.options;
           if ( manifestOptions ) {

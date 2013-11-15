@@ -4,7 +4,7 @@
 	* Used on trackevent.js
 */
 
-define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
+define( [ "dialog/dialog" ], function( Dialog ) {
 
 	function TrackNetwork(app) {
 		var lines, stage, layer, dialog, $wrapper, lineMouse, trackEventStart;
@@ -12,6 +12,7 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		var GREY = "CCC";
 		var RED = "red";
 		var drawing = false;
+		var trackNetwork = this;
 
 		// Create Layer Canvas
 		this.createCanvas = function() {
@@ -27,9 +28,8 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 					stage = undefined;
 					return false
 				}
+				layer.lines = {} // Object to save lines by ID
 				this.drawLineEventMouse(stage, layer);
-			} else {
-				layer.children.splice(0);
 			}
 			stage.setWidth($wrapper.width());
 			stage.setHeight($wrapper.height());
@@ -37,46 +37,66 @@ define( [ "dialog/dialog", "ui/widget/tooltip" ], function( Dialog, ToolTip ) {
 		}
 
 		// List all tracks and then calculate coords for lines.
-		this.calculateLines = function(ev) {
+		this.calculateLines = function(evType, evTrack) {
 			if (!this.createCanvas()) return;
-			var tracks = app.orderedTrackEventsSet;
-console.log("calculateLines [tracks]", tracks);
-			var flow = 0;
-			//$(".trackMediaEvent.on-flow").removeClass("on-flow");
+			var tracks = app.orderedTrackEventsSet, tempTracksIDs;
+			// Remove all lines when is trackeventremoved
+			if (evType === "trackeventremoved") {
+				this.cleanOldLines(evTrack, {});
+			}
 
 			for(var i in tracks) {
 				var j = Number(i) + 1;
-				if(!tracks[j]) break; // tracks[j] == Next track media
+				tempTracksIDs = {} // We save the keys Id of the trackevents
 
-				if (tracks[i].length === 1) {
-					try { var keyname = tracks[i][0].manifest.about.keyname }
-					catch(ex) { var keyname }
-					if (keyname === "quizme") { // Then draw lines (1-M)
-						for (var l in tracks[j]) {
-							this.drawLine(tracks[i][0], tracks[j][l], layer);
-							flow = this.setFlow(flow, tracks[j][l]);
-						}
-					} else { // Else draw lines with media in the same Track
-						// Draw Manual Lines
-						var drew = this.drawManualLines(tracks[i][0], layer);
-						if (!drew) {
-							this.drawLineSameTrack(tracks[i][0], tracks[j], layer);
-						}
+				if( !tracks[j] ) { // there's not next track media
+					for (var k in tracks[i]) { // so we clean all lines for every media
+						this.cleanOldLines(tracks[i][k], {});
 					}
+					break;
+				}; // tracks[j] == Next track media
+
+				// Draw lines
+				if (tracks[i].length === 1) {
+					if (tracks[i][0].type === "quizme") { // Then draw lines (1-M)
+						for (var l in tracks[j]) {
+							this.drawLine(tracks[i][0], tracks[j][l]);
+							tempTracksIDs[tracks[j][l].id] = true; // This means is not a old lines
+						}
+						this.cleanOldLines(tracks[i][0], tempTracksIDs); // Clean the old ones
+						continue;
+					} 
 				}
 				if (tracks[j].length === 1) { // Draw lines (M-1)
 					for (var k in tracks[i]) {
-						for (var l in tracks[j]) {
-							this.drawLine(tracks[i][k], tracks[j][l], layer);
-							flow = this.setFlow(flow, tracks[j][l]);
+						if ( !this.drawLine(tracks[i][k], tracks[j][0]) || tracks[i][k].type === "quizme" ) {
+							tempTracksIDs = {};
+							tempTracksIDs[tracks[j][0].id] = true; // This means is not a old lines
+							this.cleanOldLines(tracks[i][k], tempTracksIDs); // Clean the old ones
 						}
 					}
-				} else if (tracks[i].length > 1) { // Draw lines with media in the same Track
+				}
+				else { // Draw lines with media in the same Track
+					var drawn;
 					for (var k in tracks[i]) {
 						// Draw Manual Lines
-						var drew = this.drawManualLines(tracks[i][k], layer);
-						if (!drew) {
-							this.drawLineSameTrack(tracks[i][k], tracks[j], layer);
+						if ( this.drawManualLines(tracks[i][k]) ) {
+							continue;
+						}
+						drawn = false;
+						tempTracksIDs = {};
+						for (var l in tracks[j]) {
+							// Then draw line between tracks in the same layer
+							if (tracks[i][k].track.id === tracks[j][l].track.id) {
+								if (this.drawLine(tracks[i][k], tracks[j][l])) {
+									drawn = true;
+								}
+								tempTracksIDs[tracks[j][l].id] = true; // This means is not a old lines
+								break; // Just one line
+							}
+						}
+						if (!drawn || tracks[i][k].type === "quizme") {
+							this.cleanOldLines(tracks[i][k], tempTracksIDs); // Clean the old ones
 						}
 					}
 				}
@@ -87,108 +107,138 @@ console.log("calculateLines [tracks]", tracks);
 			this.mouseDownDrawing(stage, layer);
 		}
 
-		// Draw Lines between two points
-		this.drawLine = function(start_obj, end_obj, layer, options) {
-			if (start_obj.linesTo && start_obj.linesTo[end_obj.id] === "removed") return; // Lines removed
-			if (options === undefined) options = {};
-			try {
-				var keyname  = start_obj.manifest.about.keyname;
-				var quizname = start_obj.popcornOptions.name;
+		// calculate and redraw all lines of the layer
+		this.updateLinesOfLayer = function() {
+			if (!stage) {
+				this.calculateLines();
+				return;
+			} else {
+				this.createCanvas();
 			}
-			catch(ex) {
-				var keyname, namequiz;
-			}
+			var points;
+			Object.keys(layer.lines).forEach(function(id) {
+				points = trackNetwork.calculatePoints(
+					layer.lines[id].startTrackEvent.$element,
+					layer.lines[id].endTrackEvent.$element
+				);
+				if (!points) return;
+				// update points of every line
+				layer.lines[id].getPoints()[0].x = points[0];
+				layer.lines[id].getPoints()[0].y = points[1];
+				layer.lines[id].getPoints()[1].x = points[2];
+				layer.lines[id].getPoints()[1].y = points[3];
+			});
+			layer.draw();
+		}
 
-			$start = $(start_obj.view.element);
-			$end = $(end_obj.view.element);
-
+		this.calculatePoints = function($start, $end) {
 			try { // Points (Start , End)
 				var start_x = $start.position().left + $start.width();
 				var start_y = $start.parent().position().top + $start.height()/2;
 				var end_x   = $end.position().left;
 				var end_y   = $end.parent().position().top + $end.height()/2;
-			} catch(ex) {return}
+				return [start_x, start_y, end_x, end_y];
+			} catch(ex) {
+				return false;
+			}
+		}
+
+		// Draw Lines between two points
+		this.drawLine = function(start, end, options) {
+			if ( options === undefined ) options = {};
+			if ( !options.manual && start.linesTo && 
+					start.linesTo[options.id] === false ) {
+				return false; // Line was removed
+			}
+
+			var points = this.calculatePoints(start.$element, end.$element);
+			if (!points) return false;
 
 			// Look if there is a line
-			if (start_obj.linesTo && start_obj.linesTo[end_obj.id]) {
-				var line = start_obj.linesTo[end_obj.id];
-				line.getPoints()[0].x = start_x;
-				line.getPoints()[0].y = start_y;
-				line.getPoints()[1].x = end_x;
-				line.getPoints()[1].y = end_y;
+			if (start.linesTo && start.linesTo[end.id] instanceof Kinetic.Line) {
+				var line = start.linesTo[end.id]; // get line by id
+				line.getPoints()[0].x = points[0];
+				line.getPoints()[0].y = points[1];
+				line.getPoints()[1].x = points[2];
+				line.getPoints()[1].y = points[3];
 				if (options.manual && options.color) {
-					line.attrs.stroke = options.color;
+					line.attrs.stroke = options.color; // change color
 				}
+				this.removeOthersLines(start, end.id);
 			}
 			else { // New line
-				// start.addClass("on-flow").removeClass("out-of-flow");
-				// end.addClass("on-flow").removeClass("out-of-flow");
 				if (!options.color) options.color = GREY; // Default color gray
 
 				var line = new Kinetic.Line({ // Create Kinetic Line
-					points: [start_x, start_y, end_x, end_y],
+					points: [points[0], points[1], points[2], points[3]],
 					stroke: options.color,
 					strokeWidth: 5,
 					lineCap: 'round',
 					lineJoin: 'round'
 				});
 
-				if (keyname === "quizme") {
+				if (start.type === "quizme") { // Rule for plugin quizme
 					line.popup = {
 						pass: "true",
 						score: ["more-equal", 50],
-						questions: [quizname],
+						questions: [start.popcornOptions.name], // name Quiz
 						keyrule: 'score' // by Default
 					}
 				} else { // others plugins
 					line.popup = {
-						'pass': "true",
-						'keyrule': 'pass' // by Default
+						pass: "true",
+						keyrule: 'pass' // by Default
 					}
 				}
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
-					this.popup.left = ev.offsetX,
-					this.popup.top  = ev.screenY,
-					dialog = Dialog.spawn( "dinamic", {'data': this.popup} );
+					this.popup.left = ev.offsetX;
+					this.popup.top  = ev.screenY;
+					dialog = Dialog.spawn( "dinamic", {
+						data: {
+							popup: this.popup,
+							line: this._id
+						},
+						events: {
+							delete: function(e) { // e.Data
+								trackNetwork.drawLayer(); // remove line.id from layer
+								dialog.close();
+							}
+						}
+					});
 					dialog.open( "empty" );
 				});
+
+				layer.add(line);
+				layer.lines[line._id] = line;
+
+				// Save "line" and "popup rule" into the object
+				this.saveLinesTo(start, end.id, line);
+				// Save references to the tracks events
+				line.startTrackEvent = start;
+				line.endTrackEvent = end;
 			}
-			// When the user define the line -> manual == True
 			if (options.manual) {
 				line.manual = true;
 			}
-
-			this.saveTo(start_obj, "linesTo", end_obj.id, line); // Save line into the object start_obj
-			this.saveTo(start_obj.popcornTrackEvent, "rulesTo", end_obj.id, line.popup); // save Rule
-
-			line.move(0, 0);
-			layer.add(line);
 			return true;
 		}
 
-		// Draw lines which are in the same Layer(Track)
-		this.drawLineSameTrack = function(start, end_set, layer) {
-console.log("[drawLineSameTrack]", start, start.track);
-			if (!!!start.track) return;
-			var startTrackId = start.track.id;
-			for (var i in end_set) {
-				if (!!!end_set[i].track) continue;
-				var endTrackId = end_set[i].track.id;
-				if (startTrackId === endTrackId) { // Then draw line between tracks in the same layer
-					this.drawLine(start, end_set[i], layer);
-					this.setSameFlow(start, end_set[i]);
-					continue;
+		this.drawManualLines = function(trackA, options) {
+			var drawn = false, aux;
+			for (var id in trackA.linesTo) {
+				var trackB = app.getTrackEvents( "id", id )[0];
+				if (!!trackB && !!trackA.linesTo[id] && trackA.linesTo[id].manual) {
+					if ( this.drawLine(trackA, trackB, {manual: true}) ) {
+						drawn = true;
+					}
 				}
-				// if (!$(end_set[i].view.element).hasClass("on-flow"))
-				//	$(end_set[i].view.element).addClass("out-of-flow");
-				// if (!$(start.view.element).hasClass("on-flow"))
-				//	$(start.view.element).addClass("out-of-flow");
 			}
+			return drawn;
 		}
 
 		// Draw manual lines from first track to the last track
-		this.drawLineFromFirst = function($objA, $objB, layer, options) {
+		this.drawLineFromFirst = function($objA, $objB, options) {
 			if ( !$objA.jquery || !$objB.jquery ) return;
 
 			var trackA = app.getTrackEvents( "id", $objA.attr('data-butter-trackevent-id') )[0];
@@ -196,67 +246,67 @@ console.log("[drawLineSameTrack]", start, start.track);
 			if (!trackA || !trackB) return;
 
 			if (trackA.popcornOptions.start <= trackB.popcornOptions.start) {
-				this.drawLine(trackA, trackB, layer, options);
+				this.drawLine(trackA, trackB, options);
 			} else {
-				this.drawLine(trackB, trackA, layer, options);
+				this.drawLine(trackB, trackA, options);
 			}
-		}
-
-		// Draw manual lines
-		this.drawManualLines = function(trackEventA, layer) {
-			var drew = false, aux;
-			for (var id in trackEventA.linesTo) {
-				if (trackEventA.linesTo[id].manual) {
-					var trackEventB = app.getTrackEvents( "id", id )[0];
-					if (trackEventB) {
-						aux = this.drawLine(trackEventA, trackEventB, layer, {'manual': true});
-						if (aux) drew = true;
-					}
-				}
-			}
-			return drew;
 		}
 
 		// Save line into object track event
-		this.saveTo = function(obj, key, id, data) {
-			if (obj.jquery) { // get object trackEvent with ID
-				var start = app.getTrackEvents( "id", obj.attr('data-butter-trackevent-id') );
+		this.saveLinesTo = function(obj, id, line) {
+			if ($.isEmptyObject(obj.linesTo)) {
+				obj.linesTo = {}
+				obj.popcornTrackEvent.rulesTo = {}
 			} else {
-				var start = obj;
+				this.removeOthersLines(obj, id);
 			}
-			if ($.isEmptyObject(start[key])) {
-				start[key] = {}
-			} else {
-				// if it is not a trackEvent quizme then remove all lines before
-				try { 
-					var keyname = obj.manifest.about.keyname }
-				catch(ex) {
-					var keyname
-				}
-				if (keyname !== "quizme") {
-					for (var trackID in start[key]) {
-						if (!!start[key][trackID].remove && id !== trackID) { // type of line
-							start[key][trackID].remove();
-							delete start[key][trackID]; // Remove all lines
-						}
+			obj.linesTo[id] = line; // Save new line
+			obj.popcornTrackEvent.rulesTo[id] = line.popup;
+		}
+		this.removeOthersLines = function(obj, id) {
+			// if it's not a trackEvent quizme then remove all lines before
+			if (obj.type !== "quizme") {
+				Object.keys(obj.linesTo).forEach(function(trackID) {
+					if (obj.linesTo[trackID] instanceof Kinetic.Line && id !== trackID) {
+						delete layer.lines[obj.linesTo[trackID]._id] // delete from layer
+						obj.linesTo[trackID].remove(); // remove line from layer children
 					}
-				}
+					if (id !== trackID) {
+						delete obj.linesTo[trackID]; // Remove all lines from TrackEvent
+						delete obj.popcornTrackEvent.rulesTo[trackID] // from popcornTrackEvent
+					}
+				});
 			}
-			start[key][id] = data; // Add new line
 		}
 
-		// set the same Flow for Track Events Media
-		this.setSameFlow = function(prev, track) {
-			track.popcornTrackEvent.flow = prev.popcornTrackEvent.flow;
-		}
-		// set Flow for each Track Events Media
-		this.setFlow = function(flow, track) {
-			if ($(track.view.element).hasClass("mainFlow")) {
-				track.popcornTrackEvent.flow = 0;
-			} else {
-				track.popcornTrackEvent.flow = ++flow;
+		// Remove old lines references
+		this.cleanOldLines = function(obj, tempKeys) {
+			if ( obj && obj.linesTo ) {
+				Object.keys(obj.linesTo).forEach(function(trackID) {
+					if (!tempKeys[trackID]) { // It's an old line
+						try {
+							delete layer.lines[obj.linesTo[trackID]._id] // delete from layer
+							obj.linesTo[trackID].remove(); // remove line from layer children
+						}
+						catch(err) {}
+						try {
+							delete obj.linesTo[trackID]; // Remove all lines from TrackEvent
+							delete obj.popcornTrackEvent.rulesTo[trackID]; // from popcornTrackEvent
+						}
+						catch(err) {}
+					}
+				});
 			}
-			return flow;
+		}
+
+		this.drawLayer = function(id) {
+			//layer.children.splice(0);
+			layer.draw();
+		}
+
+		this.clearLayer = function() {
+			layer.children.splice(0);
+			layer.draw();
 		}
 
 		// Reset all events and then bind the events again (cause live events seen dont works)
@@ -268,7 +318,6 @@ console.log("[drawLineSameTrack]", start, start.track);
 			// EventListener for handle pointers
 			$butterTrackEv.find(".left-handle-line, .right-handle-line")
 			.on("mousedown" ,  function(e) {
-				console.log("[mousedown Live]");
 				e.stopPropagation();
 				if (drawing) {
 					drawing = false;
@@ -312,57 +361,52 @@ console.log("[drawLineSameTrack]", start, start.track);
 
 		// Drawing lines along the cursor path
 		this.drawLineEventMouse = function(stage, layer) {
-			var trackNetwork = this, $wrapper;
-			$(function() {
-				$wrapper = $(".tracks-container-wrapper");
+			var trackNetwork = this;
 
-				// Try to close dialog when blur
-				$(".butter-tray").on("mousedown", function(e) {
-					try{ dialog.close() } catch(err){}
-				});
+			// Try to close dialog when blur
+			$(".butter-tray").on("mousedown", function(e) {
+				try { dialog.close() } catch(err) {}
+			});
 
-				$wrapper.on("mousemove", function(e) {
-					if (!drawing) return true;
-					e.stopPropagation();
-					var src = $(e.srcElement);
-					// If track-event is hovered then calculate 'end-point-line'
-					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
-						var parent = $(e.srcElement).parents(".butter-track-event");
-						if (src.hasClass("butter-track-event")) parent = src;
-						lineMouse.getPoints()[1].x = parent.position().left;
-						lineMouse.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
-					} else {
-						lineMouse.getPoints()[1].x = e.offsetX;
-						lineMouse.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
-					}
-					
-					layer.draw();
-					return false;
-				});
+			$wrapper.on("mousemove", function(e) {
+				if (!drawing) return true;
+				e.stopPropagation();
+				var src = $(e.srcElement);
+				// If track-event is hovered then calculate 'end-point-line'
+				if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
+					var parent = $(e.srcElement).parents(".butter-track-event");
+					if (src.hasClass("butter-track-event")) parent = src;
+					lineMouse.getPoints()[1].x = parent.position().left;
+					lineMouse.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
+				} else {
+					lineMouse.getPoints()[1].x = e.offsetX;
+					lineMouse.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
+				}
+				
+				layer.draw();
+				return false;
+			});
 
-				$wrapper.on("mouseup", function(e) {
-					if (!drawing) return true;
-					e.stopPropagation();
-					drawing = false;
-					// we modify the orderedTrackEventsSet
-					var src = $(e.srcElement);
-					lineMouse.remove();
-					if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
-						var parent = $(e.srcElement).parents(".butter-track-event");
-						src.hasClass("butter-track-event") && !!(parent = src);
-						lineMouse = trackNetwork.drawLineFromFirst(trackEventStart, parent, layer, {
-							'color': GREEN,
-							'manual': true
-						});
-					}
-					layer.draw();
-					return false;
-				});
-
-
-
+			$wrapper.on("mouseup", function(e) {
+				if (!drawing) return true;
+				e.stopPropagation();
+				drawing = false;
+				// we modify the orderedTrackEventsSet
+				var src = $(e.srcElement);
+				lineMouse.remove();
+				if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
+					var parent = $(e.srcElement).parents(".butter-track-event");
+					src.hasClass("butter-track-event") && !!(parent = src);
+					lineMouse = trackNetwork.drawLineFromFirst(trackEventStart, parent, {
+						color: GREEN,
+						manual: true
+					});
+				}
+				layer.draw();
+				return false;
 			});
 		}
 	}
+
 	return TrackNetwork;
 });

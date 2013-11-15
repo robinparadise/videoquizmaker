@@ -198,7 +198,6 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
     };
 
     extendObject.showPluginPreview = function( trackEvent ) {
-console.log("[showPluginPreview]");
       var startTime = trackEvent.popcornOptions.start,
           endTime = trackEvent.popcornOptions.end,
           currentTime = butter.currentTime,
@@ -220,7 +219,6 @@ console.log("[showPluginPreview]");
      * @param {String} propertyName: Name of property to update when change is detected
      */
     extendObject.attachSelectChangeHandler = function( element, trackEvent, propertyName ) {
-console.log("[attachSelectChangeHandler]");
       element.addEventListener( "change", function() {
         var updateOptions = {};
         updateOptions[ propertyName ] = element.value;
@@ -598,7 +596,6 @@ console.log("[attachSelectChangeHandler]");
     };
 
     extendObject.createStartEndInputs = function( trackEvent, callback ) {
-console.log("[createStartEndInputs] What is this?");
       var editorElement = __defaultLayouts.querySelector( ".start-end" ).cloneNode( true ),
           start = editorElement.querySelector( "input[data-manifest-key='start']" ),
           end = editorElement.querySelector( "input[data-manifest-key='end']" );
@@ -797,7 +794,6 @@ console.log("[createStartEndInputs] What is this?");
      * @param {TrackEvent} trackEvent: TrackEvent which supplies the manifest and property updates
      */
     extendObject.updatePropertiesFromManifest = function ( trackEvent, manifestKeys, forceTarget ) {
-console.log("[updatePropertiesFromManifest]");
       var element,
           popcornOptions = trackEvent.popcornOptions,
           manifestOptions = trackEvent.manifest.options,

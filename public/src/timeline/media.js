@@ -5,11 +5,13 @@
 define( [ "core/trackevent", "core/track", "core/eventmanager",
           "./track-container", "util/scrollbars", "./timebar",
           "./status", "./trackhandles", "./super-scrollbar",
-          "util/lang", "text!layouts/media-instance.html" ],
+          "util/lang", "text!layouts/media-instance.html",
+          "core/track-network" ],
   function( TrackEvent, Track, EventManager,
             TrackContainer, Scrollbars, TimeBar,
             Status, TrackHandles, SuperScrollbar,
-            LangUtils, MEDIA_INSTANCE_LAYOUT ) {
+            LangUtils, MEDIA_INSTANCE_LAYOUT,
+            TrackNetwork ) {
 
   var DEFAULT_BOUNDS = [ 0, 1 ];
 
@@ -30,7 +32,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
         _rootElement = LangUtils.domFragment( MEDIA_INSTANCE_LAYOUT, ".media-instance" ),
         _tracksContainer = new TrackContainer( butter, media, _rootElement ),
         _container = _rootElement.querySelector( ".media-container" ),
-        _superScrollbar = new SuperScrollbar( _tracksContainer.element, _tracksContainer.container, setContainerBounds, _media ),
+        _superScrollbar = new SuperScrollbar( butter, _tracksContainer.element, _tracksContainer.container, setContainerBounds, _media ),
         _vScrollBar = new Scrollbars.Vertical( _tracksContainer.element, _tracksContainer.container ),
         _hScrollBar = new Scrollbars.Horizontal( _tracksContainer.element, _tracksContainer.container ),
         _timebar = new TimeBar( butter, _media, butter.ui.tray.statusArea, _tracksContainer ),
@@ -42,6 +44,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
     _tracksContainer.setScrollbars( _vScrollBar, _hScrollBar );
 
     EventManager.extend( _this );
+
 
     function onEditorToggled() {
       _tracksContainer.update();
@@ -139,7 +142,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
 
       butter.ui.tray.setMediaInstance( _rootElement );
 
-      _media.listen( "trackeventremoved", function( e ){
+      _media.listen( "trackeventremoved", function( e ) {
         var trackEvent = e.data;
         trackEvent.view.unlisten( "trackeventmousedown", onTrackEventMouseDown );
         trackEvent.unlisten( "trackeventselected", onTrackEventSelected );
@@ -251,6 +254,8 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
 
     butter.listen( "ready", function(){
       updateUI();
+      // Track Network
+      butter.trackNetwork = new TrackNetwork(butter);
     });
 
     this.trackContainer = _tracksContainer;

@@ -165,7 +165,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 }
                 manager.isFirstStart && manager.firstStart();
             }
-            dialog["quizzes"].update();
+            dialog["quizzesScrollbar"].update();
         },
         receiveQuiz: function (data) {
             var action;
@@ -222,7 +222,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 }
                 !!action && action.animate === "delete" && manager.cleanQuestionEdit();
             }
-            dialog["questions"].update();
+            dialog["questionsScrollbar"].update();
         },
         getQuiz: function (name) {
             if (Object.keys( GlobalQuiz[name] ).length === 0) {
@@ -597,12 +597,12 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
 
     // Resize Dialog
     $(window).resize(function() {
-        dialog["quizzes"].update();
-        dialog["questions"].update();
+        dialog["quizzesScrollbar"].update();
+        dialog["questionsScrollbar"].update();
     });
 
-    addScrollbar($quizzes.parents(".scrollbar-container")[0], "quizzes");
-    addScrollbar($questions.parents(".scrollbar-container")[0], "questions");
+    addScrollbar($quizzes.parents(".scrollbar-container")[0], "quizzesScrollbar");
+    addScrollbar($questions.parents(".scrollbar-container")[0], "questionsScrollbar");
     manager.changeTypeAnswer("type-tf");       // by default answer quiz is true-false
     quizDB.getquizzes(manager.receiveQuizzes); // On start dialog load quizzes
 

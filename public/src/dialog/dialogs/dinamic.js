@@ -4,10 +4,11 @@
 
 define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars" ],
   function( LAYOUT_SRC, Dialog, Scrollbars ) {
-    Dialog.register( "dinamic", LAYOUT_SRC, function ( dialog, _options ) {
+    Dialog.register( "dinamic", LAYOUT_SRC, function ( dialog, _data ) {
         dialog.assignEscapeKey( "default-close" );
         dialog.assignButton( ".close-button", "close" );
         dialog.enableCloseButton();
+        var _options = _data.popup;
 
 console.log("[Click for dinamic dialog]", _options);
 
@@ -29,6 +30,7 @@ console.log("[Click for dinamic dialog]", _options);
         $questions       = $popupQuestions.find(".questions"),
         // Pass
         $assuredPass     = $popupPass.find(".assured-pass"),
+        //$deleteBtn       = $popupTab.find(".delete"),
         // Quizzes
         GlobalQuiz       = this.Butter.QuizOptions;
 
@@ -168,6 +170,17 @@ console.log("[Click for dinamic dialog]", _options);
                     _options.keyrule = "pass";
                 });
             }
+/*
+            $deleteBtn.click(function() {
+                console.log("[Delete]");
+                _data.line.remove() && dialog.close();
+            });
+*/
+
+            dialog.registerActivity( "delete", function(){
+              dialog.send( "delete", _data.line );
+            });
+            dialog.assignButton( ".delete", "delete" );
 
             addScrollbar($popupQuestions[0]);
             togglePopupTab();
