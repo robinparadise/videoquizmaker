@@ -160,7 +160,7 @@
     width: 100%;
     text-align: center;
   }
-  .icon-plus {
+  .icon-plus, .icon-minus {
     background-color: @greyGreen;
     border-radius: 7px;
     margin: 10px;
@@ -168,9 +168,14 @@
     -moz-transform: scale(1.2);
     transform: scale(1.2);
     cursor: pointer;
-  }
-  .icon-plus.add-quiz {
-    background-color: @green;
+    &.add-quiz {
+      background-color: @green;
+    }
+    &.delete-quiz {
+      &.selected {
+        background-color: salmon;
+      }
+    }
   }
   .scrollbar-container.quizzes-container {
     width: 162px;

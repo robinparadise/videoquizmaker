@@ -6,13 +6,16 @@
     <h1><span class="title"></span>Quiz Manager</h1>
     <ul class="manager-list">
 
-        <li class="list-quizzes">
+        <li id="list-quizzes">
             <div class="manager-header list-quizzes-header">Quizzes</div>
             <div class="scrollbar-container quizzes-container">
                 <div class="scrollbar-outer scrollbar-inner">
                     <ul class="manager-sublist quizzes"></ul>
                     <input class="add-new-quiz" type="text" placeholder="Type name of quiz...">
-                    <div class="wrapper-icon"><span class="icon icon-white icon-plus add-quiz"></span></div>
+                    <div class="wrapper-icon">
+                        <span class="icon icon-white icon-plus add-quiz"></span>
+                        <span class="icon icon-white icon-minus delete-quiz selected"></span>
+                    </div>
                 </div>
             </div>
         </li>

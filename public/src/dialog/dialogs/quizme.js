@@ -7,24 +7,26 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
 
   Dialog.register( "quizme", LAYOUT_SRC, function( dialog ) {
 
-    var rootElement    = dialog.rootElement,
-        quizzes        = rootElement.querySelector( ".quizzes" ),
-        questions      = rootElement.querySelector( ".questions" ),
-        selectTypeAns  = rootElement.querySelector( ".select-type-answer" ),
-        questionInput  = rootElement.querySelector( ".question-input" ),
-        addUpdateQues  = rootElement.querySelector( ".add-update-question" ),
-        $rootElement   = $( rootElement ),
-        $quizzes       = $( quizzes ),
-        $questions     = $( questions ),
-        $selectTypeAns = $( selectTypeAns ),
-        $addUpdateQues = $( addUpdateQues ),
-        $answers       = $rootElement.find( ".answer" ),
-        $deleteQues    = $rootElement.find( ".delete-question" ),
-        $addQuestion   = $rootElement.find( ".add-question" ),
-        $addQuiz       = $rootElement.find( ".add-quiz" ),
-        $inputNewQuiz  = $rootElement.find( ".add-new-quiz" ),
-        GlobalQuiz     = this.Butter.QuizOptions,
-        TempDataQuiz   = new Object();
+    var rootElement       = dialog.rootElement,
+        quizzes           = rootElement.querySelector( ".quizzes" ),
+        questions         = rootElement.querySelector( ".questions" ),
+        selectTypeAns     = rootElement.querySelector( ".select-type-answer" ),
+        questionInput     = rootElement.querySelector( ".question-input" ),
+        addUpdateQues     = rootElement.querySelector( ".add-update-question" ),
+        $rootElement      = $( rootElement ),
+        $quizzes          = $( quizzes ),
+        $questions        = $( questions ),
+        $selectTypeAns    = $( selectTypeAns ),
+        $addUpdateQues    = $( addUpdateQues ),
+        $answers          = $rootElement.find( ".answer" ),
+        $deleteQues       = $rootElement.find( ".delete-question" ),
+        $addQuestion      = $rootElement.find( ".add-question" ),
+        $addQuiz          = $rootElement.find( ".add-quiz" ),
+        $deleteQuiz       = $rootElement.find( ".delete-quiz" ),
+        $inputNewQuiz     = $rootElement.find( ".add-new-quiz" ),
+        $quizzesContainer = $rootElement.find( "#list-quizzes" ),
+        GlobalQuiz        = this.Butter.QuizOptions,
+        TempDataQuiz;
 
     // Save and Close (on variable Butter.QuizOptions)
     var saveAndClose = function () {
@@ -140,18 +142,38 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
             else if (data.error && data.error !== "okay") {
                 console.log(data.error);
             }
-            else if (TempDataQuiz && Object.keys(TempDataQuiz).length > 0) {
-                var name = Object.keys(TempDataQuiz)[0];
+            // Delete Quiz
+            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "delete") {
+                var name = TempDataQuiz["#action#"].name;
+                TempDataQuiz = undefined;
+                delete GlobalQuiz[name];
+                $quizzes.find("[quizname='"+name+"']").fadeOut("slow", function() {
+                    $(this).remove();
+                });
+            }
+            // Change name of Quiz
+            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "changeNameQuiz") {
+                var newname = TempDataQuiz["#action#"].newname;
+                var oldname = TempDataQuiz["#action#"].oldname;
+                TempDataQuiz = undefined;
+                GlobalQuiz[newname] = GlobalQuiz[oldname];
+                delete GlobalQuiz[oldname];
+                $quizzes.find(".selected").text(newname).attr("quizname", newname);
+            }
+            // Add new Quiz
+            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "newQuiz") { // new Quiz
+                var name = TempDataQuiz["#action#"].newname;
                 TempDataQuiz = undefined;
                 if (!GlobalQuiz[name]) {
                     GlobalQuiz[name] = new Object();
                 }
                 appendToList($quizzes, name, { // append just this one
                     "quizname": name,
-                    "quizId": data.id
+                    "quizid": data.id
                 });
                 $inputNewQuiz.val("");
             }
+            // Append all quizzes
             else {
                 quizzes.innerHTML = ""; // clean quizzes list
                 for (var id in data.quiz) {
@@ -160,7 +182,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     }
                     appendToList($quizzes, data.quiz[id], {
                         "quizname": data.quiz[id],
-                        "quizId": id
+                        "quizid": id
                     });
                 }
                 manager.isFirstStart && manager.firstStart();
@@ -180,9 +202,9 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 console.log(data.error);
             }
             else if (TempDataQuiz && Object.keys(TempDataQuiz).length > 0) {
-                var name = Object.keys(TempDataQuiz)[0];
-                var dataQuestions = $.extend({}, TempDataQuiz[name]);
                 action = $.extend({}, TempDataQuiz["#action#"]);
+                var name = action.name;
+                var dataQuestions = $.extend({}, TempDataQuiz[name]);
                 TempDataQuiz = undefined;
             }
             else {
@@ -371,7 +393,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
     }
 
     var storeQuizTemp = function (name, question, answers, anscorrect, type, position, action) {
-        TempDataQuiz = new Object;
+        TempDataQuiz = {};
         TempDataQuiz[name] = $.extend({}, GlobalQuiz[name]);
         if (!position && TempDataQuiz[name][type]) { // create a new question
             position = TempDataQuiz[name][type].length;
@@ -397,27 +419,123 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
     }
 
     var saveQuiz = function (name, callback) {
-        var id = $quizzes.find(".selected").attr("quizId");
+        var id = $quizzes.find(".selected").attr("quizid");
         quizDB.updatequiz(id, name, TempDataQuiz[name], callback);
     }
 
     selectTypeAns.addEventListener( "change", manager.changeTypeAnswer, false );
 
-    $quizzes.click(function(ev) {
-        var $that = $(ev.srcElement);
-        if (ev.srcElement && !$that.hasClass("quizzes") && !$that.hasClass("selected")) {
+    // Quizzes List
+    $quizzes.on("click", "li", function(ev) {
+        var $that = $(this);
+        if (!$that.hasClass("selected")) {
             $quizzes.find(".selected").removeClass("selected");
             $questions.find(".selected").removeClass("selected");
             $that.addClass("selected");
+            $deleteQuiz.addClass("selected");
             manager.getQuiz($that.text());
             manager.cleanQuestionEdit("smart");
         }
         return false;
     });
+    // Append Input to Change name of the Quiz
+    $quizzes.on("dblclick", "li", function(ev) {
+        var $that = $(this);
+        if ($that.hasClass("selected")) {
+            $quizzes.find("input").remove(); // remove old inputs
+            $that.hide();
+            // input
+            var $input = $inputNewQuiz.clone();
+            $input.val( $that.text() );
+            $input.removeClass("add-new-quiz").show();
+            $input.attr("quizname", $that.text());
+            $input.attr("quizid", $that.attr("quizid"));
+            $that.after($input); // insert new input
+            $input.focus()[0].select();
+        }
+        return false;
+    });
+    // Live test if the new name exits
+    $quizzesContainer.on("input", "input", function(ev) {
+        var $that = $(this);
+        if (!!GlobalQuiz[this.value] && $that.attr("quizname") !== this.value) {
+            $that.addClass("focus-red");
+        } else {
+            $that.removeClass("focus-red");
+        }
+    });
+    // When the input Change Name Quiz lose the focus then remove it
+    $quizzes.on("focusout", "input", function(ev) {
+        $(this).hide();
+        $quizzes.find(".selected").show();
+    });
+    // When the inputNewQuiz lose the focus then hide it
+    $inputNewQuiz.focusout(function(ev) {
+        var $that = $(this);
+        setTimeout(function() {
+            $that.hide("slow");
+        }, 100);
+    });
+    // Input to enter the new name of the Quiz
+    $quizzesContainer.on("keypress", "input", function(ev) {
+        var code = event.keyCode ? event.keyCode : event.which;
+        if (code !== 13) return true;
+        var $that = $(this).hide();
+        // Change Name of Quiz
+        if ($that.attr("quizname")) {
+            if (!GlobalQuiz[this.value] || $that.attr("quizname") !== this.value) {
+                var oldname = $that.attr("quizname");
+                var newname = $that.val();
+                var quizid  = Number($that.attr("quizid"));
+                TempDataQuiz = {
+                    "#action#": {
+                        oldname: oldname,
+                        newname: newname,
+                        animate: "changeNameQuiz"
+                    }
+                }
+                quizDB.updatequiz(quizid, newname, GlobalQuiz[oldname], manager.receiveQuizzes);
+            }
+        }
+        // Create New Quiz
+        else if (!GlobalQuiz[this.value]) {
+            TempDataQuiz = {
+                "#action#": {
+                    newname: this.value,
+                    animate: "newQuiz"
+                }
+            }
+            quizDB.savequiz(this.value, {}, manager.receiveQuizzes);
+        }
+        return false;
+    });
+    // Button add Quiz : show the input for the new Quiz
+    $addQuiz.click(function() {
+        $inputNewQuiz.show();
+        $inputNewQuiz[0].focus();
+    });
 
-    $questions.click(function(ev) {
-        var $that = $(ev.srcElement);
-        if (ev.srcElement && !$that.hasClass("questions") && !$that.hasClass("selected")) {
+    $deleteQuiz.click(function(ev) {
+        var $selected = $quizzes.find(".selected");
+        if ($selected.length > 0) {
+            $deleteQuiz.removeClass("selected");
+            manager.cleanQuestionEdit("smart");
+            questions.innerHTML = "";
+            TempDataQuiz = {
+                "#action#": {
+                    animate: "delete",
+                    name: $selected.text()
+                }
+            }
+            quizDB.deletequiz($selected.attr("quizid"), manager.receiveQuizzes);
+        }
+        return false;
+    });
+
+    // Questions List
+    $questions.on("click", "li", function(ev) {
+        var $that = $(this);
+        if (!$that.hasClass("selected")) {
             $questions.find(".selected").removeClass("selected");
             $that.addClass("selected");
             manager.showEditQuestion($that.attr("question"));
@@ -562,39 +680,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         addUpdateQues.value === "Update" && $addUpdateQues.show();
     });
 
-    // Button add Quiz : show the input for the new Quiz
-    $addQuiz.click(function() {
-        $inputNewQuiz.show();
-        $inputNewQuiz[0].focus();
-    });
-    // Live test if the new name exits
-    $inputNewQuiz.on("input", function(ev) {
-        if (!!GlobalQuiz[this.value]) {
-            $inputNewQuiz.addClass("focus-red");
-        } else {
-            $inputNewQuiz.removeClass("focus-red");
-        }
-    });
-    // Input to enter the new name of the Quiz
-    $inputNewQuiz.keypress(function(ev) {
-        var code = event.keyCode ? event.keyCode : event.which;
-        if (code == 13) {
-            console.log("[keypress][enter]");
-            if (!GlobalQuiz[this.value]) {
-                TempDataQuiz = {};
-                TempDataQuiz[this.value] = {};
-                quizDB.savequiz(this.value, {}, manager.receiveQuizzes);
-            }
-            return false;
-        }
-    });
-    // When the inputNewQuiz lose the focus then hide it
-    $inputNewQuiz.focusout(function(ev) {
-        setTimeout(function() {
-            $inputNewQuiz.hide("slow");
-        }, 100);
-    });
-
     // Resize Dialog
     $(window).resize(function() {
         dialog["quizzesScrollbar"].update();
@@ -605,31 +690,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
     addScrollbar($questions.parents(".scrollbar-container")[0], "questionsScrollbar");
     manager.changeTypeAnswer("type-tf");       // by default answer quiz is true-false
     quizDB.getquizzes(manager.receiveQuizzes); // On start dialog load quizzes
-
-    // Test
-
-/*    var testFunc = function(response) {
-       console.log("[testFunc][response]", response);
-   }*/
-//    quizDB.getquiz("Fill", testFunc);
-//
-
-/*quizDB.deletequiz(1, testFunc);
-quizDB.deletequiz(2, testFunc);
-quizDB.deletequiz(3, testFunc);*/
-
-    
-    var changeNameQuiz = function(obj, name, newname) {
-        if (name != newname) {
-            if (obj[newname] === undefined) {
-                obj[newname] = obj[name];
-                delete obj[name];
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
     
   });
   

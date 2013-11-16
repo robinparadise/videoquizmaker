@@ -594,7 +594,6 @@ app.post('/api/deletequiz', filter.isStorageAvailable, function( req, res ) {
   }
 
   var id = parseInt( req.body.id, 10 );
-  console.log("[ID]", id, req);
 
   if ( isNaN( id ) ) {
     res.json( { error: "ID was not a number" }, 500 );
