@@ -147,7 +147,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		this.drawLine = function(start, end, options) {
 			if ( options === undefined ) options = {};
 			if ( !options.manual && start.linesTo && 
-					start.linesTo[options.id] === false ) {
+					start.linesTo[end.id] === false ) {
 				return false; // Line was removed
 			}
 
@@ -197,11 +197,12 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					dialog = Dialog.spawn( "dinamic", {
 						data: {
 							popup: this.popup,
-							line: this._id
+							lineId: this._id
 						},
 						events: {
-							delete: function(e) { // e.Data
-								trackNetwork.drawLayer(); // remove line.id from layer
+							delete: function(e) { // e.Data is LineId
+								// remove line.id from layer
+								trackNetwork.removeLine(e.data);
 								dialog.close();
 							}
 						}
@@ -299,8 +300,13 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			}
 		}
 
-		this.drawLayer = function(id) {
-			//layer.children.splice(0);
+		this.removeLine = function(id) {
+			var line = layer.lines[id];
+			// False means It's a deleted line
+			line.startTrackEvent.linesTo[line.endTrackEvent.id] = false;
+			line.startTrackEvent.popcornTrackEvent.rulesTo[line.endTrackEvent.id] = false;
+			delete layer.lines[id]; // remove reference in the layer
+			line.remove();
 			layer.draw();
 		}
 

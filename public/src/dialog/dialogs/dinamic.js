@@ -178,13 +178,13 @@ console.log("[Click for dinamic dialog]", _options);
 */
 
             dialog.registerActivity( "delete", function(){
-              dialog.send( "delete", _data.line );
+              dialog.send( "delete", _data.lineId );
             });
             dialog.assignButton( ".delete", "delete" );
 
             addScrollbar($popupQuestions[0]);
             togglePopupTab();
-            // Position of the popup
+            // Reload position of the popup
             $rootElement.show("fast", reloadPopup);
         });
 
