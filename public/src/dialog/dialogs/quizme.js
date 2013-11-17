@@ -219,7 +219,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     return;
                 }
             }
-            GlobalQuiz[name] = Object.create(dataQuestions); // Save
+            GlobalQuiz[name] = $.extend({}, dataQuestions); // Save
             manager.appendQuestions(name, GlobalQuiz[name], action);
         },
         appendQuestions: function (name, data, action) {

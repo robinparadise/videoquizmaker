@@ -315,7 +315,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			layer.draw();
 		}
 
-		// Reset all events and then bind the events again (cause live events seen dont works)
+		// Reset all events and then bind the events again (cause live events seem dont works)
 		this.mouseDownDrawing = function(stage, layer) {
 			var $butterTrackEv = $wrapper.find(".butter-track-event");
 			$butterTrackEv.find(".left-handle-line, .right-handle-line").off();
