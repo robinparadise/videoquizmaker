@@ -550,6 +550,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
 
     $deleteQues.click(function(ev) {
         var $deleted = $questions.find(".selected").addClass("deleted");
+        var $selected = $quizzes.find(".selected");
         var info = $deleted.attr("question").split("|");
         var name = info[0];
         var type = info[1];
@@ -558,7 +559,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         TempDataQuiz[name] = $.extend({}, GlobalQuiz[name]);
         TempDataQuiz[name][type].splice(parseInt( pos, 10 ), 1);
         TempDataQuiz[name][type].length < 0 && delete TempDataQuiz[name][type];
-        TempDataQuiz["#action#"] = {animate: "delete"}
+        TempDataQuiz["#action#"] = {
+            animate: "delete",
+            name: $selected.text()
+        }
         saveQuiz(name, manager.receiveQuiz);
         return false;
     });
