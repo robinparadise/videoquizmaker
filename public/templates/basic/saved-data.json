@@ -23,7 +23,11 @@
                     "target": "video-container",
                     "title": "Simple statements",
                     "name": "TrueFalse",
-                    "block": "No"
+                    "width": 60,
+                    "height": 60,
+                    "top": 10,
+                    "left": 10,
+                    "transition": "popcorn-fade"
                 },
                 "track": "Layer0",
                 "name": "TrackEvent0"
@@ -36,7 +40,11 @@
                     "target": "video-container",
                     "title": "Simple statements",
                     "name": "Fill",
-                    "block": "No"
+                    "width": 60,
+                    "height": 60,
+                    "top": 10,
+                    "left": 10,
+                    "transition": "popcorn-fade"
                 },
                 "track": "Layer0",
                 "name": "TrackEvent1"

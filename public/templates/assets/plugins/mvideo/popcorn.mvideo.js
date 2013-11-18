@@ -53,7 +53,7 @@
           "default": "No",
           optional: true
         },       
-        target: "video-container",
+        target: "video",
       }
     },
     /**
@@ -65,12 +65,13 @@
       var target = document.getElementById( options.target );
       options._container = document.createElement( "div" );
 
-      for (var i = 0;; i+=1) {
+/*      for (var i = 0;; i+=1) {
           if (!document.getElementById(options.target + i)) {
               options._container.id = options.target + i;
               break;
           }
-      }
+      }*/
+      options._container.id = options.target;
       $(options._container).hide();
 
       if ( !target && Popcorn.plugin.debug ) {
