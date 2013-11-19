@@ -219,6 +219,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     return;
                 }
             }
+            GlobalQuiz[name] = {};
             GlobalQuiz[name] = $.extend({}, dataQuestions); // Save
             manager.appendQuestions(name, GlobalQuiz[name], action);
         },
@@ -558,7 +559,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         TempDataQuiz = new Object;
         TempDataQuiz[name] = $.extend({}, GlobalQuiz[name]);
         TempDataQuiz[name][type].splice(parseInt( pos, 10 ), 1);
-        TempDataQuiz[name][type].length < 0 && delete TempDataQuiz[name][type];
+        TempDataQuiz[name][type].length <= 0 && delete TempDataQuiz[name][type];
         TempDataQuiz["#action#"] = {
             animate: "delete",
             name: $selected.text()
