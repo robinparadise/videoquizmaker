@@ -484,6 +484,9 @@
 							callback.quizResult(quizInfo); // Send quizInfo
 						}
 					}
+					console.log("stats:", stats);
+					console.log("q:", q);
+					console.log("userAns", userAns);
 				});
 				$( ".q-help, .q-check-btn, .q-prob, .q-intro, .q-ans", currQuiz).hide();
 				if( settings.review ){

@@ -28,9 +28,9 @@ var quizzes = require('./quizzes.json');
 var TrueFalse = {"tf": quizzes['tf']};
 var Fill = {"fill": quizzes['fill']};
 var MultiList = {"multiList": quizzes['multiList']};
-var quizTF = {name: "TrueFalse", data: TrueFalse, type: "tf"};
-var quizFILL = {name: "Fill", data: Fill, type: "fill"};
-var quizMultiList = {name: "MultiList", data: MultiList, type: "multiList"};
+var quizTF = {name: "TrueFalse", data: TrueFalse};
+var quizFILL = {name: "Fill", data: Fill};
+var quizMultiList = {name: "MultiList", data: MultiList};
 
 function readTemplateConfig( templateName, templatedPath ) {
   var configPath = templatedPath.replace( '{{templateBase}}', config.dirs.templates + '/' );

@@ -49,6 +49,7 @@
     right: 10px;
     cursor: pointer;
     opacity: 0.5;
+    z-index: 1000;
     &:hover {
       opacity: 1;
     }
@@ -204,7 +205,7 @@
   left: 200px;
   top: 20px;
   width: 300px;
-  height: 340px;
+  height: 350px;
   padding: 0px;
   margin: 0;
   border-radius: 6px;
@@ -227,6 +228,10 @@
       width: 100%;
       .questions {
         width: 287px;
+        li.selected {
+          background-color: coral;
+          color: white;
+        }
       }
     }
   }
@@ -242,6 +247,7 @@
     color: white;
     padding: 0px 10px;
     margin: 0px;
+    z-index: 100;
   }
   .popup-tab-header {
     position: relative;
@@ -250,6 +256,7 @@
     border-bottom: @_editorHeaderBorder solid @green;
     height: @_editorHeaderHeight;
     background: white;
+    z-index: 100;
     > ul {
       margin: 0;
       padding: 0;
@@ -293,13 +300,24 @@
     text-align: center;
     width: 100%;
     padding: 0;
-    bottom: 0;
+    bottom: -10px;
     cursor: pointer;
     &:hover {
       font-weight: bold;
     }
   }
+  #append-hidden-elements {
+    display: none;
+  }
+  .bottom-border {
+    position: absolute;
+    height: 10px;
+    width: 100%;
+    z-index: 1000;
+    bottom: 0;
+  }
 }
+/* Arrows */
 .butter-dinamic-dialog {
   &:after, &:before {
     top: 100%;
@@ -309,10 +327,7 @@
     width: 0;
     position: absolute;
     /*pointer-events: none;*/
-  }
-}
-.butter-dinamic-dialog {
-  &:after, &:before {
+    z-index: 1000;
     border-color: rgba(136, 183, 213, 0);
     border-top-color: #FFF;
     border-width: 30px;

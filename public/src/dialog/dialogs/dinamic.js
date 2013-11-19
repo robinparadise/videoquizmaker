@@ -10,29 +10,28 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
         dialog.enableCloseButton();
         var _options = _data.popup;
 
-console.log("[Click for dinamic dialog]", _options);
-
         var $rootElement = $( dialog.rootElement );
         // Headers
-        $headers         = $rootElement.find("a.popup-tab-header-a"),
-        $headerScore     = $headers.filter(".header-score"),
-        $headerQuestions = $headers.filter(".header-questions"),
-        $headerPass      = $headers.filter(".header-pass"),
+        $headers           = $rootElement.find("a.popup-tab-header-a"),
+        $headerScore       = $headers.filter(".header-score"),
+        $headerQuestions   = $headers.filter(".header-questions"),
+        $headerPass        = $headers.filter(".header-pass"),
         // Tabs
-        $popupTab        = $rootElement.find(".popup-tab"),
-        $popupScore      = $popupTab.filter(".popup-score"),
-        $popupQuestions  = $popupTab.filter(".popup-questions"),
-        $popupPass       = $popupTab.filter(".popup-pass"),
+        $popupTab          = $rootElement.find(".popup-tab"),
+        $popupScore        = $popupTab.filter(".popup-score"),
+        $popupQuestions    = $popupTab.filter(".popup-questions"),
+        $popupPass         = $popupTab.filter(".popup-pass"),
         // Score
-        $assuredScore    = $popupScore.find(".assured-score"),
-        $score           = $popupScore.find(".score"),
+        $assuredScore      = $popupScore.find(".assured-score"),
+        $score             = $popupScore.find(".score"),
         // Questions
-        $questions       = $popupQuestions.find(".questions"),
+        $questions         = $popupQuestions.find(".questions"),
         // Pass
-        $assuredPass     = $popupPass.find(".assured-pass"),
-        //$deleteBtn       = $popupTab.find(".delete"),
+        $assuredPass       = $popupPass.find(".assured-pass"),
+        // Hidden elements
+        $hiddenFields      = $rootElement.find("#append-hidden-elements"),
         // Quizzes
-        GlobalQuiz       = this.Butter.QuizOptions;
+        GlobalQuiz         = this.Butter.QuizOptions;
 
         var addScrollbar = function( scrollbarContainer ) {
             var scrollbarInner = scrollbarContainer.querySelector( ".scrollbar-inner" );
@@ -58,7 +57,9 @@ console.log("[Click for dinamic dialog]", _options);
             $.each(attrs, function(name, value) {
                 $elem.attr(name, value); // attributes
             });
+            var $respondField = $hiddenFields.find(".assured-pass-wrapper").clone().hide();
             $list.append($elem);
+            $elem.append($respondField);
         }
 
         var togglePopupTab = function(keyrule) {
@@ -86,20 +87,78 @@ console.log("[Click for dinamic dialog]", _options);
             _options.keyrule = "score";
         }
 
-        var setQuestions = function(questions) {
+        var appendQuestions = function(questions) {
             if (!questions) questions = _options.questions;
-            var name = questions[0];
+            var name = questions.name;
             var data = GlobalQuiz[name];
-            $questions.text("");
-            for (var type in data) {
-                for (var n in data[type]) {
-                    appendToList($questions, data[type][n].ques, {
-                        'question': [name, type, n].join('|')
-                    });
+            // append questions
+            if ($questions.find("li").length <= 0) {
+                $questions.text(""); // empty, who knows
+                for (var type in data) {
+                    for (var n in data[type]) {
+                        appendToList($questions, data[type][n].ques, {
+                            question: [name, type, n].join('|'),
+                            quesname: name,
+                            questype: type,
+                            quespos: n
+                        });
+                    }
                 }
             }
-            //var attr = questions[1];
-            //_options.keyrule = "questions";
+            // click question
+            if (!$questions.find(".selected").hasClass("selected")) {
+                $questions.find("li:first").click();
+            } else {
+                $questions.find(".selected").click();
+            }
+        }
+
+        var setQuestions = function(questions) {
+            if (!questions) questions = _options.questions;
+            var $selected;
+            _options.keyrule = "questions";
+console.log("setQuestions", questions);
+
+            // select the question
+            if (questions.attr) {
+                $selected = $questions.find("[question='"+questions.attr+"']");
+            }
+            else if (questions.type && questions.n) {
+                var attrQuestions = [questions.name, questions.type, questions.n].join("|");
+                $selected = $questions.find("[question='"+attrQuestions+"']");
+            }
+            else {
+                return;
+            }
+console.log("selected chosen");
+
+            // Select Assured by answer
+            if (questions.assured === "answer pass") {
+                $selected.find(".value-answer-pass").prop("checked", true);
+                if (questions.answerpass === true || questions.answerpass === "true") {
+                    $selected.find(".answer-pass [value='true']").prop("selected", true);
+                }
+                else {
+                    $selected.find(".answer-pass [value='false']").prop("selected", true);
+                }
+            }
+            else if (questions.assured === "specific answer") {
+                $selected.find(".value-specific-answer").prop("checked", true);
+            }
+        }
+        var setParamsQuestion = function($that) {
+            var questions = _options.questions;
+            var $assuredAnswerPass = $that.parents(".assured-pass-wrapper");
+
+            var assured = $assuredAnswerPass.find(".value-answer-pass").prop("checked");
+            if (assured) {
+                questions.assured = "answer pass";
+            } else {
+                questions.assured = "specific answer";
+            }
+
+            questions.answerpass = $assuredAnswerPass.find(".answer-pass :selected").val();
+            questions.userAnswer = $assuredAnswerPass.find(".specific-user-answer :selected").val();
         }
 
         var setPass = function(pass) {
@@ -110,9 +169,9 @@ console.log("[Click for dinamic dialog]", _options);
             
         var reloadPopup = function() {
             if (_options) {
-                var offsetGlobalY = 62 + 17; // ?? No idea
-                var offsetGlobalX = 20;     // ?? No idea
-                var offsetHeight  = 47;    // Arrow height
+                var offsetGlobalY = 62 + 17; // ?? offset of the body
+                var offsetGlobalX = 20;
+                var offsetHeight  = 40;    // Arrow height
                 var height = $rootElement.height() + offsetHeight;
                 $rootElement.css({
                     "left": _options.left - offsetGlobalX,
@@ -144,14 +203,46 @@ console.log("[Click for dinamic dialog]", _options);
 
             // Questions
             if (_options.questions) {
-                $headerQuestions.click(function() {
-                    if ( $(this).hasClass(".butter-active") ) return;
+                $questions.on("click", "li", function(ev) {
+                    var $that = $(this);
+                    if (!$that.hasClass("selected")) {
+                        $questions.find(".selected").removeClass("selected").find(".assured-pass-wrapper").slideUp();
+                        $that.addClass("selected");
+                        $that.find(".assured-pass-wrapper").slideDown(function() {
+                            dialog.scrollbar.update();
+                        });
+
+                        _options.questions.attr = $that.attr("question");
+                        _options.questions.type = $that.attr("questype");
+                        _options.questions.n = Number($that.attr("quespos"));
+                        _options.questions.ques = $that.text();
+                        setQuestions();
+                    }
+                });
+                $headerQuestions.click(function(ev) {
+                    if ( $(this).hasClass("butter-active") ) {
+                        dialog.scrollbar.update();
+                        return;
+                    }
                     $headers.removeClass("butter-active");
                     $headerQuestions.addClass("butter-active");
                     $popupTab.hide();
                     $popupQuestions.show();
-                    setQuestions();
+                    appendQuestions();
                     dialog.scrollbar.update();
+                });
+
+                $questions.on("change", "[name='assured-pass']", function(ev) {
+                    ev.preventDefault();
+                    setParamsQuestion($(this));
+                });
+                $questions.on("change", ".answer-pass", function(ev) {
+                    ev.preventDefault();
+                    setParamsQuestion($(this));
+                });
+                $questions.on("change", ".specific-user-answer", function(ev) {
+                    ev.preventDefault();
+                    setParamsQuestion($(this));
                 });
             }
 
@@ -170,12 +261,6 @@ console.log("[Click for dinamic dialog]", _options);
                     _options.keyrule = "pass";
                 });
             }
-/*
-            $deleteBtn.click(function() {
-                console.log("[Delete]");
-                _data.line.remove() && dialog.close();
-            });
-*/
 
             dialog.registerActivity( "delete", function(){
               dialog.send( "delete", _data.lineId );

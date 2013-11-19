@@ -492,11 +492,11 @@ define( [
       checkTimeoutLoop(function(){
         // Make sure _popcorn still exists (e.g., destroy() hasn't been called),
         // that we're ready, and that we have a duration.
-        //_mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 && _popcorn.duration() > 0 ) );
-        _mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 ) );
-console.log("###Loop checkTimeoutLoop", "_mediaReady", _mediaReady, "So we force true", _popcorn, _popcorn.duration() );
+        _mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 && _popcorn.duration() > 0 ) );
+        //_mediaReady = ( _popcorn && ( _popcorn.media.readyState >= 1 ) );
+//console.log("###Loop checkTimeoutLoop", "_mediaReady", _mediaReady, "So we force true", _popcorn, _popcorn.duration() );
 // It's very strange, we have to set duration before.
-_popcorn.media.duration = 20;
+//_popcorn.media.duration = 20;
 
         return _mediaReady;
         //return true;

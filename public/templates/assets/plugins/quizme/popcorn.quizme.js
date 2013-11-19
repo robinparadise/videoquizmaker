@@ -6,33 +6,20 @@
     return fallback;
   }
 
-  var Default = {tf: [
-    {
-      ques: "Directions given by teachers should be very unclear.",
-      ans: false,
-    },
-    {
-      ques: "The official language of all the countries in South America is Spanish.",
-      ans: false,
-      ansInfo: "This statement is false because of the absolute word all. Spanish is the official language of 9 of the 13 countries in South America. The exceptions are Brazil (Portuguese), French Guiana (French), Guyana (English), and Suriname (Dutch).",
-    },
-    {
-      ques: "Shaking hands with women is acceptable in Indonesia.",
-      ans: true,
-    },
-  ]};
-
   var opt1 = {
       title: "Simple statements",
       disableRestart: true,
       disableDelete: false,
       help: "You do not need help.",
-      multiLen: 5,
       showAns: false,
       allRandom: true,
+      random: false,
       fxSpeed: "fast",
+      hoverClass: "q-ol-hover",
+      review: true,
+      showFeedback: false
   };
-  var quiz, target;
+  var target;
 
   Popcorn.plugin( "quizme", {
 
@@ -123,7 +110,6 @@
     },
 
     _setup: function( options ) {
-      var target;
       options._target = target = Popcorn.dom.find( options.target );
       options._container = document.createElement( "div" );
       options._container.classList.add( "jquizme-container" );
@@ -141,10 +127,12 @@
       }
       target && target.appendChild( options._container );
 
-      if (!!options.name) {
-        options.quiz = Butter.QuizOptions[options.name];
-      } else {
-        options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
+      if (Butter.QuizOptions) {
+        if (!!options.name) {
+          options.quiz = Butter.QuizOptions[options.name];
+        } else {
+          options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
+        }
       }
       !!options.title && !!(options.title = opt1.title);
 
@@ -152,11 +140,14 @@
       options.callback = {
         popcorn: this,
         quizResult: function(info) {
+          console.log("info Stats:", info);
           this.popcorn.continueFlow(options, info); // Continue with the next Flow
         }
       }
       options.$container = $(options._container);
-      options.$container.jQuizMe(options.quiz, opt1, options.callback);
+      if (options.quiz) {
+        options.$container.jQuizMe(options.quiz, opt1, options.callback);
+      }
     },
 
     start: function( event, options ) {

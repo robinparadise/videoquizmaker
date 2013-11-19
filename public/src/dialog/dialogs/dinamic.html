@@ -36,10 +36,17 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
                         <option value="equal">Equal to</option>
                     </select>
                 </fieldset>
-                <fieldset class="trackevent-property">
+                <fieldset class="trackevent-property default input units">
                     <label class="property-name">Percent</label>
-                    <input class="score" type="number" placeholder="50" step="10" data-manifest-key="zoom">
+                    <div class="butter-form-append">
+                        <input class="score" type="number" placeholder="50" step="1" data-manifest-key="score">
+                        <span class="butter-unit">%</span>
+                    </div>
                 </fieldset>
+                <!-- <fieldset class="trackevent-property">
+                    <label class="property-name">Time</label>
+                    <input class="time" type="number" placeholder="50" step="10" data-manifest-key="score">
+                </fieldset> -->
                 <label class="property-name delete">Delete</label>
             </div>
 
@@ -51,14 +58,49 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
                 <fieldset class="trackevent-property-popup select">
                     <label class="property-name">Assure pass</label>
                     <select class="assured-pass">
-                        <option value="true">Assured pass</option>
-                        <option value="false" selected>Denied pass</option>
+                        <option value="true" selected>Assured pass</option>
+                        <option value="false">Denied pass</option>
                     </select>
                 </fieldset>
                 <label class="property-name delete">Delete</label>
             </div>
             
+            <div id="append-hidden-elements">
+
+                <div class="assured-pass-wrapper">
+                    <fieldset class="trackevent-property-popup">
+                        <div class="butter-form-radio">
+                            <input class="value-answer-pass assured-pass" type="radio" name="assured-pass">
+                            <label class="property-name">Choose by answer pass</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="trackevent-property-popup select">
+                        <select class="answer-pass assured-pass">
+                            <option value="true">Question answered correctly</option>
+                            <option value="false" selected>Question answered incorrectly</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset class="trackevent-property-popup">
+                        <div class="butter-form-radio">
+                            <input class="value-specific-answer assured-pass" type="radio" name="assured-pass">
+                            <label class="property-name">Choose by specific answer</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="trackevent-property-popup select">
+                        <select class="specific-user-answer specific-answer assured-pass">
+                            <option value="true" selected>User answers</option>
+                            <option value="false">User doesn't answer</option>
+                        </select>
+                    </fieldset>
+                </div>
+
+            </div>
         </div>
+
+        <div class="bottom-border"></div>
 
     </div>
     <a class="close-button"><span class="icon icon-white icon-x"></span></a>

@@ -181,7 +181,11 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					line.popup = {
 						pass: "true",
 						score: ["more-equal", 50],
-						questions: [start.popcornOptions.name], // name Quiz
+						questions: {
+							name: start.popcornOptions.name, // name Quiz
+							assured: "answer pass", // default asssure by respond (respond || answers)
+							answerpass: "true", // default assured by answered correctly
+						},
 						keyrule: 'score' // by Default
 					}
 				} else { // others plugins
