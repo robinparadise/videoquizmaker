@@ -681,7 +681,7 @@
 				if( !stats.problem[ i ] ){
 					stats.problem[ i ] = {
 						"amountTried": 0,
-						"isCorrect":null,
+						"isCorrect": null,
 						"userAnswer": undefined,
 						"ans": q.ans[i],
 						"ques": q.ques[i],

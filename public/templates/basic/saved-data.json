@@ -24,8 +24,8 @@
                     "title": "Simple statements",
                     "name": "TrueFalse",
                     "width": 60,
-                    "height": 60,
-                    "top": 10,
+                    "height": 100,
+                    "top": 0,
                     "left": 10,
                     "transition": "popcorn-fade"
                 },
@@ -41,7 +41,7 @@
                     "title": "Simple statements",
                     "name": "Fill",
                     "width": 60,
-                    "height": 60,
+                    "height": 90,
                     "top": 10,
                     "left": 10,
                     "transition": "popcorn-fade"

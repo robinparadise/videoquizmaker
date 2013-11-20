@@ -117,7 +117,6 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
             if (!questions) questions = _options.questions;
             var $selected;
             _options.keyrule = "questions";
-console.log("setQuestions", questions);
 
             // select the question
             if (questions.attr) {
@@ -130,7 +129,6 @@ console.log("setQuestions", questions);
             else {
                 return;
             }
-console.log("selected chosen");
 
             // Select Assured by answer
             if (questions.assured === "answer pass") {
@@ -212,10 +210,14 @@ console.log("selected chosen");
                             dialog.scrollbar.update();
                         });
 
-                        _options.questions.attr = $that.attr("question");
-                        _options.questions.type = $that.attr("questype");
-                        _options.questions.n = Number($that.attr("quespos"));
-                        _options.questions.ques = $that.text();
+                        var name = _options.questions.name;
+                        var attr = $that.attr("question");
+                        var type = $that.attr("questype");
+                        var pos  = Number($that.attr("quespos"));
+                        _options.questions.attr = attr;
+                        _options.questions.type = type;
+                        _options.questions.n    = pos;
+                        _options.questions.ques = GlobalQuiz[name][type][pos].ques;
                         setQuestions();
                     }
                 });

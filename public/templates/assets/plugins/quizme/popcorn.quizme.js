@@ -12,7 +12,7 @@
       disableDelete: false,
       help: "You do not need help.",
       showAns: false,
-      allRandom: true,
+      allRandom: false,
       random: false,
       fxSpeed: "fast",
       hoverClass: "q-ol-hover",
@@ -67,7 +67,7 @@
           elem: "input",
           type: "number",
           label: "Height",
-          "default": 70,
+          "default": 90,
           "units": "%",
           hidden: true
         },
@@ -75,7 +75,7 @@
           elem: "input",
           type: "number",
           label: "Top",
-          "default": 10,
+          "default": 0,
           "units": "%",
           hidden: true
         },
