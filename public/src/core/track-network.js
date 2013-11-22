@@ -183,8 +183,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						score: ["more-equal", 50],
 						questions: {
 							name: start.popcornOptions.name, // name Quiz
-							assured: "answer pass", // default asssure by respond (respond || answers)
-							answerpass: "true", // default assured by answered correctly
+							assured: "correct answer", // default assured by answered correctly
+							userAnswer: "true"
 						},
 						keyrule: 'score' // by Default
 					}
@@ -201,7 +201,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					dialog = Dialog.spawn( "dinamic", {
 						data: {
 							popup: this.popup,
-							lineId: this._id
+							lineId: this._id,
+							trackEvent: start
 						},
 						events: {
 							delete: function(e) { // e.Data is LineId

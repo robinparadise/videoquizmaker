@@ -9,6 +9,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
         dialog.assignButton( ".close-button", "close" );
         dialog.enableCloseButton();
         var _options = _data.popup;
+        var _trackEvent = _data.trackEvent;
 
         var $rootElement = $( dialog.rootElement );
         // Headers
@@ -51,15 +52,81 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
             return dialog.scrollbar;
         };
 
-        var appendToList = function($list, text, attrs) {
+        var appendToList = function($list, text, attrs, answers, answerCorrect) {
             $elem = $(document.createElement( "li" ));
             $elem.text(text);
             $.each(attrs, function(name, value) {
                 $elem.attr(name, value); // attributes
             });
+            // append options for assured-pass
             var $respondField = $hiddenFields.find(".assured-pass-wrapper").clone().hide();
+            var $answerField = $hiddenFields.find(".answer-checkbox-field");
+            var $answerFieldClone = $answerField.clone();
+            // First answer is correct
+            $answerFieldClone.find(".answer-label").text( answerCorrect.toString() ).addClass("correct-answer");
+            $respondField.append($answerFieldClone);
+            // Append other answers
+            $.each(answers, function(index, answer) {
+                $answerFieldClone = $answerField.clone();
+                $answerFieldClone.find(".answer-label").text(answer.toString());
+                $respondField.append($answerFieldClone);
+            });
+
             $list.append($elem);
             $elem.append($respondField);
+        }
+
+        var appendQuestions = function(questions) {
+            if (!questions) questions = _options.questions;
+            // get quizname from trackEvent
+            var quizname = _trackEvent.popcornOptions.name;
+            var name = quizname;
+            var data = GlobalQuiz[name];
+            // Load again quiz
+            if (quizname !== questions.name) {
+                $questions.html(""); // empty
+                questions.name = quizname;
+                questions.attr = undefined;
+                questions.type = undefined;
+            }
+            // append questions
+            if ($questions.find("li").length <= 0) {
+                var answers, answerCorrect;
+
+                for (var type in data) {
+                    for (var n in data[type]) {
+
+                        if (type === "tf") {
+                            answers = [data[type][n].ans === false];
+                        } else if (type === "fill" || type === "cards") {
+                            answers = ["other answers"];
+                        } else {
+                            answers = data[type][n].ansSel;
+                        }
+                        answerCorrect = data[type][n].ans; // push correct answer
+
+                        appendToList($questions, data[type][n].ques, {
+                            question: [name, type, n].join('|'),
+                            quesname: name,
+                            questype: type,
+                            quespos: n
+                        }, answers, answerCorrect);
+                    }
+                }
+            }
+            // click question
+            if (questions.attr) {
+                $questions.find("[question='"+questions.attr+"']").click();
+            }
+            else if (questions.type && questions.n) {
+                var attrQuestions = [questions.name, questions.type, questions.n].join("|");
+                $questions.find("[question='"+attrQuestions+"']").click();
+            }
+            else if (!$questions.find(".selected").hasClass("selected")) {
+                $questions.find("li:first").click();
+            } else {
+                $questions.find(".selected").click();
+            }
         }
 
         var togglePopupTab = function(keyrule) {
@@ -87,32 +154,6 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
             _options.keyrule = "score";
         }
 
-        var appendQuestions = function(questions) {
-            if (!questions) questions = _options.questions;
-            var name = questions.name;
-            var data = GlobalQuiz[name];
-            // append questions
-            if ($questions.find("li").length <= 0) {
-                $questions.text(""); // empty, who knows
-                for (var type in data) {
-                    for (var n in data[type]) {
-                        appendToList($questions, data[type][n].ques, {
-                            question: [name, type, n].join('|'),
-                            quesname: name,
-                            questype: type,
-                            quespos: n
-                        });
-                    }
-                }
-            }
-            // click question
-            if (!$questions.find(".selected").hasClass("selected")) {
-                $questions.find("li:first").click();
-            } else {
-                $questions.find(".selected").click();
-            }
-        }
-
         var setQuestions = function(questions) {
             if (!questions) questions = _options.questions;
             var $selected;
@@ -130,33 +171,66 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                 return;
             }
 
-            // Select Assured by answer
-            if (questions.assured === "answer pass") {
-                $selected.find(".value-answer-pass").prop("checked", true);
-                if (questions.answerpass === true || questions.answerpass === "true") {
-                    $selected.find(".answer-pass [value='true']").prop("selected", true);
-                }
-                else {
-                    $selected.find(".answer-pass [value='false']").prop("selected", true);
-                }
+            // Select Assured by answer (correct | incorrect | specific)
+            if (questions.assured === "correct answer") {
+                $selected.find(".value-correct-answer").prop("checked", true);
+            }
+            else if (questions.assured === "incorrect answer") {
+                $selected.find(".value-incorrect-answer").prop("checked", true);
             }
             else if (questions.assured === "specific answer") {
                 $selected.find(".value-specific-answer").prop("checked", true);
+            }
+
+            // Select type of user Answer
+            if (questions.userAnswer === true || questions.userAnswer === "true") {
+                questions.userAnswer = true;
+                $selected.find(".specific-user-answer [value='true']").prop("selected", true);
+            }
+            else {
+                questions.userAnswer = false;
+                $selected.find(".specific-user-answer [value='false']").prop("selected", true);
+            }
+
+            // Check and uncheck answers
+            var $answerCheckboxs = $selected.find(".answer-checkbox");
+            if (typeof(questions.answers) === "string") {
+                questions.answers = [questions.answers];
+            }
+            if ($.isArray(questions.answers)) {
+                $answerCheckboxs.prop("checked", false); // unchecked all
+                for (var index in questions.answers) {
+                    $answerCheckboxs.filter(function() {
+                        var labelAnswer = $(this).siblings(".answer-label").text();
+                        if (labelAnswer === questions.answers[index]) {
+                            this.checked = true;
+                        }
+                    });
+                }
             }
         }
         var setParamsQuestion = function($that) {
             var questions = _options.questions;
             var $assuredAnswerPass = $that.parents(".assured-pass-wrapper");
 
-            var assured = $assuredAnswerPass.find(".value-answer-pass").prop("checked");
-            if (assured) {
-                questions.assured = "answer pass";
-            } else {
+            var $assured = $assuredAnswerPass.find(".assured-question:checked");
+            if ($assured.hasClass("value-correct-answer")) {
+                questions.assured = "correct answer";
+            }
+            else if ($assured.hasClass("value-incorrect-answer")) {
+                questions.assured = "incorrect answer";
+            }
+            else if ($assured.hasClass("value-specific-answer")) {
                 questions.assured = "specific answer";
             }
-
-            questions.answerpass = $assuredAnswerPass.find(".answer-pass :selected").val();
             questions.userAnswer = $assuredAnswerPass.find(".specific-user-answer :selected").val();
+        }
+        var setUserAnswers = function($that) {
+            var questions = _options.questions;
+            var $quesParent = $that.parents("li[question='"+questions.attr+"']");
+            questions.answers = $quesParent.find(".answer-checkbox:checked").map( function() {
+                return $(this).siblings('.answer-label').text();
+            }).get();
         }
 
         var setPass = function(pass) {
@@ -164,12 +238,12 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
             $assuredPass.find("[value='"+pass+"']").prop("selected", true);
             _options.keyrule = "pass";
         }
-            
+
         var reloadPopup = function() {
             if (_options) {
                 var offsetGlobalY = 62 + 17; // ?? offset of the body
                 var offsetGlobalX = 20;
-                var offsetHeight  = 40;    // Arrow height
+                var offsetHeight  = 30;    // Arrow height
                 var height = $rootElement.height() + offsetHeight;
                 $rootElement.css({
                     "left": _options.left - offsetGlobalX,
@@ -246,6 +320,10 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     ev.preventDefault();
                     setParamsQuestion($(this));
                 });
+                $questions.on("change", ".answer-checkbox", function(ev) {
+                    ev.preventDefault();
+                    setUserAnswers($(this));
+                });
             }
 
             // Pass Changes
@@ -268,6 +346,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
               dialog.send( "delete", _data.lineId );
             });
             dialog.assignButton( ".delete", "delete" );
+            dialog.assignButton( ".delete2", "delete" );
 
             addScrollbar($popupQuestions[0]);
             togglePopupTab();

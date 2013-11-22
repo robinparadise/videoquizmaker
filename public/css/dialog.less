@@ -212,8 +212,11 @@
   -moz-box-shadow: 0 0 4px rgba(0,0,0,0.8);
   -webkit-filter: drop-shadow(0 0 4px rgba(0,0,0,.8));
   filter: drop-shadow(0 0 4px rgba(0,0,0,0.8));
-  .trackevent-property,
-  fieldset {
+  &.butter-modal-overlay {
+    height: 0;
+    width: 0;
+  }
+  fieldset, .trackevent-property {
     margin: 6px !important;
   }
   .dinamic-body {
@@ -222,15 +225,25 @@
   }
   .popup-tab-body {
     position: absolute;
-    height: 240px;
+    height: 285px;
     width: 300px;
     .popup-tab {
       width: 100%;
       .questions {
         width: 287px;
+        fieldset {
+          margin: 0px 6px !important;
+        }
         li.selected {
           background-color: coral;
           color: white;
+        }
+        .answer-label.correct-answer {
+          font-weight: bold;
+        }
+        .specific-answer {
+          margin-left: 10%;
+          width: 90%;
         }
       }
     }
@@ -255,7 +268,7 @@
     left: 0px;
     border-bottom: @_editorHeaderBorder solid @green;
     height: @_editorHeaderHeight;
-    background: white;
+    background: @baseDark;
     z-index: 100;
     > ul {
       margin: 0;
@@ -269,33 +282,27 @@
         top: 0;
       }
     }
-  }
-  .popup-tab-header .butter-btn {
-    background: none;
-    border: none;
-    color: #000;
-    font-size: 14px;
-    padding: 0 10px;
-    border-radius: 0;
-    height: @_editorHeaderHeight;
-    line-height: @_editorHeaderHeight;
-    &.butter-active {
-      background: @green;
+    .butter-btn {
+      background: none;
+      border: none;
       color: #FFF;
-    }
-    &.butter-editor-btn-disabled {
-      color: rgba( 255, 255, 255, 0.3 );
-      > .icon {
-        opacity: 0.3;
+      font-size: 14px;
+      padding: 0 10px;
+      border-radius: 0;
+      height: @_editorHeaderHeight;
+      line-height: @_editorHeaderHeight;
+      &.butter-active {
+        background: @green;
+      }
+      &.butter-editor-btn-disabled {
+        color: rgba( 255, 255, 255, 0.3 );
+        > .icon {
+          opacity: 0.3;
+        }
       }
     }
-  } // .butter-btn
-
-  &.butter-modal-overlay {
-    height: 0;
-    width: 0;
   }
-  .delete {
+  .delete, .delete2 {
     position: absolute;
     text-align: center;
     width: 100%;
@@ -316,9 +323,7 @@
     z-index: 1000;
     bottom: 0;
   }
-}
-/* Arrows */
-.butter-dinamic-dialog {
+  /* Arrows */
   &:after, &:before {
     top: 100%;
     border: solid transparent;
@@ -334,8 +339,7 @@
     left: 50%;
     margin-left: -30px;
   }
-}
-// Dialog Dinamic
+} /* Dialog Dinamic */
 
 .butter-feedback-form {
   padding: 0;

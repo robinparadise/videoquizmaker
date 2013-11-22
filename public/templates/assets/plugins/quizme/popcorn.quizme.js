@@ -127,31 +127,29 @@
       }
       target && target.appendChild( options._container );
 
-      if (Butter.QuizOptions) {
-        if (!!options.name) {
-          options.quiz = Butter.QuizOptions[options.name];
-        } else {
-          options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
-        }
-      }
       !!options.title && !!(options.title = opt1.title);
 
       // Object Callback with functions that jquizme execute when finish
       options.callback = {
         popcorn: this,
         quizResult: function(info) {
-          console.log("info Stats:", info);
           this.popcorn.continueFlow(options, info); // Continue with the next Flow
         }
       }
       options.$container = $(options._container);
-      if (options.quiz) {
-        options.$container.jQuizMe(options.quiz, opt1, options.callback);
+      if (Butter.QuizOptions) {
+        if (!!options.name) {
+          options.quiz = Butter.QuizOptions[options.name];
+        } else {
+          options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
+        }
+        !!options.quiz && options.$container.jQuizMe(options.quiz, opt1, options.callback);
       }
     },
 
     start: function( event, options ) {
       if (!options.$container.children().hasClass("quiz-el")) { // Create again 'cause was deleted
+        options.quiz = Butter.QuizOptions[options.name];
         options.$container.jQuizMe(options.quiz, opt1, options.callback);
       }
       if ( options._container ) {

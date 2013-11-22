@@ -33,17 +33,16 @@
                 "name": "TrackEvent0"
             }, {
                 "id": "TrackEvent1",
-                "type": "quizme",
+                "type": "mvideo",
                 "popcornOptions": {
                     "start": 9,
                     "end": 14,
                     "target": "video-container",
-                    "title": "Simple statements",
-                    "name": "Fill",
-                    "width": 60,
-                    "height": 90,
-                    "top": 10,
-                    "left": 10,
+                    "name": "Video2.mp4",
+                    "width": 100,
+                    "height": 100,
+                    "top": 0,
+                    "left": 0,
                     "transition": "popcorn-fade"
                 },
                 "track": "Layer0",

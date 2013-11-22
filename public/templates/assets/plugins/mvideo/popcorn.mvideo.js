@@ -1,6 +1,13 @@
 // PLUGIN: Media
 
 (function ( Popcorn ) {
+  function validateDimension( value, fallback ) {
+    if ( typeof value === "number" ) {
+      return value;
+    }
+    return fallback;
+  }
+  var target;
   
   Popcorn.plugin( "mvideo" , {
       
@@ -46,14 +53,57 @@
           label: "Video Start",
           "default": 0,
         },
+        width: {
+          elem: "input",
+          type: "number",
+          label: "Width",
+          "default": 100,
+          "units": "%",
+          hidden: true
+        },
+        height: {
+          elem: "input",
+          type: "number",
+          label: "Height",
+          "default": 100,
+          "units": "%",
+          hidden: true
+        },
+        top: {
+          elem: "input",
+          type: "number",
+          label: "Top",
+          "default": 0,
+          "units": "%",
+          hidden: true
+        },
+        left: {
+          elem: "input",
+          type: "number",
+          label: "Left",
+          "default": 0,
+          "units": "%",
+          hidden: true
+        },
+        transition: {
+          elem: "select",
+          options: [ "None", "Pop", "Slide Up", "Slide Down", "Fade" ],
+          values: [ "popcorn-none", "popcorn-pop", "popcorn-slide-up", "popcorn-slide-down", "popcorn-fade" ],
+          label: "Transition",
+          "default": "popcorn-fade"
+        },
         block: {
           elem: "select",
           options: ["No", "Yes"],
           label: "Block",
           "default": "No",
-          optional: true
-        },       
-        target: "video",
+          hidden: true
+        },
+        zindex: {
+          "default": 1,
+          hidden: true
+        },
+        target: "video-overlay",
       }
     },
     /**
@@ -62,20 +112,20 @@
      * items in place before the start function is called. 
      */
     _setup : function( options ) { 
-      var target = document.getElementById( options.target );
+      options._target = target = Popcorn.dom.find( options.target );
       options._container = document.createElement( "div" );
+      options._container.classList.add( "mvideo-container" );
+      options._container.style.width = validateDimension( options.width, "100" ) + "%";
+      options._container.style.height = validateDimension( options.height, "100" ) + "%";
+      options._container.style.top = validateDimension( options.top, "0" ) + "%";
+      options._container.style.left = validateDimension( options.left, "0" ) + "%";
+      options._container.style.zIndex = +options.zindex;
+      options._container.classList.add( options.transition );
+      options._container.classList.add( "off" );
 
-/*      for (var i = 0;; i+=1) {
-          if (!document.getElementById(options.target + i)) {
-              options._container.id = options.target + i;
-              break;
-          }
-      }*/
-      options._container.id = options.target;
-      $(options._container).hide();
-
+      options._container.style.display = "none";
       if ( !target && Popcorn.plugin.debug ) {
-          throw new Error( "target container doesn't exist" );
+        throw new Error( "target container doesn't exist" );
       }
       target && target.appendChild( options._container );
 
@@ -89,8 +139,7 @@
       options._video = Popcorn.smart( options._container, video_source );
       $(options._container).find("video").attr({
         'controls': 'controls',
-        'data-butter': 'media',
-        'width': '380px' // *We need to use fitVid.js to resize videos
+        'data-butter': 'media'
       });
     },
     /**
@@ -99,7 +148,11 @@
      * options variable
      */
     start: function( event, options ) {
-      $(options._container).show();
+      if ( options._container ) {
+        options._container.classList.add( "on" );
+        options._container.classList.remove( "off" );
+        options._container.style.display = "";
+      }
       if ($(".status-button").attr("data-state") == "true") {
         options._video.currentTime(options.videoStart);
         options._video.play();
@@ -119,8 +172,10 @@
           options._video.currentTime(options.videoStart);     
         } catch(ex) {}
       }
-      if (!options.block || options.block === "No") {
-        $(options._container).hide();
+      if ( options._container ) {
+        options._container.classList.add( "off" );
+        options._container.classList.remove( "on" );
+        options._container.style.display = "none";
       }
     },
 
