@@ -8,8 +8,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 	function TrackNetwork(app) {
 		var lines, stage, layer, dialog, $wrapper, lineMouse, trackEventStart;
-		var GREEN = "#3FB58E";
-		var GREY = "CCC";
+		var GREEN = "MediumSeaGreen";
+		var GREY = "silver";
 		var RED = "red";
 		var drawing = false;
 		var trackNetwork = this;
@@ -24,6 +24,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					});
 					layer = new Kinetic.Layer();
 					stage.add(layer);
+					stage.$content = $(stage.content);
 				} catch(err) {
 					stage = undefined;
 					return false
@@ -194,10 +195,16 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						keyrule: 'pass' // by Default
 					}
 				}
+				line.popup.instance = end.popcornTrackEvent;
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
-					this.popup.left = ev.offsetX;
-					this.popup.top  = ev.screenY;
+					if (ev.offsetX) {
+						this.popup.left = ev.offsetX;
+						this.popup.top  = ev.screenY;
+					} else { // Firefox
+						this.popup.left = ev.pageX - stage.$content.offset().left;
+						this.popup.top  = ev.screenY;
+					}
 					dialog = Dialog.spawn( "dinamic", {
 						data: {
 							popup: this.popup,
@@ -335,8 +342,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					layer.draw();
 				} else {
 					trackEventStart = $(this).parent();
-					var that = $(this);
-					var wrapper = that.parent().parent();
+					var $that = $(this);
+					var $wrap = $that.parent().parent();
 					var mousePos = stage.getMousePosition();
 					lineMouse = new Kinetic.Line({
 						points: [0, 0, 50, 50],
@@ -351,8 +358,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					});
 					layer.add(lineMouse);
 					//start point and end point are the same
-					lineMouse.getPoints()[0].x = that.parent().position().left + that.position().left;
-					lineMouse.getPoints()[0].y = wrapper.position().top + that.outerHeight()/2 + that.position().top +1.5;
+					lineMouse.getPoints()[0].x = $that.parent().position().left + $that.position().left;
+					lineMouse.getPoints()[0].y = $wrap.position().top + $that.outerHeight()/2 + $that.position().top +1.5;
 					lineMouse.getPoints()[1].x = lineMouse.getPoints()[0].x;
 					lineMouse.getPoints()[1].y = lineMouse.getPoints()[0].y;
 
@@ -382,16 +389,25 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			$wrapper.on("mousemove", function(e) {
 				if (!drawing) return true;
 				e.stopPropagation();
-				var src = $(e.srcElement);
-				// If track-event is hovered then calculate 'end-point-line'
-				if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
-					var parent = $(e.srcElement).parents(".butter-track-event");
-					if (src.hasClass("butter-track-event")) parent = src;
-					lineMouse.getPoints()[1].x = parent.position().left;
-					lineMouse.getPoints()[1].y = parent.height()/2 + parent.parent().position().top + parent.position().top;
+				if (!e.srcElement) {
+					var $src = $(e.originalEvent.originalTarget);
 				} else {
-					lineMouse.getPoints()[1].x = e.offsetX;
-					lineMouse.getPoints()[1].y = e.offsetY + $(e.srcElement).position().top;
+					var $src = $(e.srcElement);
+				}
+				// If track-event is hovered then calculate 'end-point-line'
+				if ($src.parents(".butter-track-event").length > 0 || $src.hasClass("butter-track-event")) {
+					var $parent = $src.parents(".butter-track-event");
+					if ($src.hasClass("butter-track-event")) $parent = $src;
+					lineMouse.getPoints()[1].x = $parent.position().left;
+					lineMouse.getPoints()[1].y = $parent.height()/2 + $parent.parent().position().top;
+				} else {
+					if (e.offsetX) {
+						lineMouse.getPoints()[1].x = e.offsetX;
+						lineMouse.getPoints()[1].y = e.offsetY;
+					} else { // Firefox
+						lineMouse.getPoints()[1].x = e.pageX - stage.$content.offset().left;
+						lineMouse.getPoints()[1].y = e.pageY - stage.$content.offset().top;
+					}
 				}
 				
 				layer.draw();
@@ -403,12 +419,16 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				e.stopPropagation();
 				drawing = false;
 				// we modify the orderedTrackEventsSet
-				var src = $(e.srcElement);
+				if (!e.srcElement) {
+					var $src = $(e.originalEvent.originalTarget);
+				} else { // Firefox
+					var $src = $(e.srcElement);
+				}
 				lineMouse.remove();
-				if (src.parents(".butter-track-event").length > 0 || src.hasClass("butter-track-event")) {
-					var parent = $(e.srcElement).parents(".butter-track-event");
-					src.hasClass("butter-track-event") && !!(parent = src);
-					lineMouse = trackNetwork.drawLineFromFirst(trackEventStart, parent, {
+				if ($src.parents(".butter-track-event").length > 0 || $src.hasClass("butter-track-event")) {
+					var $parent = $src.parents(".butter-track-event");
+					$src.hasClass("butter-track-event") && !!($parent = $src);
+					lineMouse = trackNetwork.drawLineFromFirst(trackEventStart, $parent, {
 						color: GREEN,
 						manual: true
 					});

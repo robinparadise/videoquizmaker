@@ -95,7 +95,7 @@
   border: 1px solid #DDD;
   background: #FFF;
   box-shadow: rgba(0, 0, 0, .1) 1px 5px 2px -3px;
-  color: rgb(85, 85, 85);
+  color: @baseText;
   font-size: 13px;
   margin-bottom: 2px;
   cursor: pointer;
@@ -209,6 +209,7 @@
   padding: 0px;
   margin: 0;
   border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
   -moz-box-shadow: 0 0 4px rgba(0,0,0,0.8);
   -webkit-filter: drop-shadow(0 0 4px rgba(0,0,0,.8));
   filter: drop-shadow(0 0 4px rgba(0,0,0,0.8));
@@ -234,9 +235,11 @@
         fieldset {
           margin: 0px 6px !important;
         }
+        li {
+          background-color: @baseLight;
+        }
         li.selected {
-          background-color: coral;
-          color: white;
+          background-color: rgba(0,0,0,0);
         }
         .answer-label.correct-answer {
           font-weight: bold;
@@ -324,7 +327,7 @@
     bottom: 0;
   }
   /* Arrows */
-  &:after, &:before {
+  .butter-dialog-offset:after, .butter-dialog-offset:before {
     top: 100%;
     border: solid transparent;
     content: " ";
