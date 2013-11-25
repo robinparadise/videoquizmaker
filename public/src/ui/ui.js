@@ -504,8 +504,8 @@ define( [ "core/eventmanager", "./toggler",
             selectedEvent = selectedEvents[ 0 ];
             butter.editor.closeTrackEventEditor( selectedEvent );
             selectedEvent.track.removeTrackEvent( selectedEvent );
-//Delete completely: redraw lines
-butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
+            //Delete completely: redraw lines
+            butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
             return;
           }
 
@@ -518,8 +518,8 @@ butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
                   selectedEvent = selectedEvents[ i ];
                   butter.editor.closeTrackEventEditor( selectedEvent );
                   selectedEvent.track.removeTrackEvent( selectedEvent );
-//Delete completely: redraw lines
-butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
+                  //Delete completely: redraw lines
+                  butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
                 }
                 dialog.close();
               },
