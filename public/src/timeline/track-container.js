@@ -190,7 +190,6 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
 
     function createTrackEventFromDrop( trackEvent, popcornOptions, oldTrack, desiredTrack ) {
       var newTrack = _media.forceEmptyTrackSpaceAtTime( desiredTrack, popcornOptions.start, popcornOptions.end, trackEvent );
-
       if ( oldTrack !== newTrack ) {
         if ( oldTrack ) {
           oldTrack.removeTrackEvent( trackEvent, true );

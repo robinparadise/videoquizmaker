@@ -48,7 +48,13 @@ define( [ "./ghost-track" ], function( GhostTrack ) {
         overlappingTrackEvent = trackView.findOverlappingTrackEvent( trackEventView );
 
         if ( overlappingTrackEvent ) {
-          nextTrack = _media.getNextTrack( track );
+          nextTrack = _media.getPrevTrack( track );
+          if (!!nextTrack && nextTrack.view.findOverlappingTrackEvent( trackEventView )) {
+            nextTrack = _media.getNextTrack( track );
+          }
+          if (!nextTrack) {
+            nextTrack = _media.getNextTrack( track );
+          }
           if ( !nextTrack || nextTrack.view.findOverlappingTrackEvent( trackEventView ) ) {
             nextTrack = createGhostTrackForTrack( track, nextTrack );
             if ( trackEventView.ghost && trackEventView.ghost.track !== nextTrack ) {
@@ -58,6 +64,9 @@ define( [ "./ghost-track" ], function( GhostTrack ) {
                 cleanUpGhostTrack( ghostTrack.lastTrack );
               }
             }
+          }
+          if (!!trackEventView.ghost && trackEventView.ghost.track.id !== nextTrack.id) {
+            nextTrack.view.addTrackEventGhost( trackEventView.createGhost() );
           }
           if ( !trackEventView.ghost ) {
             nextTrack.view.addTrackEventGhost( trackEventView.createGhost() );

@@ -21,6 +21,7 @@ define( [ "./eventmanager", "./trackevent", "./views/track-view", "util/sanitize
         _order = 0,
         _name = NAME_PREFIX + _order;
 
+
     _this._media = null;
 
     /*

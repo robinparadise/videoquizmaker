@@ -338,6 +338,14 @@
         return null;
       };
 
+      this.getPrevTrack = function( currentTrack ) {
+        var trackIndex = _orderedTracks.indexOf( currentTrack );
+        if ( trackIndex > 0 && trackIndex < _orderedTracks.length ) {
+          return _orderedTracks[ trackIndex - 1 ];
+        }
+        return null;
+      };
+
       this.getLastTrack = function( currentTrack ) {
         var trackIndex = _orderedTracks.indexOf( currentTrack );
         if ( trackIndex > 0 ) {
@@ -359,7 +367,13 @@
         var nextTrack;
 
         if ( track.findOverlappingTrackEvent( start, end, ignoreTrackEvent ) ) {
-          nextTrack = _this.getNextTrack( track );
+          nextTrack = _this.getPrevTrack( track );
+          if (!!nextTrack && nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent )) {
+            nextTrack = _this.getNextTrack( track );
+          }
+          if (!nextTrack) {
+            nextTrack = _this.getNextTrack( track );
+          }
           if ( nextTrack ) {
             if ( nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent ) ) {
               return _this.insertTrackBefore( nextTrack );
