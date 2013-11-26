@@ -2,3 +2,6 @@
   position: absolute;
   box-shadow: 0 4px 10px -5px rgba(0, 0, 0, 0.2);
 }
+.mvideo-container video {
+    width: 100%;
+}

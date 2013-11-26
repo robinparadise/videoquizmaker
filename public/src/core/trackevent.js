@@ -8,9 +8,9 @@
  * Supports a single event in the Media > Track > TrackEvent model.
  */
 define( [ "./logger", "./eventmanager", "./observer",
-          "util/lang", "util/time", "./views/trackevent-view" ],
+          "util/lang", "util/time", "./views/trackevent-view", "./super-trackevent" ],
   function( Logger, EventManager, Observer,
-            LangUtil, TimeUtil, TrackEventView ) {
+            LangUtil, TimeUtil, TrackEventView, SuperTrackEvent ) {
 
   var __guid = 0;
 
@@ -52,6 +52,7 @@ define( [ "./logger", "./eventmanager", "./observer",
           end: 1
         },
         _view = new TrackEventView( this, _type, _popcornOptions ),
+        _superTrackEvent = new SuperTrackEvent( _this ),
         _popcornWrapper = null,
         _selected = false;
 
@@ -301,6 +302,19 @@ define( [ "./logger", "./eventmanager", "./observer",
         configurable: false,
         get: function(){
           return _view;
+        }
+      },
+
+      /**
+       * Property: superTrackEvent
+       *
+       * A reference to the superTrackEvent object generated for this TrackEvent.
+       * @malleable: No.
+       */
+      superTrackEvent: {
+        enumerable: true,
+        get: function(){
+          return _superTrackEvent;
         }
       },
       /**

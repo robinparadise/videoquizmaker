@@ -364,18 +364,23 @@
       };
 
       this.forceEmptyTrackSpaceAtTime = function( track, start, end, ignoreTrackEvent ) {
-        var nextTrack;
+        var nextTrack, overlappingTrackEvent;
 
+        overlappingTrackEvent = track.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
         if ( track.findOverlappingTrackEvent( start, end, ignoreTrackEvent ) ) {
           nextTrack = _this.getPrevTrack( track );
-          if (!!nextTrack && nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent )) {
-            nextTrack = _this.getNextTrack( track );
+          if ( nextTrack ) {
+            overlappingTrackEvent = nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
+            if ( overlappingTrackEvent ) {
+              nextTrack = _this.getNextTrack( track );
+            }
           }
-          if (!nextTrack) {
+          if ( !nextTrack ) {
             nextTrack = _this.getNextTrack( track );
           }
           if ( nextTrack ) {
-            if ( nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent ) ) {
+            overlappingTrackEvent = nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
+            if ( overlappingTrackEvent ) {
               return _this.insertTrackBefore( nextTrack );
             }
             else {
@@ -387,7 +392,46 @@
           }
         }
 
-        return track;
+        return track; // not overlapping
+      };
+
+      this.forceEmptySpaceAtTime = function( track, start, end, ignoreTrackEvent ) {
+        var nextTrack, overlappingTrackEvent1, overlappingTrackEvent2, overlappingTrackEvent3,
+            aux = {track: undefined, overlappingTrackEvent: undefined};
+
+        overlappingTrackEvent1 = track.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
+        if ( overlappingTrackEvent1 ) {
+          nextTrack = _this.getPrevTrack( track ); // first look for the prev track
+          if ( nextTrack ) { // then look if overlap with other TrackEvent
+            overlappingTrackEvent2 = nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
+            if ( overlappingTrackEvent2 ) { // if overlap then look for the next track instead
+              nextTrack = _this.getNextTrack( track );
+            }
+          }
+          if ( !nextTrack ) { // if there's no prev track look for the next track
+            nextTrack = _this.getNextTrack( track );
+          }
+          if ( nextTrack ) {
+            overlappingTrackEvent3 = nextTrack.findOverlappingTrackEvent( start, end, ignoreTrackEvent );
+            if ( overlappingTrackEvent3 ) {
+              aux.track = _this.insertTrackBefore( nextTrack );
+              aux.overlappingTrackEvent = overlappingTrackEvent1; // overlapping 1 [2] 3
+              return aux;
+            }
+            else {
+              aux.track = nextTrack;
+              aux.overlappingTrackEvent = overlappingTrackEvent1; // overlapping 1 [2]
+              return aux;
+            }
+          }
+          else {
+              aux.track = this.addTrack();
+              aux.overlappingTrackEvent = overlappingTrackEvent1; // overlapping 1 [2]
+            return aux;
+          }
+        }
+        aux.track = track; // not overlapping
+        return aux;
       };
 
       this.fixTrackEventBounds = function() {

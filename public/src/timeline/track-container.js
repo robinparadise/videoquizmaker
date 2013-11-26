@@ -58,7 +58,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
         var newTrack, draggableType,
             trackEvent, trackEventRect,
             droppedLeftValue, duration,
-            start, end,
+            start, end, overlappingTrackEvent,
             containerRect = _container.getBoundingClientRect();
 
         // XXX secretrobotron: I chopped out an if statement from this section
@@ -94,10 +94,16 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
           start = droppedLeftValue / _container.clientWidth * _media.duration;
           end = start + duration;
 
-          createTrackEventFromDrop( trackEvent, {
+          overlappingTrackEvent = createTrackEventFromDrop( trackEvent, {
             start: start,
             end: end
           }, trackEvent.track, _newTrackForDroppables );
+
+          // trackEvent is a subTrackEvent of the overlappingTrackEvent
+          // and the overlappingTrackEvent is the superTrackEvent
+          if (overlappingTrackEvent) { // superTrackEvent
+            createSuperTrackEvent(overlappingTrackEvent, trackEvent);
+          }
         }
       }
     });
@@ -188,8 +194,25 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       });
     }
 
+    function createSuperTrackEvent(superT, subT) {
+      var superTrackEvent = superT.superTrackEvent;
+      var subTrackEvent = subT.superTrackEvent;
+
+      if (!superTrackEvent.isSuperTrackEvent) {
+        superTrackEvent.setSuperTrackEvent(true);
+      }
+      if (!subTrackEvent.isSubTrackEventOf(superT.id)) {
+        subTrackEvent.setSubTrackEvent(true, superT);
+        superTrackEvent.addSubTrackEvent(subT);
+      }
+    }
+
     function createTrackEventFromDrop( trackEvent, popcornOptions, oldTrack, desiredTrack ) {
-      var newTrack = _media.forceEmptyTrackSpaceAtTime( desiredTrack, popcornOptions.start, popcornOptions.end, trackEvent );
+      var newTrack, aux;
+      // forceEmptySpaceAtTime >> aux return: {track: obj, overlappingTrackEvent: obj}
+      aux = _media.forceEmptySpaceAtTime( desiredTrack, popcornOptions.start, popcornOptions.end, trackEvent );
+      newTrack = aux.track;
+
       if ( oldTrack !== newTrack ) {
         if ( oldTrack ) {
           oldTrack.removeTrackEvent( trackEvent, true );
@@ -202,17 +225,27 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
         trackEvent.update( popcornOptions );
         _this.ghostManager.removeGhostsAfterDrop( trackEvent, oldTrack );
       }
+
+      // if an overlappingTrackEvent exists then the TrackEvent belong to the overlappingTrackEvent
+      // Means the current TrackEvent is a subtrackEvent of this ovelappingTrackEvent
+      return aux.overlappingTrackEvent; // superTrackEvent
     }
 
     function onTrackEventDropped( e ) {
       var trackEvent = e.data.trackEvent,
           popcornOptions = e.data,
           desiredTrack = e.data.track,
-          oldTrack = trackEvent.track;
+          oldTrack = trackEvent.track,
+          overlappingTrackEvent;
 
       trackEvent.view.element.style.top = "0";
 
-      createTrackEventFromDrop( trackEvent, popcornOptions, oldTrack, desiredTrack );
+      overlappingTrackEvent = createTrackEventFromDrop( trackEvent, popcornOptions, oldTrack, desiredTrack );
+      // trackEvent is a subTrackEvent of the overlappingTrackEvent
+      // and the overlappingTrackEvent is the superTrackEvent
+      if ( overlappingTrackEvent ) {
+        createSuperTrackEvent(overlappingTrackEvent, trackEvent);
+      }
     }
 
     function onTrackEventResizeStarted( e ) {
