@@ -257,7 +257,13 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			var trackA = app.getTrackEvents( "id", $objA.attr('data-butter-trackevent-id') )[0];
 			var trackB = app.getTrackEvents( "id", $objB.attr('data-butter-trackevent-id') )[0];
 			if (!trackA || !trackB) return;
-
+			// if some trackEvent is a SubTrackEvent look for the parent
+			if (trackA.superTrackEvent.isSubTrackEvent) {
+				trackA = trackA.superTrackEvent.parent;
+			}
+			if (trackB.superTrackEvent.isSubTrackEvent) {
+				trackB = trackB.superTrackEvent.parent;
+			}
 			if (trackA.popcornOptions.start <= trackB.popcornOptions.start) {
 				this.drawLine(trackA, trackB, options);
 			} else {
