@@ -41,6 +41,9 @@ define( [ "core/eventmanager" ],
           }
           _subTrackEvents = {};
           _subTrackEventsAll = [];
+          _superTrackEvent.popcornTrackEvent.isSuperTrackEvent = val;
+          // reset popcornTrackEvent
+          _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
         }
       },
       isSubTrackEvent: {
@@ -86,6 +89,13 @@ define( [ "core/eventmanager" ],
       }
     });
 
+    // Set PopcornWrapper SuperTrackEvents
+    this.setPopcornTrackEvent = function() {
+      if (!_superTrackEvent.popcornTrackEvent) {
+        _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
+      }
+    }
+
     this.setBackgroundColor = function() {
       _background = _allBackground[Math.floor(Math.random()*_allBackground.length)];
     };
@@ -125,12 +135,16 @@ define( [ "core/eventmanager" ],
       } else {
         _this.removeAttrElement(_superTrackEvent, "super-track-event");
       }
+      // setPopcornTrackEvent
+      _this.setPopcornTrackEvent();
     }
 
     this.addSubTrackEvent = function( trackEvent ) {
       if (!_subTrackEvents[trackEvent.id]) {
         _subTrackEventsAll.push(trackEvent);
         _subTrackEvents[trackEvent.id] = trackEvent;
+        // set popcornTrackEvent
+        _superTrackEvent.popcornTrackEvent.subTrackEvents.push(trackEvent.popcornTrackEvent);
         _this.setAttrElement(trackEvent);
       }
     };
@@ -138,6 +152,9 @@ define( [ "core/eventmanager" ],
       trackEvent.superTrackEvent.setSubTrackEvent(false);
       delete _subTrackEvents[ trackEvent.id ];
       _subTrackEventsAll.splice( _subTrackEventsAll.indexOf( trackEvent ), 1 );
+      // set popcornTrackEvent
+      _superTrackEvent.popcornTrackEvent.subTrackEvents.splice(
+        _subTrackEventsAll.indexOf( trackEvent.popcornTrackEvent), 1 );
     };
 
     // when the trackevent is dropped somewhere else we need to verify
