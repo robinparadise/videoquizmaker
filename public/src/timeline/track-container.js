@@ -204,6 +204,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       if (!subTrackEvent.isSubTrackEventOf(superT.id)) {
         subTrackEvent.setSubTrackEvent(true, superT);
         superTrackEvent.addSubTrackEvent(subT);
+        _media.dispatch( "trackeventupdated", subT );
       }
     }
 

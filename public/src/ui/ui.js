@@ -310,28 +310,44 @@ define( [ "core/eventmanager", "./toggler",
       // Find when tracks are in the same level at time ("belongs to the same track")
       belongsToSameSet = function(start, end) {
         if (!start || !end) return false;
-        if (start.popcornOptions.start <= end.popcornOptions.end
-          && end.popcornOptions.start <= start.popcornOptions.end) {
+        if (end.popcornOptions.start <= start.popcornOptions.end) {
           return true;
         }
         return false;
       },
+      // We ordered the tracks by Set (the tracks which are in the same space of time
+      // belong to the same Set). We have to ignore the "subTrackEvents"
       sortTrackEventsBySet = function( base ) {
-        var aux = [[base[0]]];
-        !!base[0].popcornTrackEvent && !!(base[0].popcornTrackEvent.setMedia = aux.length -1);
+        var aux, j;
+
         for (var i in base) {
-          var j = Number(i) + 1;
-          if ( !base[j] ) break;
-          if ( belongsToSameSet(base[i], base[j]) ) {
-            aux[aux.length-1].push(base[j]);
-            !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
-            !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
-          } else {
-            aux[aux.length] = [base[j]];
-            !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
+          // we skip the subtracks events
+          if ( !base[i].superTrackEvent.isSubTrackEvent ) {
+            if ( !aux ) {
+              aux = [ [ base[i] ] ];
+              !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
+            }
+            // Next Track
+            j = Number(i) + 1;
+            if ( !base[j] ) break;
+            if ( base[j].superTrackEvent.isSubTrackEvent ) break;
+
+            if ( belongsToSameSet(base[i], base[j]) ) { // We can improve this with overlapping function
+              aux[aux.length-1].push(base[j]);
+              !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
+              !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
+            } else {
+              aux[aux.length] = [base[j]];
+              !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
+            }
           }
         }
-        return aux;
+
+        if (!aux) { // There's no tracks
+          return [];
+        } else {
+          return aux;
+        }
       };
 
     butter.listen( "trackeventadded", function( e ) {

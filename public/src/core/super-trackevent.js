@@ -43,7 +43,6 @@ define( [ "core/eventmanager" ],
           if (val === true) {
             _isSubTrackEvent = false;
             _background = _allBackground[Math.floor(Math.random()*_allBackground.length)];
-            _parent = null;
           } else {
             _this.subTrackEvents = {};
             _this.subTrackEventsAll = [];
