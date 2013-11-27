@@ -329,8 +329,12 @@ define( [ "core/eventmanager", "./toggler",
             }
             // Next Track
             j = Number(i) + 1;
-            if ( !base[j] ) break;
-            if ( base[j].superTrackEvent.isSubTrackEvent ) break;
+            if ( !base[j] ) return aux;
+            // skipping the subtracks events
+            while (base[j].superTrackEvent.isSubTrackEvent) {
+              j++;
+              if ( !base[j] ) return aux;
+            }
 
             if ( belongsToSameSet(base[i], base[j]) ) { // We can improve this with overlapping function
               aux[aux.length-1].push(base[j]);

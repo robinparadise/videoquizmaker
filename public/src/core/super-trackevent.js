@@ -15,12 +15,7 @@ define( [ "core/eventmanager" ],
         _subTrackEvents = {},
         _subTrackEventsAll = [],
         _allBackground = [
-          "cornflowerblue",
-          "yellowgreen",
-          "orangered",
-          "chocolate",
-          "seagreen",
-          "brown"
+          "yellowgreen", "chocolate", "seagreen", "brown"
         ],
         _element,
         _parent,
@@ -41,13 +36,11 @@ define( [ "core/eventmanager" ],
         set: function(val) {
           _isSuperTrackEvent = val;
           if (val === true) {
-            _isSubTrackEvent = false;
-            _background = _allBackground[Math.floor(Math.random()*_allBackground.length)];
-          } else {
-            _this.subTrackEvents = {};
-            _this.subTrackEventsAll = [];
-            _this.removeAttrElement();
+            _this.setSubTrackEvent(false);
+            _this.setBackgroundColor();
           }
+          _subTrackEvents = {};
+          _subTrackEventsAll = [];
         }
       },
       isSubTrackEvent: {
@@ -58,10 +51,9 @@ define( [ "core/eventmanager" ],
         set: function(val) {
           _isSubTrackEvent = val;
           if (val === true) {
-            _isSuperTrackEvent = false;
+            _this.setSuperTrackEvent(false);
           } else {
             _parent = null;
-            _this.removeAttrElement();
           }
         }
       },
@@ -97,22 +89,27 @@ define( [ "core/eventmanager" ],
     this.setBackgroundColor = function() {
       _background = _allBackground[Math.floor(Math.random()*_allBackground.length)];
     };
-    this.setAttrElement = function(subTrackEvent) {
-      subTrackEvent.view.element.setAttribute("super-track-event", _background);
+    this.setAttrElement = function(trackEvent, attrClass) {
+      trackEvent.view.element.setAttribute("super-track-event", _background);
+      trackEvent.view.element.classList.add(attrClass);
     };
-    this.removeAttrElement = function() {
-      _subTrackEvent.view.element.removeAttribute("super-track-event");
+    this.removeAttrElement = function(trackEvent, attrClass) {
+      trackEvent.view.element.removeAttribute("super-track-event");
+      trackEvent.view.element.classList.remove("super-track-event");
+      trackEvent.view.element.classList.remove("sub-track-event");
     };
 
     /* SubTrackEvent */
     this.setSubTrackEvent = function( val, parent ) {
       _this.isSubTrackEvent = val;
-      if (parent) {
+      if (val && parent) {
         _parent = parent;
         _background = _parent.superTrackEvent.background;
+        _this.setAttrElement(_superTrackEvent, "sub-track-event");
+      } else {
+        _this.removeAttrElement(_superTrackEvent, "sub-track-event");
       }
     };
-
     this.isSubTrackEventOf = function(parent) {
       if (!_parent) {
         return false
@@ -124,7 +121,9 @@ define( [ "core/eventmanager" ],
     this.setSuperTrackEvent = function( val ) {
       _this.isSuperTrackEvent = val;
       if (val === true) {
-        this.setAttrElement(_superTrackEvent);
+        _this.setAttrElement(_superTrackEvent, "super-track-event");
+      } else {
+        _this.removeAttrElement(_superTrackEvent, "super-track-event");
       }
     }
 
