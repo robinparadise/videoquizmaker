@@ -159,12 +159,22 @@ define( [ "core/eventmanager" ],
 
     // when the trackevent is dropped somewhere else we need to verify
     // if this still belongs to the SuperTrackEvent.
-    this.closeToSuperTrackEvent = function() {
-      if (_parent) {
-        return true;
+    this.stillBelongsToParent = function() {
+      if (_parent) { // is subTrackEvent
+        var distanceTracks = Math.abs( _superTrackEvent.track.order - _parent.track.order );
+        // Is the subTrackEvent belong to the same space of time of the parent and
+        // the track-id is close to the parent-track-id (distance is least one track)
+        if (_superTrackEvent.popcornOptions.start <= _parent.popcornOptions.end   &&
+            _superTrackEvent.popcornOptions.end   >= _parent.popcornOptions.start &&
+            distanceTracks <= 1) {
+          return true; // The subTrackEvent is close to the parent
+        }
+        // Remove from the superTrackEvent: removeTrackEvent
+        // Call the function "removeSubTrackEvent" of the parent
+        _parent.superTrackEvent.removeSubTrackEvent(_superTrackEvent);
       }
       return false;
-    }
+    };
 
   }; //SuperTrackEvent
 });

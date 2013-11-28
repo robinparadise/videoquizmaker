@@ -318,11 +318,31 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			}
 		}
 
+		// Active all instance of this branch
+		this.enableAll = function(that, instance) {
+			if (instance.isSuperTrackEvent) { // Enable all SubTrackEvents
+				for (var i in  instance.subTrackEvents) {
+					instance.subTrackEvents[i].disable = false;
+				}
+			}
+			if (!instance.rulesTo) { // is leaf node
+				instance.disable = false;
+			} else {
+				Object.keys(instance.rulesTo).forEach(function(id) {
+					if (instance.rulesTo[id] !== false) {
+						that.disableAll(that, instance.rulesTo[id].instance);
+					}
+				});
+				instance.disable = false;
+			}
+	    }
+
 		this.removeLine = function(id) {
 			var line = layer.lines[id];
 			// False means It's a deleted line
 			line.startTrackEvent.linesTo[line.endTrackEvent.id] = false;
 			line.startTrackEvent.popcornTrackEvent.rulesTo[line.endTrackEvent.id] = false;
+			this.enableAll(this, line.endTrackEvent.popcornTrackEvent); // active trackEvents of this branch
 			delete layer.lines[id]; // remove reference in the layer
 			line.remove();
 			layer.draw();

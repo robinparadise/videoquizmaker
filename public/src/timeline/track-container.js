@@ -101,6 +101,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
 
           // trackEvent is a subTrackEvent of the overlappingTrackEvent
           // and the overlappingTrackEvent is the superTrackEvent
+          trackEvent.superTrackEvent.stillBelongsToParent();
           if (overlappingTrackEvent) { // superTrackEvent
             createSuperTrackEvent(overlappingTrackEvent, trackEvent);
           }
@@ -244,6 +245,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       overlappingTrackEvent = createTrackEventFromDrop( trackEvent, popcornOptions, oldTrack, desiredTrack );
       // trackEvent is a subTrackEvent of the overlappingTrackEvent
       // and the overlappingTrackEvent is the superTrackEvent
+      trackEvent.superTrackEvent.stillBelongsToParent();
       if ( overlappingTrackEvent ) {
         createSuperTrackEvent(overlappingTrackEvent, trackEvent);
       }
