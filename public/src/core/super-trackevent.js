@@ -39,6 +39,7 @@ define( [ "core/eventmanager" ],
             _this.setSubTrackEvent(false);
             _this.setBackgroundColor();
           }
+console.log("heyhey");
           _subTrackEvents = {};
           _subTrackEventsAll = [];
           _superTrackEvent.popcornTrackEvent.isSuperTrackEvent = val;
@@ -147,7 +148,7 @@ define( [ "core/eventmanager" ],
         _superTrackEvent.popcornTrackEvent.subTrackEvents.push(trackEvent.popcornTrackEvent);
         _this.setAttrElement(trackEvent);
       }
-    };
+    }
     this.removeSubTrackEvent = function( trackEvent ) {
       trackEvent.superTrackEvent.setSubTrackEvent(false);
       delete _subTrackEvents[ trackEvent.id ];
@@ -155,7 +156,12 @@ define( [ "core/eventmanager" ],
       // set popcornTrackEvent
       _superTrackEvent.popcornTrackEvent.subTrackEvents.splice(
         _subTrackEventsAll.indexOf( trackEvent.popcornTrackEvent), 1 );
-    };
+
+      // If there're no subTracksEvents, then is a normal TrackEvent
+      if (_subTrackEventsAll.length < 1) {
+        _this.setSuperTrackEvent(false);
+      }
+    }
 
     // when the trackevent is dropped somewhere else we need to verify
     // if this still belongs to the SuperTrackEvent.
@@ -174,7 +180,7 @@ define( [ "core/eventmanager" ],
         _parent.superTrackEvent.removeSubTrackEvent(_superTrackEvent);
       }
       return false;
-    };
+    }
 
   }; //SuperTrackEvent
 });
