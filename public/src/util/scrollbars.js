@@ -197,6 +197,7 @@ define( [ "core/eventmanager" ], function( EventManager ) {
 
     outerElement.addEventListener( "scroll", function(){
       setHandlePosition();
+      Butter.app.trackNetwork && Butter.app.trackNetwork.updateLinesOfLayer();
     }, false );
 
     outerElement.addEventListener( "mousewheel", function( e ){

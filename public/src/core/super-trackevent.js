@@ -39,7 +39,6 @@ define( [ "core/eventmanager" ],
             _this.setSubTrackEvent(false);
             _this.setBackgroundColor();
           }
-console.log("heyhey");
           _subTrackEvents = {};
           _subTrackEventsAll = [];
           _superTrackEvent.popcornTrackEvent.isSuperTrackEvent = val;

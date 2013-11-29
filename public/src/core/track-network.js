@@ -7,11 +7,13 @@
 define( [ "dialog/dialog" ], function( Dialog ) {
 
 	function TrackNetwork(app) {
-		var lines, stage, layer, dialog, $wrapper, lineMouse, trackEventStart;
-		var GREEN = "MediumSeaGreen";
-		var GREY = "silver";
-		var RED = "red";
-		var drawing = false;
+		var lines, stage, layer, dialog, $wrapper, lineMouse, trackEventStart, $scrollHandle,
+			GREEN = "MediumSeaGreen",
+			GREY = "silver",
+			RED = "red",
+			_scrollLeft = 0,
+			drawing = false;
+
 		var trackNetwork = this;
 
 		// Create Layer Canvas
@@ -19,6 +21,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			if (!stage) {
 				try {
 					$wrapper = $(".tracks-container-wrapper");
+					$scrollHandle = $wrapper.find(".tracks-container");
 					stage = new Kinetic.Stage({
 						container: 'tracks-container-canvas'
 					});
@@ -109,13 +112,14 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		}
 
 		// calculate and redraw all lines of the layer
-		this.updateLinesOfLayer = function() {
+		this.updateLinesOfLayer = function(scrollLeft) {
 			if (!stage) {
 				this.calculateLines();
 				return;
 			} else {
 				this.createCanvas();
 			}
+			if (scrollLeft) _scrollLeft = scrollLeft;
 			var points;
 			Object.keys(layer.lines).forEach(function(id) {
 				points = trackNetwork.calculatePoints(
@@ -134,10 +138,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 		this.calculatePoints = function($start, $end) {
 			try { // Points (Start , End)
-				var start_x = $start.position().left + $start.width();
-				var start_y = $start.parent().position().top + $start.height()/2;
-				var end_x   = $end.position().left;
-				var end_y   = $end.parent().position().top + $end.height()/2;
+				var start_x = $start.position().left + $start.width() - _scrollLeft;
+				var start_y = $start.parent().position().top + $start.height()/2 + $scrollHandle.position().top;
+				var end_x   = $end.position().left - _scrollLeft;
+				var end_y   = $end.parent().position().top + $end.height()/2 + $scrollHandle.position().top;
 				return [start_x, start_y, end_x, end_y];
 			} catch(ex) {
 				return false;
