@@ -134,7 +134,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
 
       _vScrollbar.update();
       _hScrollbar.update();
-      butter.trackNetwork && butter.trackNetwork.updateLinesOfLayer(_element.scrollLeft);
+      butter.trackNetwork && butter.trackNetwork.updateLinesOfLayer();
     }
 
     _media.listen( "mediaready", function(){

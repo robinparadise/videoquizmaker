@@ -177,7 +177,8 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
 
     updateView = function() {
       _viewPort.style.left = outerElement.scrollLeft / innerElement.offsetWidth * 100 + "%";
-      _viewPort.style.right = ( 1 - ( outerElement.scrollLeft + outerElement.offsetWidth ) / innerElement.offsetWidth ) * 100 + "%";    };
+      _viewPort.style.right = ( 1 - ( outerElement.scrollLeft + outerElement.offsetWidth ) / innerElement.offsetWidth ) * 100 + "%";
+    };
 
     _inner.addEventListener( "mousedown", onElementMouseDown, false );
     outerElement.addEventListener( "scroll", updateView, false );
