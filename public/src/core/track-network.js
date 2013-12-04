@@ -161,7 +161,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					end.popcornOptions.start,
 					start.popcornOptions.end);
 				if (!track) {
-					track = start.track._media.tracks.slice(-1).pop(); // last Track
+					track = start.track._media.orderedTracks[start.track._media.tracks.length-1]; // last Track
 					trackOrder = track.order + 1;
 				} else {
 					trackOrder = track.order;
@@ -178,7 +178,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				trackTop = (trackOrder - end.track.order) * _trackHeigh;
 				// point 4
 				aux.push( end_x - 15 );
-				aux.push( end_y + trackTop );
+				aux.push( aux[5] ); // same as point3
 				// point 5
 				aux.push( end_x - 15 );
 				aux.push( end_y + (trackOrder - end.track.order)*_trackHeigh/2 );
@@ -293,12 +293,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						// if the drawing is backwards then draw a backwards-line with options backward = true
 						if (trackA.popcornTrackEvent.setMedia !== trackB.popcornTrackEvent.setMedia) {
 							if (trackA.popcornOptions.start >= trackB.popcornOptions.start) { // Draw Backward Line
-								console.log("Draw Backward Line");
 								options.backward = true;
 							}
 						}
 						else { // Draw Backward Line in Same Set
-							console.log("Draw Backward Line (in the same Set)");
 							options.backward = true;
 						}
 						if ( trackNetwork.drawLine(trackA, trackB, options) ) {
@@ -431,7 +429,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				start.popcornOptions.start,
 				start.popcornOptions.end);
 			if (!track) {
-				track = start.track._media.tracks.slice(-1).pop(); // last Track
+				track = start.track._media.orderedTracks[start.track._media.tracks.length-1]; // last Track
 				trackOrder = track.order + 1;
 			} else {
 				trackOrder = track.order;
