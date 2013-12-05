@@ -308,17 +308,20 @@ define( [ "core/eventmanager", "./toggler",
         return a.popcornOptions.start > b.popcornOptions.start;
       },
       // Find when tracks are in the same level at time ("belongs to the same track")
-      belongsToSameSet = function(start, end) {
+      belongsToSameSet = function(start, end, offsetEnd) {
         if (!start || !end) return false;
-        if (end.popcornOptions.start <= start.popcornOptions.end) {
+        if (!offsetEnd.value) offsetEnd.value = start.end;
+        if (end.start <= offsetEnd.value) {
+          offsetEnd.value = start.end >= end.end? start.end : end.end; // Update offsetEnd
           return true;
         }
+        offsetEnd.value = undefined;
         return false;
       },
       // We ordered the tracks by Set (the tracks which are in the same space of time
       // belong to the same Set). We have to ignore the "subTrackEvents"
       sortTrackEventsBySet = function( base ) {
-        var aux, j;
+        var aux, j, offsetEnd = {value:undefined}; // OffsetEnd: longest end time
 
         for (var i in base) {
           // we skip the subtracks events
@@ -336,7 +339,7 @@ define( [ "core/eventmanager", "./toggler",
               if ( !base[j] ) return aux;
             }
 
-            if ( belongsToSameSet(base[i], base[j]) ) { // We can improve this with overlapping function
+            if ( belongsToSameSet(base[i].popcornOptions, base[j].popcornOptions, offsetEnd) ) {
               aux[aux.length-1].push(base[j]);
               !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
               !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
