@@ -5,9 +5,6 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
 <div class="butter-dinamic-dialog butter-dialog">
     <div class="butter-dialog-offset">
     <div class="butter-dialog-body dinamic-body">
-<!--         <div class="butter-dialog-title">
-            <h2><strong>Assured</strong></h2>
-        </div> -->
 
         <div class="popup-tab-header">
             <ul>
@@ -18,7 +15,7 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
                     <a class="popup-tab-header-a butter-btn header-questions">Questions</a>
                 </li>
                 <li class="popup-tab-header-li">
-                    <a class="popup-tab-header-a butter-btn header-pass">Pass</a>
+                    <a class="popup-tab-header-a butter-btn header-pass">Time</a>
                 </li>
             </ul>
         </div>
@@ -43,10 +40,6 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
                         <span class="butter-unit">%</span>
                     </div>
                 </fieldset>
-                <!-- <fieldset class="trackevent-property">
-                    <label class="property-name">Time</label>
-                    <input class="time" type="number" placeholder="50" step="10" data-manifest-key="score">
-                </fieldset> -->
                 <label class="property-name delete">Delete</label>
             </div>
 
@@ -55,8 +48,34 @@ obtain one at https://raw.github.com/mozilla/butter/master/LICENSE -->
             </div>
 
             <div class="popup-tab popup-pass">
-                <fieldset class="trackevent-property-popup select">
-                    <label class="property-name">Assure pass</label>
+                <fieldset class="trackevent-property-popup assured-time-pass fieldset-time">
+                    <div class="butter-form-radio">
+                        <input class="value-time-pass value-assure-time" type="radio" name="assured-time-pass">
+                        <label class="property-name">Assure by time</label>
+                    </div>
+                </fieldset>
+
+                <fieldset class="trackevent-property-popup select fieldset-value-pass-time fieldset-time">
+                    <select class="value-time-select">
+                        <option value="more">More than</option>
+                        <option value="more-equal">More than or equal to</option>
+                        <option value="less-equal">Less than or equal to</option>
+                        <option value="less" selected>Less than</option>
+                        <option value="equal">Equal to</option>
+                    </select>
+                </fieldset>
+
+                <fieldset class="trackevent-property fieldset-value-pass-time fieldset-time">
+                    <input type="text" class="value-time" placeholder="mm:ss" data-manifest-key="time">
+                </fieldset>
+
+                <fieldset class="trackevent-property-popup assured-time-pass">
+                    <div class="butter-form-radio">
+                        <input class="value-time-pass value-assure-pass" type="radio" name="assured-time-pass" checked="true">
+                        <label class="property-name">Assure pass</label>
+                    </div>
+                </fieldset>
+                <fieldset class="trackevent-property-popup select fieldset-value-pass-time">
                     <select class="assured-pass">
                         <option value="true" selected>Assured pass</option>
                         <option value="false">Denied pass</option>

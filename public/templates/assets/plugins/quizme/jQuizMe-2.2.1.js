@@ -177,7 +177,8 @@
 				score: "Score",
 				wrong: "Wrong",
 				total: "Total",
-				tried: "Tried"
+				tried: "Tried",
+				timer: "Time"
 			},
 			quiz:{
 				tfEqual: " = ",
@@ -387,6 +388,27 @@
 				totalQuesLen = ( !numOfQQ || isNaN( numOfQQ ) || numOfQQ > len ) ? len : numOfQQ;
 				stats.numOfQues = totalQuesLen;
 			},
+			startTimer = function(){	
+				// JM
+				stats.timer = new Stopwatch(null, 50);
+				stats.timer.start();
+/*				$.get(
+						"/home/node/" + nid + "/start",
+						null,
+						function(resp) {
+						}, "html"
+						);*/
+			},
+			stopTimer = function(){
+				stats.timer.stop();
+/*				$.get(
+						"/home/node/" + nid + "/finish/" + stats.perc(),
+						null,
+						function(resp) {
+						}, "html"
+						);*/
+				return stats.timer.toString() + "." + parseInt(stats.timer.getElapsed().milliseconds/100);
+			},
 			// setQuizTypePos(): This stores the position of the beginning and end index of each quiz type.
 			// This allows for each quiz type to be pinpointed to in an array.
 			setQuizTypePos = function(){
@@ -410,6 +432,7 @@
 				setQuizTypePos();
 				setQuitBtn();
 				setCheckAndNextBtn();
+				startTimer();
 				if( settings.review ){ setReviewMenu(); }
 				$( stickyEl ).append( currQuiz );	
 			},
@@ -530,11 +553,14 @@
 				}
 			},
 			getUserStatDetailsForDisplay = function(){
+				var stopTimerStr = stopTimer();
+				console.log("stopTimer", stopTimerStr);
 				return [
 						(lang.stats.right + ": " + stats.numOfRight), 
 						(lang.stats.wrong + ": " + stats.numOfWrong),
 						(lang.stats.tried + ": " + stats.quesTried), 
-						(lang.stats.rate + ": " + stats.accurTxt()), 
+						/*(lang.stats.rate + ": " + stats.accurTxt()),*/
+						(lang.stats.timer + ": " + stopTimerStr), 
 						(lang.stats.total + ": " + stats.percTxt())
 					].join('<br/>');
 			},
@@ -573,6 +599,7 @@
 						"prop": q.prop,
 						"retryCount": q.retryCount,
 						"hasQuit": quit,
+						"time": stats.timer.totalElapsed/1000,
 						"quitFunc": ( !quit ) ? quitQuiz : function(){},
 						"nextFunc": ( !quit ) ? changeProb : function(){}
 					};

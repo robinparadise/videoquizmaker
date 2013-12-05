@@ -221,8 +221,12 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 				if (start.type === "quizme") { // Rule for plugin quizme
 					line.popup = {
+						time: {},
 						pass: "true",
-						score: ["more-equal", 50],
+						score: {
+							condition:"more-equal",
+							value:50
+						},
 						questions: {
 							name: start.popcornOptions.name, // name Quiz
 							assured: "correct answer", // default assured by answered correctly
@@ -326,12 +330,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			// if the drawing is backwards then draw a backwards-line with options backward = true
 			if (trackA.popcornTrackEvent.setMedia !== trackB.popcornTrackEvent.setMedia) {
 				if (trackA.popcornOptions.start >= trackB.popcornOptions.start) { // Draw Backward Line
-					console.log("Draw Backward Line");
 					options.backward = true;
 				}
 			}
 			else { // Draw Backward Line in Same Set
-				console.log("Draw Backward Line (in the same Set)");
 				options.backward = true;
 			}
 			this.drawLine(trackA, trackB, options);
@@ -437,14 +439,14 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			// trackTop for 'start' trackEvent
 			trackTop = (trackOrder - start.track.order) * _trackHeigh;
 			// point 2
-			aux.push( aux[0] + 15 );
-			aux.push( aux[1] + (trackOrder - start.track.order)*_trackHeigh/2 );
+			aux.push( points[0] + 15 );
+			aux.push( points[1] + (trackOrder - start.track.order)*_trackHeigh/2 );
 			// point 3
-			aux.push( aux[0] + 15 );
-			aux.push( aux[1] + trackTop );
+			aux.push( points[0] + 15 );
+			aux.push( points[1] + trackTop );
 			// point 4
 			aux.push( points[2] );
-			aux.push( aux[1] + trackTop );
+			aux.push( points[1] + trackTop );
 			// point 5
 			aux.push( points[2] );
 			aux.push( points[3] );
@@ -511,9 +513,9 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 			// When mouse drawing highlight track-event box
 			$butterTrackEv.hover(function(e) {
-				if (drawing) $(this).addClass("highlight");
+				if (drawing) this.classList.add("highlight");
 			}, function() {
-				$(this).removeClass("highlight");
+				this.classList.remove("highlight");
 			});
 		}
 
