@@ -39,11 +39,8 @@ define( [ "core/eventmanager" ],
             _this.setSubTrackEvent(false);
             _this.setBackgroundColor();
           }
-          _subTrackEvents = {};
-          _subTrackEventsAll = [];
+          _this.removeAllSubTrackEvents();
           _superTrackEvent.popcornTrackEvent.isSuperTrackEvent = val;
-          // reset popcornTrackEvent
-          _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
         }
       },
       isSubTrackEvent: {
@@ -162,6 +159,30 @@ define( [ "core/eventmanager" ],
       }
     }
 
+    this.removeAllSubTrackEvents = function() {
+      Object.keys(_subTrackEvents).forEach(function(id) {
+        _this.removeSubTrackEvent(_subTrackEvents[id]);
+      });
+      _subTrackEvents = {};
+      _subTrackEventsAll = [];
+      // reset popcornTrackEvent
+      _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
+    }
+
+    // We need to verify if this is a child of the parent
+    this.belongTo = function(trackEvent) {
+      if (_isSubTrackEvent) {
+        if (_parent.id === trackEvent.id) {
+          return true;
+        }
+      } else if (_isSuperTrackEvent) {
+        if (!!_subTrackEvents[trackEvent.id]) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     // when the trackevent is dropped somewhere else we need to verify
     // if this still belongs to the SuperTrackEvent.
     this.stillBelongsToParent = function() {
@@ -170,8 +191,8 @@ define( [ "core/eventmanager" ],
         // Is the subTrackEvent belong to the same space of time of the parent and
         // the track-id is close to the parent-track-id (distance is least one track)
         if (_superTrackEvent.popcornOptions.start <= _parent.popcornOptions.end   &&
-            _superTrackEvent.popcornOptions.end   >= _parent.popcornOptions.start &&
-            distanceTracks <= 1) {
+            _superTrackEvent.popcornOptions.end   >= _parent.popcornOptions.start /*&&
+            distanceTracks <= 2*/) {
           return true; // The subTrackEvent is close to the parent
         }
         // Remove from the superTrackEvent: removeTrackEvent
@@ -179,6 +200,16 @@ define( [ "core/eventmanager" ],
         _parent.superTrackEvent.removeSubTrackEvent(_superTrackEvent);
       }
       return false;
+    }
+
+    // when the trackevent is dropped somewhere else we need to verify
+    // if the childs still belongs to their parent
+    this.stillChildsBelongsToParent = function() {
+      if (_isSuperTrackEvent) {
+        Object.keys(_subTrackEvents).forEach(function(id) {
+          _subTrackEvents[id].superTrackEvent.stillBelongsToParent();
+        });
+      }
     }
 
   }; //SuperTrackEvent

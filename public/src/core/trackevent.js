@@ -216,6 +216,7 @@ define( [ "./logger", "./eventmanager", "./observer",
             }
             if ( "zindex" in manifestOptions && media ) {
               var newZIndex = media.maxPluginZIndex - _track.order;
+              if (_type === "mvideo" || _type === "secuencer") newZIndex -= 900;
 
               if ( _popcornOptions.zindex !== newZIndex ) {
                 preventUpdate = false;

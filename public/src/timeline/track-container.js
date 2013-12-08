@@ -102,6 +102,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
           // trackEvent is a subTrackEvent of the overlappingTrackEvent
           // and the overlappingTrackEvent is the superTrackEvent
           trackEvent.superTrackEvent.stillBelongsToParent();
+          trackEvent.superTrackEvent.stillChildsBelongsToParent();
           if (overlappingTrackEvent) { // superTrackEvent
             createSuperTrackEvent(overlappingTrackEvent, trackEvent);
           }
@@ -200,13 +201,17 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       var superTrackEvent = superT.superTrackEvent;
       var subTrackEvent = subT.superTrackEvent;
 
-      if (!superTrackEvent.isSuperTrackEvent) {
-        superTrackEvent.setSuperTrackEvent(true);
-      }
-      if (!subTrackEvent.isSubTrackEventOf(superT.id)) {
-        subTrackEvent.setSubTrackEvent(true, superT);
-        superTrackEvent.addSubTrackEvent(subT);
-        _media.dispatch( "trackeventupdated", subT );
+      if ( !subTrackEvent.belongTo(superT) ) {
+        if (!superTrackEvent.isSuperTrackEvent) {
+          superTrackEvent.setSuperTrackEvent(true);
+        }
+        if (superTrackEvent.isSuperTrackEvent) {
+          if (!subTrackEvent.isSubTrackEventOf(superT.id)) {
+            subTrackEvent.setSubTrackEvent(true, superT);
+            superTrackEvent.addSubTrackEvent(subT);
+            _media.dispatch( "trackeventupdated", subT );
+          }
+        }
       }
     }
 
@@ -247,6 +252,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       // trackEvent is a subTrackEvent of the overlappingTrackEvent
       // and the overlappingTrackEvent is the superTrackEvent
       trackEvent.superTrackEvent.stillBelongsToParent();
+      trackEvent.superTrackEvent.stillChildsBelongsToParent();
       if ( overlappingTrackEvent ) {
         createSuperTrackEvent(overlappingTrackEvent, trackEvent);
       }
