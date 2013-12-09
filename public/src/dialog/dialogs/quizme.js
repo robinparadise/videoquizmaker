@@ -25,6 +25,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         $deleteQuiz       = $rootElement.find( ".delete-quiz" ),
         $inputNewQuiz     = $rootElement.find( ".add-new-quiz" ),
         $quizzesContainer = $rootElement.find( "#list-quizzes" ),
+        $importQuiz       = $rootElement.find( "#import-quiz" ),
+        $error            = $rootElement.find( ".error-quizmanager" ),
         GlobalQuiz        = this.Butter.QuizOptions,
         TempDataQuiz;
 
@@ -45,7 +47,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
     (function($) {
         $.fn.fancyAnimate = function(options, callback) {
             if (!options) options = {};
-            options.duration  = 510;
+            if (!options.duration) options.duration  = 510;
             if (options.mode === "add") {
                 options.attrClass = "pulse focus-light animated-half";
             } else if (options.mode === "update" || options.mode === "update all") {
@@ -54,6 +56,9 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 options.attrClass = "pulse animated-half";
             } else if (options.mode === "focus-red") {
                 options.attrClass = "focus-red";
+            } else if (options.mode === "error") {
+                options.attrClass = "pulse animated-half";
+                options.duration = 3000;
             } else { // default
                 options.duration  = 1100;
                 options.attrClass = "pulse focus-red animated-one";
@@ -130,8 +135,44 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         return result.substr(0,c);
     }
 
+    var getNewQuizName = function(name, obj) {
+        var newname = name, i = 0;
+        if (!obj) {
+            while(!!GlobalQuiz[newname]) {
+                newname = name + " (" + ++i + ")";
+            }
+        }
+        else { // obj: avoid confict with the obj too
+            while(!!GlobalQuiz[newname] || !!obj[newname]) {
+                newname = name + " (" + ++i + ")";
+            }
+        }
+        return newname;
+    }
+
     var manager = {
+        importQuizzes: function(data) {
+            TempDataQuiz = {
+                "#action#": {animate: "newQuizzes"},
+                quizzes: {}
+            };
+            var importedQuiz;
+            Object.keys(data).forEach(function(name) {
+                importedQuiz = $.extend({}, data[name]);
+                if (!!GlobalQuiz[name]) { // The name of the quiz exists
+                    // get new name of quiz
+                    var importedName = getNewQuizName(name, data); // avoid confict with the obj data too
+                    TempDataQuiz.quizzes[importedName] = importedQuiz; // Save
+                    quizDB.savequiz(importedName, importedQuiz, manager.receiveQuizzes);
+                } else {
+                    TempDataQuiz.quizzes[name] = importedQuiz; // Save
+                    quizDB.savequiz(name, importedQuiz, manager.receiveQuizzes);
+                }
+            });
+        },
         receiveQuizzes: function(data) {
+            var action;
+            !!TempDataQuiz && !!( action = TempDataQuiz["#action#"].animate );
             if (!data) {
                 console.log({ error: "[addQuizzes]: an unknown error occured" });
             }
@@ -143,7 +184,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 console.log(data.error);
             }
             // Delete Quiz
-            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "delete") {
+            else if (action === "delete") {
                 var name = TempDataQuiz["#action#"].name;
                 TempDataQuiz = undefined;
                 delete GlobalQuiz[name];
@@ -152,7 +193,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 });
             }
             // Change name of Quiz
-            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "changeNameQuiz") {
+            else if (action === "changeNameQuiz") {
                 var newname = TempDataQuiz["#action#"].newname;
                 var oldname = TempDataQuiz["#action#"].oldname;
                 TempDataQuiz = undefined;
@@ -160,8 +201,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 delete GlobalQuiz[oldname];
                 $quizzes.find(".selected").text(newname).attr("quizname", newname);
             }
-            // Add new Quiz
-            else if (TempDataQuiz && TempDataQuiz["#action#"].animate === "newQuiz") { // new Quiz
+            // Add empty new Quiz
+            else if (action === "newQuiz") { // new Quiz
                 var name = TempDataQuiz["#action#"].newname;
                 TempDataQuiz = undefined;
                 if (!GlobalQuiz[name]) {
@@ -172,6 +213,21 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     "quizid": data.id
                 });
                 $inputNewQuiz.val("");
+            }
+            // Add new Quizzes
+            else if (action === "newQuizzes") { // new Quiz
+                if (!GlobalQuiz[data.name]) {
+                    GlobalQuiz[data.name] = new Object();
+                }
+                GlobalQuiz[data.name] = $.extend({}, TempDataQuiz.quizzes[data.name]); // Save
+                delete TempDataQuiz.quizzes[data.name];
+                if ($.isEmptyObject(TempDataQuiz.quizzes)) {
+                    TempDataQuiz = undefined;
+                }
+                appendToList($quizzes, data.name, { // append just this one
+                    "quizname": data.name,
+                    "quizid": data.id
+                });
             }
             // Append all quizzes
             else {
@@ -364,7 +420,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
             XHR.post( "/api/deletequiz", pid, callback, "application/json" );
         },
         savequiz: function (name, data, callback) {
-            if (data === undefined) { data = {} }
             var quiz = {
                 id: null,
                 name: name,
@@ -577,6 +632,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         if (question == '') {  // alert("You must enter a question");
             $(questionInput).fancyAnimate();
             $(this).fancyAnimate();
+            $error.text("You must enter a question");
+            $error.fancyAnimate({mode:"error"}, cleanError);
             return false;
         }
         
@@ -589,6 +646,8 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
             } else {
                 $answers.filter(".ans-fill").fancyAnimate();
                 $(this).fancyAnimate();
+                $error.text("You must enter an answer");
+                $error.fancyAnimate({mode:"error"}, cleanError);
                 return false;
             }
             anscorrectIndex = 0; // IndexOf correct answer
@@ -603,7 +662,6 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 }
                 anscorrectIndex = 0; // IndexOf correct answer
             } else { // Focus radio box!
-                console.log("[Truefalse select checkbox!]");
                 $answers.filter(".truefalse").parent().fancyAnimate();
                 $(this).fancyAnimate();
                 return false;
@@ -615,9 +673,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 var $inputRadio = $answers.filter(".radio-multi");
                 anscorrectIndex = $inputRadio.index( $anscorrectInputRadio[0] );
             } else { // Focus radio box!
-                console.log("[multi select checkbox!]");
                 $answers.filter(".multi").fancyAnimate();
                 $(this).fancyAnimate();
+                $error.text("Select the correct answer!");
+                $error.fancyAnimate({mode:"error"}, cleanError);
                 return false;
             }
 
@@ -628,9 +687,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
             
             // You must enter at least 2 answers
             if (answers[0] === '' || answers[1] === '') {
-                console.log("[You must enter at least 2 answers!]");
                 $answers.filter(".ans-multi:lt(2)").fancyAnimate();
                 $(this).fancyAnimate();
+                $error.text("You must enter at least 2 answers!");
+                $error.fancyAnimate({mode:"error"}, cleanError);
                 return false;
             }
         }
@@ -638,9 +698,10 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         // Null
         for (var i=0; i<answers.length; i++) {
             if (anscorrectIndex === i && answers[i] === '') {
-                console.log("[anscorrect Null!]");
                 $answers.filter(".ans-multi:eq("+anscorrectIndex+")").fancyAnimate();
                 $(this).fancyAnimate();
+                $error.text("anscorrect is Null!");
+                $error.fancyAnimate({mode:"error"}, cleanError);
                 return false;
             };
         }
@@ -648,10 +709,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         for (var i=1; i<answers.length; i++) {
             for (var j=0; j<i; j++) {
                 if (answers[i] && answers[j] && answers[i] === answers[j]) {
-                    console.log("[Equality]");
                     $answers.filter(".ans-multi:eq("+i+")").fancyAnimate();
                     $answers.filter(".ans-multi:eq("+j+")").fancyAnimate();
                     $(this).fancyAnimate();
+                    $error.text("equal answers");
+                    $error.fancyAnimate({mode:"error"}, cleanError);
                     return false;
                 }
             }
@@ -683,6 +745,94 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
     });
     $selectTypeAns.change(function(ev) {
         addUpdateQues.value === "Update" && $addUpdateQues.show();
+    });
+
+    var cleanError = function() {
+        $error.text('');
+    }
+
+    var errorHandler = function(e) {
+        var options = {
+            mode: "error",
+            duration: 4000
+        }
+        switch(e.target.error.code) {
+            case e.target.error.NOT_FOUND_ERR:
+                $error.text('File Not Found!');
+                $error.fancyAnimate({mode: "error"}, cleanError);
+                break;
+            case e.target.error.NOT_READABLE_ERR:
+                $error.text('File is not readable');
+                $error.fancyAnimate({mode: "error"}, cleanError);
+                break;
+            case e.target.error.ABORT_ERR:
+                break;
+            default:
+                $error.text('An error occurred reading this file.');
+                $error.fancyAnimate({mode: "error"}, cleanError);
+        };
+    }
+
+    var onLoadFileHandler = function(theFile, data) {
+        var typeQuizzes = ["tf", "multiList", "multi", "fill", "cards"];
+        var typeData, isQuizType,
+            quizzes = {};
+        // type of json files
+        Object.keys(data).forEach(function(name) {
+            isQuizType = $.inArray(name, typeQuizzes) !== -1;
+            if ( isQuizType && $.isArray(data[name]) ) {
+                // import the quiz from from the data
+                typeData = "import-quiz";
+                return false;
+            }
+            else if ( !isQuizType ) {
+                Object.keys(data[name]).forEach(function(type) {
+                    if ( $.isArray(data[name][type], typeQuizzes) && $.isArray(data[name][type]) ) {
+                        // import quizzes from the data
+                        typeData = "import-quizzes";
+                        return false;
+                    }
+                });
+            }
+            return false;
+        });
+        if (typeData === "import-quiz") {
+            quizzes[theFile.name] = data;
+        }
+        else if (typeData === "import-quizzes") {
+            quizzes = data;
+        }
+        else {
+            $error.text('Import Quiz: An error occurred reading this file.');
+            $error.fancyAnimate({mode: "error"}, cleanError);
+            return false;
+        }
+        
+        // Import each quiz
+        manager.importQuizzes(quizzes);
+    }
+
+    // Import Quiz
+    $importQuiz.change(function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var files = e.target.files; // FileList object
+
+        // Loop through the FileList and render json files.
+        for (var i = 0, f; f = files[i]; i++) {
+            // Only process json files.
+            var reader = new FileReader();
+
+            reader.onerror = errorHandler;
+            reader.onload = (function(theFile) {
+                return function(e) {
+                    var result = JSON.parse(e.target.result);
+                    onLoadFileHandler(theFile, result);
+                };
+            })(f);
+
+            reader.readAsText(f);
+        }
     });
 
     // Resize Dialog
