@@ -328,7 +328,6 @@ define( [ "core/eventmanager", "./toggler",
           if ( !base[i].superTrackEvent.isSubTrackEvent ) {
             if ( !aux ) {
               aux = [ [ base[i] ] ];
-              !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
             }
             // Next Track
             j = Number(i) + 1;
@@ -341,11 +340,8 @@ define( [ "core/eventmanager", "./toggler",
 
             if ( belongsToSameSet(base[i].popcornOptions, base[j].popcornOptions, offsetEnd) ) {
               aux[aux.length-1].push(base[j]);
-              !!base[i].popcornTrackEvent && !!(base[i].popcornTrackEvent.setMedia = aux.length -1);
-              !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
             } else {
               aux[aux.length] = [base[j]];
-              !!base[j].popcornTrackEvent && !!(base[j].popcornTrackEvent.setMedia = aux.length -1);
             }
           }
         }
