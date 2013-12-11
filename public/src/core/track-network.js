@@ -295,7 +295,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					trackB = app.getTrackEvents( "id", id )[0];
 					if (!!trackB) {
 						// if the drawing is backwards then draw a backwards-line with options backward = true
-						if (trackA.popcornTrackEvent.setMedia !== trackB.popcornTrackEvent.setMedia) {
+						if (trackA.popcornOptions.setMedia !== trackB.popcornOptions.setMedia) {
 							if (trackA.popcornOptions.start >= trackB.popcornOptions.start) { // Draw Backward Line
 								options.backward = true;
 							}
@@ -328,7 +328,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			}
 
 			// if the drawing is backwards then draw a backwards-line with options backward = true
-			if (trackA.popcornTrackEvent.setMedia !== trackB.popcornTrackEvent.setMedia) {
+			if (trackA.popcornOptions.setMedia !== trackB.popcornOptions.setMedia) {
 				if (trackA.popcornOptions.start >= trackB.popcornOptions.start) { // Draw Backward Line
 					options.backward = true;
 				}

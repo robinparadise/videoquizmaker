@@ -132,6 +132,7 @@ define( [ "./logger", "./eventmanager", "./observer",
      * @throws TrackEventUpdateException: When an update operation failed because of conflicting times or other serious property problems.
      */
     this.update = function( updateOptions ) {
+      console.log("updateOptions", updateOptions);
 
       var newStart,
           newEnd,
@@ -190,8 +191,9 @@ define( [ "./logger", "./eventmanager", "./observer",
 
         if ( this.manifest ) {
           // Get names of quizzes
-          if (this.manifest.about && this.manifest.about.name == "Popcorn jQuizme Plugin") {
+          if (_type === "quizme" && this.manifest.options) {
             this.manifest.options.name.options = Object.keys(Butter.QuizOptions);
+            preventUpdate = false;
           }
           manifestOptions = this.manifest.options;
           if ( manifestOptions ) {
@@ -223,6 +225,15 @@ define( [ "./logger", "./eventmanager", "./observer",
               }
 
               _popcornOptions.zindex = updateOptions.zindex = newZIndex;
+            }
+            // update SuperTrackEvents options
+            if (updateOptions.isSuperTrackEvent !== undefined) {
+              _popcornOptions.isSuperTrackEvent = updateOptions.isSuperTrackEvent;
+              preventUpdate = false;
+            }
+            if (updateOptions.subTrackEvents) {
+              _popcornOptions.subTrackEvents = updateOptions.subTrackEvents;
+              preventUpdate = false;
             }
           }
         }

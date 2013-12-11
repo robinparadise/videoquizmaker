@@ -19,7 +19,7 @@
       review: true,
       showFeedback: false
   };
-  var target;
+  var target, gettingQuizzes;
 
   // get Quizzes
   var GlobalQuiz = {};
@@ -150,7 +150,9 @@
       }
       options.$container = $(options._container);
       if ( $.isEmptyObject(GlobalQuiz) ) {
+        gettingQuizzes = true;
         this.getQuizzes(function(data) {
+          gettingQuizzes = false;
           for(var n in data.json.all) {
             GlobalQuiz[data.json.all[n].name] = JSON.parse(data.json.all[n].data);
           }
@@ -163,6 +165,21 @@
     },
 
     start: function( event, options ) {
+      if (!options.$container.children().hasClass("quiz-el") && !gettingQuizzes) {
+        if ( $.isEmptyObject(GlobalQuiz) ) {
+          gettingQuizzes = true;
+          this.getQuizzes(function(data) {
+            gettingQuizzes = false;
+            for(var n in data.json.all) {
+              GlobalQuiz[data.json.all[n].name] = JSON.parse(data.json.all[n].data);
+            }
+            createQuiz(options);
+          });
+        }
+        else {
+          createQuiz(options);
+        }
+      }
       if ( options._container ) {
         options._container.classList.add( "on" );
         options._container.classList.remove( "off" );

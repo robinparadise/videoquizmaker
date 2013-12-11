@@ -13,7 +13,6 @@ define( [ "core/eventmanager" ],
         _isSubTrackEvent = false,
         _this = this,
         _subTrackEvents = {},
-        _subTrackEventsAll = [],
         _allBackground = [
           "yellowgreen", "chocolate", "seagreen", "brown"
         ],
@@ -40,7 +39,11 @@ define( [ "core/eventmanager" ],
             _this.setBackgroundColor();
           }
           _this.removeAllSubTrackEvents();
-          _superTrackEvent.popcornTrackEvent.isSuperTrackEvent = val;
+          // setPopcornTrackEvent
+          _superTrackEvent.update({
+            isSuperTrackEvent: val,
+            subTrackEvents: []
+          });
         }
       },
       isSubTrackEvent: {
@@ -86,13 +89,6 @@ define( [ "core/eventmanager" ],
       }
     });
 
-    // Set PopcornWrapper SuperTrackEvents
-    this.setPopcornTrackEvent = function() {
-      if (!_superTrackEvent.popcornTrackEvent) {
-        _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
-      }
-    }
-
     this.setBackgroundColor = function() {
       _background = _allBackground[Math.floor(Math.random()*_allBackground.length)];
     };
@@ -132,30 +128,30 @@ define( [ "core/eventmanager" ],
       } else {
         _this.removeAttrElement(_superTrackEvent, "super-track-event");
       }
-      // setPopcornTrackEvent
-      _this.setPopcornTrackEvent();
     }
 
     this.addSubTrackEvent = function( trackEvent ) {
-      if (!_subTrackEvents[trackEvent.id]) {
-        _subTrackEventsAll.push(trackEvent);
+      if (!_subTrackEvents[trackEvent]) {
         _subTrackEvents[trackEvent.id] = trackEvent;
-        // set popcornTrackEvent
-        _superTrackEvent.popcornTrackEvent.subTrackEvents.push(trackEvent.popcornTrackEvent);
         _this.setAttrElement(trackEvent);
+        // set popcornOptions
+        _superTrackEvent.update({
+          subTrackEvents: Object.keys(_subTrackEvents)
+        });
       }
     }
     this.removeSubTrackEvent = function( trackEvent ) {
       trackEvent.superTrackEvent.setSubTrackEvent(false);
       delete _subTrackEvents[ trackEvent.id ];
-      _subTrackEventsAll.splice( _subTrackEventsAll.indexOf( trackEvent ), 1 );
-      // set popcornTrackEvent
-      _superTrackEvent.popcornTrackEvent.subTrackEvents.splice(
-        _subTrackEventsAll.indexOf( trackEvent.popcornTrackEvent), 1 );
 
       // If there're no subTracksEvents, then is a normal TrackEvent
-      if (_subTrackEventsAll.length < 1) {
+      if (Object.keys(_subTrackEvents).length < 1) {
         _this.setSuperTrackEvent(false);
+      }
+      else { // update popcornOptions
+        _superTrackEvent.update({
+          subTrackEvents: Object.keys(_subTrackEvents)
+        });
       }
     }
 
@@ -163,10 +159,6 @@ define( [ "core/eventmanager" ],
       Object.keys(_subTrackEvents).forEach(function(id) {
         _this.removeSubTrackEvent(_subTrackEvents[id]);
       });
-      _subTrackEvents = {};
-      _subTrackEventsAll = [];
-      // reset popcornTrackEvent
-      _superTrackEvent.popcornTrackEvent.subTrackEvents = [];
     }
 
     // We need to verify if this is a child of the parent
