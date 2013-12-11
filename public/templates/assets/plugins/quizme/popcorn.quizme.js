@@ -21,6 +21,17 @@
   };
   var target;
 
+  // get Quizzes
+  var GlobalQuiz = {};
+  var createQuiz = function(options) {
+    if (!!options.name && GlobalQuiz[options.name]) {
+      options.quiz = GlobalQuiz[options.name];
+    } else {
+      options.quiz = GlobalQuiz["TrueFalse"]; // Default
+    }
+    !!options.quiz && options.$container.jQuizMe(options.quiz, opt1, options.callback);
+  }
+
   Popcorn.plugin( "quizme", {
 
     manifest: {
@@ -132,26 +143,26 @@
       // Object Callback with functions that jquizme execute when finish
       options.callback = {
         popcorn: this,
-        quizResult: function(info) {
-          this.popcorn.continueFlow(options, info); // Continue with the next Flow
+        continueFlow: this.continueFlow,
+        quizResult: function(info) { // Continue with the next Flow
+          this.popcorn.continueFlow(options, info); 
         }
       }
       options.$container = $(options._container);
-      if (Butter.QuizOptions) {
-        if (!!options.name) {
-          options.quiz = Butter.QuizOptions[options.name];
-        } else {
-          options.quiz = Butter.QuizOptions["TrueFalse"]; // Default
-        }
-        !!options.quiz && options.$container.jQuizMe(options.quiz, opt1, options.callback);
+      if ( $.isEmptyObject(GlobalQuiz) ) {
+        this.getQuizzes(function(data) {
+          for(var n in data.json.all) {
+            GlobalQuiz[data.json.all[n].name] = JSON.parse(data.json.all[n].data);
+          }
+          createQuiz(options);
+        });
+      }
+      else {
+        createQuiz(options);
       }
     },
 
     start: function( event, options ) {
-      if (!options.$container.children().hasClass("quiz-el")) { // Create again 'cause was deleted
-        options.quiz = Butter.QuizOptions[options.name];
-        options.$container.jQuizMe(options.quiz, opt1, options.callback);
-      }
       if ( options._container ) {
         options._container.classList.add( "on" );
         options._container.classList.remove( "off" );

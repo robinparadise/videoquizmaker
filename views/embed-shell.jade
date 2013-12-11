@@ -22,6 +22,10 @@ html
 
     title #{projectName} - Popcorn Maker
     link(rel='stylesheet', href='#{baseHref}/css/embed-shell.css')
+    link(rel='stylesheet', href='/templates/assets/plugins/quizme/jQuizMe.css')
+    script(src='/templates/assets/jquery.min.js')
+    script(src='/templates/assets/plugins/quizme/jQuizMe-2.2.1.js')
+    script(src='/templates/assets/plugins/quizme/stopwatch.js')
   body
     .preview-message This is a preview URL only. When sharing, please use the following URL:
         a(href='#{embedShellSrc}') #{embedShellSrc}

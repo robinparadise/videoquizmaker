@@ -180,6 +180,7 @@ app.post( '/api/publish/:id',
   }
 
   Project.find( { id: id, email: email }, function( err, project ) {
+
     if ( err ) {
       res.json( { error: err }, 500);
       return;
