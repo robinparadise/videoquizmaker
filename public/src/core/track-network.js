@@ -19,6 +19,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 		var trackNetwork = this;
 
+		this.getTrackEvent = function(id) {
+			return app.getTrackEvents("id", id)[0];
+		}
+
 		// Create Layer Canvas
 		this.createCanvas = function() {
 			if (!stage) {
@@ -143,9 +147,9 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		}
 
 		this.calculatePoints = function(start, end, backward) {
-			var aux, track, trackOrder, trackTop, $start, $end;
-			$start = start.$element;
-			$end = end.$element;
+			var aux, track, trackOrder, trackTop,
+				$start = start.$element;
+				$end = end.$element;
 			try { // Points (Start , End)
 				var start_x = $start.position().left + $start.width() - _scrollLeft;
 				var start_y = $start.parent().position().top + $start.height()/2 + _scrollTop;
@@ -191,75 +195,63 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		// Draw Lines between two points
 		this.drawLine = function(start, end, options) {
 			if ( options === undefined ) options = {};
-			if ( !options.manual && start.linesTo && 
-					start.linesTo[end.id] === false ) {
+			if ( !options.manual && start.lines.isDeletedLine(end.id) ) {
 				return false; // Line was removed
 			}
 
 			var points = this.calculatePoints(start, end, options.backward);
 			if (!points) return false;
 
-			// Look if there is a line
-			if (start.linesTo && start.linesTo[end.id] instanceof Kinetic.Line) {
-				var line = start.linesTo[end.id]; // get line by id
+			if ( start.lines.isLine(end.id) ) { // if there is a kinetic line
+				var line = start.lines.allLines[end.id].line,
+					update = false;
 				line.setPoints(points);
-				if (options.manual && options.color) {
+				if (options.color && options.color !== line.attrs.stroke) {
 					line.attrs.stroke = options.color; // change color
+					update = true;
 				}
-				this.removeOthersLines(start, end.id);
+				if (options.manual && options.manual !== line.manual) {
+					line.manual = true;
+					update = true;
+				}
+				if (options.backward && options.backward !== line.backward) {
+					line.backward = true;
+					update = true;
+				}
+
+				if ( this.removeOthersLines(start, end.id) || update ) {
+					start.lines.update();
+				}
 			}
 			else { // New line
-				if (!options.color) options.color = GREY; // Default color gray
 
 				var line = new Kinetic.Line({ // Create Kinetic Line
 					points: points,
-					stroke: options.color,
+					stroke: options.color || GREY,
 					strokeWidth: 5,
 					lineCap: 'round',
 					lineJoin: 'round'
 				});
 
-				if (start.type === "quizme") { // Rule for plugin quizme
-					line.popup = {
-						time: {},
-						pass: "true",
-						score: {
-							condition:"more-equal",
-							value:50
-						},
-						questions: {
-							name: start.popcornOptions.name, // name Quiz
-							assured: "correct answer", // default assured by answered correctly
-							userAnswer: "true"
-						},
-						keyrule: 'score' // by Default
-					}
-				} else { // others plugins
-					line.popup = {
-						pass: "true",
-						keyrule: 'pass' // by Default
-					}
-				}
-				line.popup.instance = end.popcornTrackEvent;
 				// Create event popup dialog for line
 				line.on('click', function (ev) {
+					var position = {};
 					if (ev.offsetX) {
-						this.popup.left = ev.offsetX;
-						this.popup.top  = ev.screenY;
+						position.left = ev.offsetX;
+						position.top  = ev.screenY;
 					} else { // Firefox
-						this.popup.left = ev.pageX - stage.$content.offset().left;
-						this.popup.top  = ev.screenY;
+						position.left = ev.pageX - stage.$content.offset().left;
+						position.top  = ev.screenY;
 					}
 					dialog = Dialog.spawn( "dinamic", {
 						data: {
-							popup: this.popup,
-							lineId: this._id,
-							trackEvent: start
+							position: position,
+							trackEventStart: start,
+							endID: end.id
 						},
 						events: {
-							delete: function(e) { // e.Data is LineId
-								// remove line.id from layer
-								trackNetwork.removeLine(e.data);
+							delete: function(e) {
+								trackNetwork.removeLine(e.data.instance, e.data.endID);
 								dialog.close();
 							}
 						}
@@ -269,30 +261,37 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 				layer.add(line);
 				layer.lines[line._id] = line;
-
-				// Save "line" and "popup rule" into the object
-				this.saveLinesTo(start, end.id, line);
 				// Save references to the tracks events
 				line.startTrackEvent = start;
 				line.endTrackEvent = end;
+
+				if (options.manual) line.manual = true;
+				if (options.backward) line.backward = true;
+
+				// Save "line" and "popup rule" into the object
+				start.lines.addLine(end, {
+					backward: options.backward,
+					manual: options.manual,
+					color: options.color || GREY,
+					line: line,
+				});
+				return true;
 			}
-			if (options.manual) line.manual = true;
-			if (options.backward || line.backward) {
-				line.backward = true;
-				line.popup.backward = true;
-			} else {
-				line.popup.backward = false;
-			}
+			//line.popup.backward = true;
+			//line.popup.backward = false;
 			return true;
 		}
 
 		this.drawManualLines = function(trackA, tempKeys) {
 			if (!tempKeys) tempKeys = {};
-			var options = {manual: true};
-			var drawn = false, trackB;
-			!!trackA.linesTo && Object.keys(trackA.linesTo).forEach(function(id) {
-				if (!tempKeys[id] && !!trackA.linesTo[id] && trackA.linesTo[id].manual) {
-					trackB = app.getTrackEvents( "id", id )[0];
+			var options = {manual: true},
+				drawn = false,
+				trackB,
+				allLines = trackA.lines.allLines;
+
+			Object.keys(allLines).forEach(function(id) {
+				if (!tempKeys[id] && !!allLines[id] && allLines[id].manual) {
+					trackB = trackNetwork.getTrackEvent( id );
 					if (!!trackB) {
 						// if the drawing is backwards then draw a backwards-line with options backward = true
 						if (trackA.popcornOptions.setMedia !== trackB.popcornOptions.setMedia) {
@@ -303,6 +302,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						else { // Draw Backward Line in Same Set
 							options.backward = true;
 						}
+
 						if ( trackNetwork.drawLine(trackA, trackB, options) ) {
 							tempKeys[id] = true;
 							drawn = true;
@@ -316,8 +316,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		// Draw line from mouse event
 		this.drawLineFromEvent = function($objA, $objB, options) {
 			if ( !$objA.jquery || !$objB.jquery ) return;
-			var trackA = app.getTrackEvents( "id", $objA.attr('data-butter-trackevent-id') )[0];
-			var trackB = app.getTrackEvents( "id", $objB.attr('data-butter-trackevent-id') )[0];
+			var trackA = this.getTrackEvent( $objA.attr('data-butter-trackevent-id') );
+			var trackB = this.getTrackEvent( $objB.attr('data-butter-trackevent-id') );
 			if (!trackA || !trackB) return;
 			// if some trackEvent is a SubTrackEvent look for the parent
 			if (trackA.superTrackEvent.isSubTrackEvent) {
@@ -339,82 +339,74 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			this.drawLine(trackA, trackB, options);
 		}
 
-		// Save line into object track event
-		this.saveLinesTo = function(obj, id, line) {
-			if ($.isEmptyObject(obj.linesTo)) {
-				obj.linesTo = {}
-				obj.popcornTrackEvent.rulesTo = {}
-			} else {
-				this.removeOthersLines(obj, id);
-			}
-			obj.linesTo[id] = line; // Save new line
-			obj.popcornTrackEvent.rulesTo[id] = line.popup;
-		}
 		this.removeOthersLines = function(obj, id) {
+			var update = false;
+
 			// if it's not a trackEvent quizme then remove all lines before
 			if (obj.type !== "quizme") {
-				Object.keys(obj.linesTo).forEach(function(trackID) {
-					if (obj.linesTo[trackID] instanceof Kinetic.Line && id !== trackID) {
-						delete layer.lines[obj.linesTo[trackID]._id] // delete from layer
-						obj.linesTo[trackID].remove(); // remove line from layer children
-					}
-					if (id !== trackID) {
-						delete obj.linesTo[trackID]; // Remove all lines from TrackEvent
-						delete obj.popcornTrackEvent.rulesTo[trackID] // from popcornTrackEvent
+				var lineID,
+					allLines = obj.lines.allLines;
+				Object.keys(obj.lines.allLines).forEach(function(trackID) {
+					if (obj.lines.isLine(trackID) && id !== trackID) {
+						lineID = allLines[trackID].line._id;
+						obj.lines.removeLine(trackID, true); // Remove line from TrackEvent
+						layer.lines[lineID].remove(); // Remove line from layer children
+						delete layer.lines[lineID] // Delete from layer
+						update = true;
 					}
 				});
 			}
+			return update;
 		}
 
 		// Remove old lines references
 		this.cleanOldLines = function(obj, tempKeys) {
-			if ( obj && obj.linesTo ) {
-				Object.keys(obj.linesTo).forEach(function(trackID) {
-					if (!tempKeys[trackID]) { // It's an old line
-						try {
-							delete layer.lines[obj.linesTo[trackID]._id] // delete from layer
-							obj.linesTo[trackID].remove(); // remove line from layer children
-						}
-						catch(err) {}
-						try {
-							delete obj.linesTo[trackID]; // Remove all lines from TrackEvent
-							delete obj.popcornTrackEvent.rulesTo[trackID]; // from popcornTrackEvent
-						}
-						catch(err) {}
-					}
-				});
+			var allLines = obj.lines.allLines,
+				update = false, lineID;
+
+			Object.keys(allLines).forEach(function(trackID) {
+				if (!tempKeys[trackID] && obj.lines.isLine(trackID)) { // It's an old line
+					lineID = allLines[trackID].line._id;
+					obj.lines.removeLine(trackID, true); // Remove line from TrackEvent
+					layer.lines[lineID].remove(); // Remove line from layer children
+					delete layer.lines[lineID]; // Delete from layer
+					update = true;
+				}
+			});
+			if (update) {
+				obj.lines.update();
 			}
 		}
 
 		// Active all instance of this branch
 		this.enableAll = function(that, instance) {
-			if (instance.isSuperTrackEvent) { // Enable all SubTrackEvents
-				for (var i in  instance.subTrackEvents) {
-					instance.subTrackEvents[i].disable = false;
-				}
+			if (instance.superTrackEvent.isSuperTrackEvent) { // Enable all SubTrackEvents
+				instance.superTrackEvent.subTrackEvents.forEach(function(id) {
+					instance.superTrackEvent.subTrackEvents[id].update({disable: false});
+				});
 			}
-			if (!instance.rulesTo) { // is leaf node
-				instance.disable = false;
+			if ( instance.lines.isLeafNode() ) { // Leaf node
+				instance.update({disable: false});
 			} else {
-				Object.keys(instance.rulesTo).forEach(function(id) {
-					if (instance.rulesTo[id] !== false) {
-						that.enableAll(that, instance.rulesTo[id].instance);
+				var lineEvt = instance.lines;
+				Object.keys(lineEvt.allLines).forEach(function(id) {
+					if (lineEvt.allLines[id] && !lineEvt.allLines[id].deleted && !lineEvt.allLines[id].backward) {
+						that.enableAll(that, lineEvt.allLines[id].endInstance);
 					}
 				});
-				instance.disable = false;
+				instance.update({disable: false});
 			}
-	    }
+		}
 
-		this.removeLine = function(id) {
-			var line = layer.lines[id];
+		this.removeLine = function(instance, id) {
+			var lineEvt = instance.lines.allLines[id];
 			// False means It's a deleted line
-			line.startTrackEvent.linesTo[line.endTrackEvent.id] = false;
-			line.startTrackEvent.popcornTrackEvent.rulesTo[line.endTrackEvent.id] = false;
-			if (!line.backward) {
-				this.enableAll(this, line.endTrackEvent.popcornTrackEvent); // active trackEvents of this branch
+			instance.lines.setDeletedLine(id);
+			if (!lineEvt.backward) {
+				this.enableAll(this, lineEvt.endInstance); // active trackEvents of this branch
 			}
-			delete layer.lines[id]; // remove reference in the layer
-			line.remove();
+			lineEvt.line.remove();
+			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
 			layer.draw();
 		}
 
@@ -470,7 +462,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					layer.draw();
 				} else {
 					$instStart = $(this).parent();
-					instStart = app.getTrackEvents( "id", $instStart.attr('data-butter-trackevent-id') )[0];
+					instStart = trackNetwork.getTrackEvent( $instStart.attr('data-butter-trackevent-id') );
 					var $that = $(this);
 					var $wrap = $that.parent().parent();
 					lineMouse = new Kinetic.Line({
