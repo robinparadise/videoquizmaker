@@ -87,8 +87,8 @@ define( [ "core/eventmanager" ],
           _lines[trackEventID].backward = options.backward;
           _rules[trackEventID].backward = options.backward;
         }
-        if (options.manual)   _lines[trackEventID].manual   = options.manual;
-        if (options.color)    _lines[trackEventID].color    = options.color;
+        if (options.manual) _lines[trackEventID].manual = options.manual;
+        if (options.color)  _lines[trackEventID].color  = options.color;
         _trackEvent.update({rules: _rules});
       }
     }
