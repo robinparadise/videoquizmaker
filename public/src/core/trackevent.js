@@ -7,10 +7,10 @@
  *
  * Supports a single event in the Media > Track > TrackEvent model.
  */
-define( [ "./logger", "./eventmanager", "./observer",
-          "util/lang", "util/time", "./views/trackevent-view", "./super-trackevent" ],
+define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
+          "./views/trackevent-view", "./super-trackevent", "./lines-trackevent" ],
   function( Logger, EventManager, Observer,
-            LangUtil, TimeUtil, TrackEventView, SuperTrackEvent ) {
+            LangUtil, TimeUtil, TrackEventView, SuperTrackEvent, Lines ) {
 
   var __guid = 0;
 
@@ -53,6 +53,7 @@ define( [ "./logger", "./eventmanager", "./observer",
         },
         _view = new TrackEventView( this, _type, _popcornOptions ),
         _superTrackEvent = new SuperTrackEvent( _this ),
+        _lines = new Lines( _this ),
         _popcornWrapper = null,
         _selected = false;
 
@@ -132,7 +133,6 @@ define( [ "./logger", "./eventmanager", "./observer",
      * @throws TrackEventUpdateException: When an update operation failed because of conflicting times or other serious property problems.
      */
     this.update = function( updateOptions ) {
-      console.log("updateOptions", updateOptions);
 
       var newStart,
           newEnd,
@@ -145,6 +145,14 @@ define( [ "./logger", "./eventmanager", "./observer",
       if ( !updateOptions ) {
         updateOptions = {};
         preventUpdate = false;
+      } else {
+        // Remove circular object
+        if (updateOptions.track) {
+          delete updateOptions.track;
+        }
+        if (updateOptions.trackEvent) {
+          delete updateOptions.trackEvent;
+        }
       }
 
       newStart = updateOptions.start;
@@ -235,6 +243,16 @@ define( [ "./logger", "./eventmanager", "./observer",
               _popcornOptions.subTrackEvents = updateOptions.subTrackEvents;
               preventUpdate = false;
             }
+            // enable options
+            if (updateOptions.disable !== undefined) {
+              _popcornOptions.disable = updateOptions.disable;
+              preventUpdate = false;
+            }
+            if (updateOptions.rules) {
+              _popcornOptions.rules = updateOptions.rules;
+              preventUpdate = false;
+            }
+
           }
         }
       }
@@ -329,6 +347,20 @@ define( [ "./logger", "./eventmanager", "./observer",
           return _superTrackEvent;
         }
       },
+
+      /**
+       * Property: lines
+       *
+       * A reference to the lines object generated for this TrackEvent.
+       * @malleable: No.
+       */
+      lines: {
+        enumerable: true,
+        get: function(){
+          return _lines;
+        }
+      },
+
       /**
        * Property: dragging
        *

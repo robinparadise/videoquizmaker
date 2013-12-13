@@ -88,7 +88,6 @@ define( [
           popcornEvent = null;
 
       function createTrackEvent() {
-
         if ( _popcorn.getTrackEvent( popcornId ) ) {
           _popcorn[ trackEvent.type ]( popcornId, newOptions );
         } else {
@@ -96,6 +95,23 @@ define( [
         }
 
         popcornEvent = _popcorn.getTrackEvent( popcornId );
+        if (newOptions.isSuperTrackEvent !== undefined) {
+          if (popcornEvent.isSuperTrackEvent !== newOptions.isSuperTrackEvent) {
+            popcornEvent.isSuperTrackEvent = newOptions.isSuperTrackEvent;
+          }
+        }
+        if (newOptions.subTrackEvents) {
+          popcornEvent.subTrackEvents = newOptions.subTrackEvents;
+        }
+        if (newOptions.rules) {
+          popcornEvent.rules = newOptions.rules;
+        }
+        if (newOptions.disable !== undefined) {
+          if (popcornEvent.disable !== newOptions.disable) {
+            popcornEvent.disable = newOptions.disable;
+          }
+        }
+
         trackEvent.popcornTrackEvent = popcornEvent;
 
         trackEvent.popcornOptions.start = +popcornEvent.start;
