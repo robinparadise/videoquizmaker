@@ -8,8 +8,10 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
         dialog.assignEscapeKey( "default-close" );
         dialog.assignButton( ".close-button", "close" );
         dialog.enableCloseButton();
-        var _options = _data.popup,
-        _trackEvent = _data.trackEvent,
+        
+        var _options = _data.trackEventStart.lines.allRules[_data.endID],
+        _trackEvent  = _data.trackEventStart,
+        _position    = _data.position,
         $rootElement = $( dialog.rootElement ),
         // Headers
         $headers           = $rootElement.find("a.popup-tab-header-a"),
@@ -266,8 +268,8 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                 var offsetHeight  = 30;    // Arrow height
                 var height = $rootElement.height() + offsetHeight;
                 $rootElement.css({
-                    "left": _options.left - offsetGlobalX,
-                    "top": _options.top - height - offsetGlobalY
+                    "left": _position.left - offsetGlobalX,
+                    "top": _position.top - height - offsetGlobalY
                 });
             }
         }
@@ -282,14 +284,17 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     $popupTab.hide();
                     $popupScore.show();
                     setScore();
+                    _trackEvent.lines.update();
                 });
                 $assuredScore.change(function(ev) {
                     _options.score.condition = $assuredScore.find(":selected").attr("value");
                     _options.keyrule = "score";
+                    _trackEvent.lines.update();
                 });
                 $score.change(function() {
                     _options.score.value = this.value;
                     _options.keyrule = "score";
+                    _trackEvent.lines.update();
                 });
             }
 
@@ -313,6 +318,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                         _options.questions.n    = pos;
                         _options.questions.ques = GlobalQuiz[name][type][pos].ques;
                         setQuestions();
+                        _trackEvent.lines.update();
                     }
                 });
                 $headerQuestions.click(function(ev) {
@@ -331,19 +337,23 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                 $questions.on("change", "[name='assured-pass']", function(ev) {
                     ev.preventDefault();
                     setParamsQuestion($(this));
+                    _trackEvent.lines.update();
                 });
                 $questions.on("change", ".answer-pass", function(ev) {
                     ev.preventDefault();
                     setParamsQuestion($(this));
+                    _trackEvent.lines.update();
                 });
                 $questions.on("change", ".specific-user-answer", function(ev) {
                     ev.preventDefault();
                     setParamsQuestion($(this));
+                    _trackEvent.lines.update();
                 });
                 $questions.on("change", ".answer-checkbox", function(ev) {
                     ev.preventDefault();
                     setUserAnswers($(this));
                 });
+                _trackEvent.lines.update();
             }
 
             // Pass Changes
@@ -355,10 +365,12 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     $popupTab.hide();
                     $popupPass.show();
                     setTimePass();
+                    _trackEvent.lines.update();
                 });
                 $assuredPass.change(function() {
                     _options.pass = $assuredPass.find(":selected").val();
                     _options.keyrule = "pass";
+                    _trackEvent.lines.update();
                 });
             }
             // Time Changes
@@ -370,21 +382,27 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     } else {
                         _options.keyrule = "pass";
                     }
+                    _trackEvent.lines.update();
                 });
 
                 $assuredTimeSelect.change(function() {
                     _options.time.condition = $(this).find(":selected").attr("value");
                     _options.keyrule = "time";
+                    _trackEvent.lines.update();
                 });
 
                 $assuredTime.change(function() {
                     _options.time.value = Util.toSeconds(this.value);
                     _options.keyrule = "time";
+                    _trackEvent.lines.update();
                 });
             }
 
             dialog.registerActivity( "delete", function(){
-              dialog.send( "delete", _data.lineId );
+              dialog.send("delete", {
+                    instance: _data.trackEventStart,
+                    endID: _data.endID
+                });
             });
             dialog.assignButton( ".delete", "delete" );
             dialog.assignButton( ".delete2", "delete" );
