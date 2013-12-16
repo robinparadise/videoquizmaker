@@ -5,7 +5,7 @@
 define( [ "core/eventmanager" ],
   function( EventManager ) {
 
-  return function( trackEventObj ) {
+  return function( trackEventObj, options ) {
 
     var _id = trackEventObj.id,
         _trackEvent = trackEventObj,
@@ -63,11 +63,11 @@ define( [ "core/eventmanager" ],
       if ( !_lines[trackEvent.id] ) { // New Line
         var popupRule = _this.createPopupRule();
         popupRule.backward = options.backward;
+        popupRule.manual = options.manual;
         _lines[trackEvent.id] = {
           line: options.line,
           manual: options.manual,
           backward: options.backward,
-          color: options.color,
           startInstance: _trackEvent,
           endInstance: trackEvent,
           rule: popupRule,
@@ -81,15 +81,25 @@ define( [ "core/eventmanager" ],
       }
     }
 
-    this.setLine = function(trackEventID, options) {
+    this.setLine = function(trackEventID, options, preventUpdate) {
       if ( !!_lines[trackEventID] ) {
-        if (options.backward) {
+        if (options.backward !== undefined) {
           _lines[trackEventID].backward = options.backward;
           _rules[trackEventID].backward = options.backward;
         }
-        if (options.manual) _lines[trackEventID].manual = options.manual;
-        if (options.color)  _lines[trackEventID].color  = options.color;
-        _trackEvent.update({rules: _rules});
+        if (options.manual !== undefined) {
+          _lines[trackEventID].manual = options.manual;
+          _rules[trackEventID].manual = options.manual;
+        }
+        if (options.line) {
+          _lines[trackEventID].line = options.line;
+        }
+        if (options.endInstance) {
+          _lines[trackEventID].endInstance = options.endInstance;
+        }
+        if (!preventUpdate) {
+          _trackEvent.update({rules: _rules});
+        }
       }
     }
     this.setRule = function(trackEventID, options) {
@@ -140,6 +150,41 @@ define( [ "core/eventmanager" ],
 
     this.isLeafNode = function() {
       return Object.keys(_lines).length < 1;
+    }
+
+    this.addRefLine = function( trackEventID, options ) {
+      if ( !_lines[trackEventID] ) { // New Line
+        _lines[trackEventID] = {
+          manual: options.manual,
+          backward: options.backward,
+          startInstance: _trackEvent,
+          endInstance: trackEventID,
+          rule: options.rule,
+        }
+        // New Popup Rule
+        _rules[trackEventID] = options.rule;
+      }
+    }
+
+    // When the line in not create yet (is undefined because is a project imported)
+    // but a line must be exist then is a Reference Line ;)
+    // So, we look if the endInstance is a "string", this string references to the instance
+    this.isRefLine = function(trackEventID) {
+      if ( !!_lines[trackEventID] ) {
+        return typeof(_lines[trackEventID].endInstance) === "string";
+      }
+      return false;
+    }
+
+    // When a Found backup or project (options is not undefined), then create the references lines
+    if (!!options && options.rules) {
+      var opt = {};
+      Object.keys(options.rules).forEach(function(id) {
+        opt.backward = options.rules[id].backward;
+        opt.manual = options.rules[id].manual;
+        opt.rule = $.extend({}, options.rules[id]);
+        _this.addRefLine(id, opt);
+      });
     }
 
   }; //Lines

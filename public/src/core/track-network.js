@@ -198,36 +198,88 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			if ( !options.manual && start.lines.isDeletedLine(end.id) ) {
 				return false; // Line was removed
 			}
-
 			var points = this.calculatePoints(start, end, options.backward);
 			if (!points) return false;
 
 			if ( start.lines.isLine(end.id) ) { // if there is a kinetic line
-				var line = start.lines.allLines[end.id].line,
+				var lineEvt = start.lines.allLines[end.id];
+					line = start.lines.allLines[end.id].line,
 					update = false;
 				line.setPoints(points);
-				if (options.color && options.color !== line.attrs.stroke) {
-					line.attrs.stroke = options.color; // change color
+				if (options.manual && options.manual !== lineEvt.manual) {
+					line.attrs.stroke = GREEN; // change color
+					lineEvt.rule.manual = options.manual;
+					lineEvt.manual = options.manual;
+					line.manual = options.manual;
 					update = true;
 				}
-				if (options.manual && options.manual !== line.manual) {
-					line.manual = true;
+				if (options.backward && options.backward !== lineEvt.backward) {
+					lineEvt.rule.backward = options.backward;
+					lineEvt.backward = options.backward;
+					line.backward = options.backward;
 					update = true;
 				}
-				if (options.backward && options.backward !== line.backward) {
-					line.backward = true;
-					update = true;
-				}
-
+				// Remove others lines and sync options to popcorn
 				if ( this.removeOthersLines(start, end.id) || update ) {
 					start.lines.update();
 				}
+			}
+			else if ( start.lines.isRefLine(end.id) ) {
+				var lineEvt = start.lines.allLines[end.id];
+				// We need to create the line
+				var line = new Kinetic.Line({ // Create Kinetic Line
+					points: points,
+					stroke: lineEvt.manual? GREEN:GREY,
+					strokeWidth: 5,
+					lineCap: 'round',
+					lineJoin: 'round',
+
+				});
+				// Create event popup dialog for line
+				line.on('click', function (ev) {
+					var position = {};
+					if (ev.offsetX) {
+						position.left = ev.offsetX;
+						position.top  = ev.screenY;
+					} else { // Firefox
+						position.left = ev.pageX - stage.$content.offset().left;
+						position.top  = ev.screenY;
+					}
+					dialog = Dialog.spawn( "dinamic", {
+						data: {
+							position: position,
+							trackEventStart: start,
+							endID: end.id
+						},
+						events: {
+							delete: function(e) {
+								trackNetwork.removeLine(e.data.instance, e.data.endID);
+								dialog.close();
+							}
+						}
+					});
+					dialog.open( "empty" );
+				});
+				layer.add(line);
+				layer.lines[line._id] = line;
+
+				line.manual = lineEvt.manual;
+				line.backward = lineEvt.backward;
+				// Save references to the tracks events
+				line.startTrackEvent = start;
+				line.endTrackEvent = end;
+				start.lines.setLine( end.id, {
+					line: line,
+					endInstance: end
+				});
+
+				return true;
 			}
 			else { // New line
 
 				var line = new Kinetic.Line({ // Create Kinetic Line
 					points: points,
-					stroke: options.color || GREY,
+					stroke: options.manual? GREEN:GREY,
 					strokeWidth: 5,
 					lineCap: 'round',
 					lineJoin: 'round'
@@ -261,24 +313,20 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 				layer.add(line);
 				layer.lines[line._id] = line;
+
 				// Save references to the tracks events
 				line.startTrackEvent = start;
 				line.endTrackEvent = end;
-
 				if (options.manual) line.manual = true;
 				if (options.backward) line.backward = true;
-
 				// Save "line" and "popup rule" into the object
 				start.lines.addLine(end, {
 					backward: options.backward,
 					manual: options.manual,
-					color: options.color || GREY,
 					line: line,
 				});
 				return true;
 			}
-			//line.popup.backward = true;
-			//line.popup.backward = false;
 			return true;
 		}
 
@@ -461,10 +509,11 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					drawing = false;
 					layer.draw();
 				} else {
-					$instStart = $(this).parent();
-					instStart = trackNetwork.getTrackEvent( $instStart.attr('data-butter-trackevent-id') );
 					var $that = $(this);
 					var $wrap = $that.parent().parent();
+					$instStart = $that.parent();
+					instStart = trackNetwork.getTrackEvent( $instStart.attr('data-butter-trackevent-id') );
+					
 					lineMouse = new Kinetic.Line({
 						points: [0, 0, 50, 50],
 						strokeWidth: 3,
@@ -576,10 +625,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				if ($src.parents(".butter-track-event").length > 0 || $src.hasClass("butter-track-event")) {
 					$parent = $src.parents(".butter-track-event");
 					$src.hasClass("butter-track-event") && !!($parent = $src);
-					trackNetwork.drawLineFromEvent($instStart, $parent, {
-						color: GREEN,
-						manual: true
-					});
+					trackNetwork.drawLineFromEvent($instStart, $parent, {manual: true});
 				}
 				layer.draw();
 			});

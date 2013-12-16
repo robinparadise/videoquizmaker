@@ -30,6 +30,17 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
     };
   };
 
+  var getUniqueID = function(id) {
+    if (id) {
+      var nid = Number(id.split("TrackEvent")[1]);
+      __guid = nid + 1;
+    }
+    else {
+      return __guid++;
+    }
+    return nid;
+  }
+
   /**
    * Class: TrackEvent
    *
@@ -42,7 +53,7 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
     options = options || {};
 
     var _this = this,
-        _id = "TrackEvent" + __guid++,
+        _id = "TrackEvent" + getUniqueID(options.id),
         _name = options.name || _id,
         _logger = new Logger( _id ),
         _track = null,
@@ -52,8 +63,8 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
           end: 1
         },
         _view = new TrackEventView( this, _type, _popcornOptions ),
-        _superTrackEvent = new SuperTrackEvent( _this ),
-        _lines = new Lines( _this ),
+        _superTrackEvent = new SuperTrackEvent( _this, _popcornOptions ),
+        _lines = new Lines( _this, _popcornOptions ),
         _popcornWrapper = null,
         _selected = false;
 

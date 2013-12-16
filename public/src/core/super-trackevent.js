@@ -5,7 +5,7 @@
 define( [ "core/eventmanager" ],
   function( EventManager ) {
 
-  return function( superTrackEvent ) {
+  return function( superTrackEvent, options ) {
 
     var _id = superTrackEvent.id,
         _superTrackEvent = superTrackEvent,
@@ -18,7 +18,10 @@ define( [ "core/eventmanager" ],
         ],
         _element,
         _parent,
-        _background;
+        _background,
+        _options = options,
+        _subTrackEventsOptions,
+        _media = Butter.app;
 
     Object.defineProperties( this, {
       id: {
@@ -42,7 +45,7 @@ define( [ "core/eventmanager" ],
           // setPopcornTrackEvent
           _superTrackEvent.update({
             isSuperTrackEvent: val,
-            subTrackEvents: []
+            subTrackEvents: [],
           });
         }
       },
@@ -150,7 +153,7 @@ define( [ "core/eventmanager" ],
       }
       else { // update popcornOptions
         _superTrackEvent.update({
-          subTrackEvents: Object.keys(_subTrackEvents)
+          subTrackEvents: Object.keys(_subTrackEvents),
         });
       }
     }
@@ -202,6 +205,31 @@ define( [ "core/eventmanager" ],
           _subTrackEvents[id].superTrackEvent.stillBelongsToParent();
         });
       }
+    }
+
+    this.getTrackEvent = function(id) {
+      return _media.getTrackEvents("id", id)[0];
+    }
+
+    _this.onReadySetSuperTrackEvent = function() {
+console.log("READY");
+      _this.setSuperTrackEvent(true); // set superTrackEvent
+      var subTrackEvent;
+      _subTrackEventsOptions.forEach(function(id) {
+        subTrackEvent = _this.getTrackEvent(id);
+        if (subTrackEvent) {
+          subTrackEvent.superTrackEvent.setSubTrackEvent(true, _superTrackEvent); // set subTrackEvent
+          _this.addSubTrackEvent(subTrackEvent); // add subTrackEvent
+        }
+      });
+      //_media.dispatch( "trackeventupdated", _superTrackEvent );
+    }
+
+    if (!!_options && _options.isSuperTrackEvent && _options.subTrackEvents) {
+      _subTrackEventsOptions = _options.subTrackEvents.slice();
+console.log(_subTrackEventsOptions);
+      // We need to wait 'til all trackEvent are loaded successfully
+      _media.media[0].listen("mediaready", _this.onReadySetSuperTrackEvent);
     }
 
   }; //SuperTrackEvent
