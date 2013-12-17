@@ -212,7 +212,6 @@ define( [ "core/eventmanager" ],
     }
 
     _this.onReadySetSuperTrackEvent = function() {
-console.log("READY");
       _this.setSuperTrackEvent(true); // set superTrackEvent
       var subTrackEvent;
       _subTrackEventsOptions.forEach(function(id) {
@@ -227,7 +226,6 @@ console.log("READY");
 
     if (!!_options && _options.isSuperTrackEvent && _options.subTrackEvents) {
       _subTrackEventsOptions = _options.subTrackEvents.slice();
-console.log(_subTrackEventsOptions);
       // We need to wait 'til all trackEvent are loaded successfully
       _media.media[0].listen("mediaready", _this.onReadySetSuperTrackEvent);
     }

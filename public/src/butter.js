@@ -370,6 +370,9 @@ window.Butter = {
               // cut off events that overlap the duration
               popcornOptions.end = _currentMedia.duration;
             }
+            // To ensure an unique id we need to delete the old id
+            delete popcornOptions.id;
+
             trackEvent = _this.generateSafeTrackEvent( _copiedEvents[ i ].type, popcornOptions );
             trackEvent.selected = true;
           }

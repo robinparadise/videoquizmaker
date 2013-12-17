@@ -326,9 +326,6 @@ define( [ "core/eventmanager", "./toggler",
         for (var i in base) {
           // we skip the subtracks events
           if ( !base[i].superTrackEvent.isSubTrackEvent ) {
-            // Save reference to the order in the list orderedTrackEvent
-            !!base[i].popcornOptions && !!(base[i].popcornOptions.id = base[i].id);
-
             if ( !aux ) {
               aux = [ [ base[i] ] ];
               !!base[i].popcornOptions && !!(base[i].popcornOptions.setMedia = aux.length -1);

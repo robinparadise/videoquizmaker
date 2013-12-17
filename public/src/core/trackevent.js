@@ -30,10 +30,20 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
     };
   };
 
+  var getTrackEventByID = function(id) {
+    return Butter.app.getTrackEvents("id", id)[0];
+  }
+
+  var existTrackEventID = function(id) {
+    return !!getTrackEventByID(id);
+  }
+
   var getUniqueID = function(id) {
     if (id) {
       var nid = Number(id.split("TrackEvent")[1]);
-      __guid = nid + 1;
+      if (nid > __guid) {
+        __guid = nid + 1;
+      }
     }
     else {
       return __guid++;
@@ -53,7 +63,7 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
     options = options || {};
 
     var _this = this,
-        _id = "TrackEvent" + getUniqueID(options.id),
+        _id = "TrackEvent" + getUniqueID(options.popcornOptions.id),
         _name = options.name || _id,
         _logger = new Logger( _id ),
         _track = null,
@@ -73,6 +83,9 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
 
     _this.popcornOptions = _popcornOptions;
     _this.popcornTrackEvent = null;
+
+    // update popcornOptions ID
+    _this.popcornOptions.id = _id;
 
     function defaultValue( item ) {
       if ( item.hasOwnProperty( "default" ) ) {
