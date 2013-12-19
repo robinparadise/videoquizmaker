@@ -26,6 +26,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         $inputNewQuiz     = $rootElement.find( ".add-new-quiz" ),
         $quizzesContainer = $rootElement.find( "#list-quizzes" ),
         $importQuiz       = $rootElement.find( "#import-quiz" ),
+        $exportQuiz       = $rootElement.find( ".export-quiz" ),
         $error            = $rootElement.find( ".error-quizmanager" ),
         GlobalQuiz        = this.Butter.QuizOptions,
         TempDataQuiz;
@@ -833,6 +834,29 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
 
             reader.readAsText(f);
         }
+    });
+
+    // Create a Link to Export/Download Quizzes to a file JSON
+    var createDownloadFile = function() {
+        var json = JSON.stringify(GlobalQuiz);
+        var blob = new Blob([json], {type: "application/json"});
+        var url  = URL.createObjectURL(blob);
+
+        var a = document.createElement('a');
+        a.download    = "exported-quizzes.json";
+        a.href        = url;
+        a.textContent = "";
+        a.classList.add("export-quiz-link");
+
+        $exportQuiz.after(a);
+        a.click();
+    };
+    // Export Quizzes to json file
+    $exportQuiz.click(function() {
+        // Remove link to download file json
+        $exportQuiz.next("export-quiz-link").remove();
+        // Create a Link to download
+        createDownloadFile();
     });
 
     // Resize Dialog

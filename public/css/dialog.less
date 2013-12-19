@@ -198,13 +198,18 @@
     background: @greyGreen;
     color: white;
   }
-  label.import-quiz {
+  label.import-quiz, label.export-quiz {
     cursor: pointer;
+    display: inline;
     &:hover {
       font-weight: bold;
     }
   }
   #import-quiz {
+    position: absolute;
+    left: -9999px;
+  }
+  #export-quiz {
     position: absolute;
     left: -9999px;
   }

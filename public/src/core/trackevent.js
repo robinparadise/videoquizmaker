@@ -30,14 +30,6 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
     };
   };
 
-  var getTrackEventByID = function(id) {
-    return Butter.app.getTrackEvents("id", id)[0];
-  }
-
-  var existTrackEventID = function(id) {
-    return !!getTrackEventByID(id);
-  }
-
   var getUniqueID = function(id) {
     if (id) {
       var nid = Number(id.split("TrackEvent")[1]);
