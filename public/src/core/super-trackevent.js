@@ -182,7 +182,7 @@ define( [ "core/eventmanager" ],
     // if this still belongs to the SuperTrackEvent.
     this.stillBelongsToParent = function() {
       if (_parent) { // is subTrackEvent
-        var distanceTracks = Math.abs( _superTrackEvent.track.order - _parent.track.order );
+        //var distanceTracks = Math.abs( _superTrackEvent.track.order - _parent.track.order );
         // Is the subTrackEvent belong to the same space of time of the parent and
         // the track-id is close to the parent-track-id (distance is least one track)
         if (_superTrackEvent.popcornOptions.start <= _parent.popcornOptions.end   &&

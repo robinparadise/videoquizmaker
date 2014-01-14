@@ -120,11 +120,13 @@ define( [ "core/eventmanager" ],
       }
     }
 
-    this.setDeletedLine = function(trackEventID) {
+    this.setDeletedLine = function(trackEventID, preventUpdate) {
       if ( !!_lines[trackEventID] ) {
         _lines[trackEventID] = {deleted: true};
         _rules[trackEventID] = _lines[trackEventID];
-        _trackEvent.update({rules: _rules});
+        if (!preventUpdate) {
+          _trackEvent.update({rules: _rules});
+        }
       }
     }
 
@@ -180,10 +182,16 @@ define( [ "core/eventmanager" ],
     if (!!options && options.rules) {
       var opt = {};
       Object.keys(options.rules).forEach(function(id) {
-        opt.backward = options.rules[id].backward;
-        opt.manual = options.rules[id].manual;
-        opt.rule = $.extend({}, options.rules[id]);
-        _this.addRefLine(id, opt);
+        if (options.rules[id].deleted) {
+          _lines[id] = {deleted: true};
+          _rules[id] = _lines[id];
+        }
+        else {
+          opt.backward = options.rules[id].backward;
+          opt.manual = options.rules[id].manual;
+          opt.rule = $.extend({}, options.rules[id]);
+          _this.addRefLine(id, opt);
+        }
       });
     }
 
