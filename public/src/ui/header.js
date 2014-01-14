@@ -25,15 +25,13 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _projectTitlePlaceHolderText = _projectName.innerHTML,
         _webmakerNav,
         _toolTip,
-        _quizmanagerButton = _rootElement.querySelector( ".butter-quizmanager-btn" ),
-
-    // create a tooltip for the plrojectName element
-    _toolTip = ToolTip.create({
-      title: "header-title-tooltip",
-      message: "Change the name of your project",
-      element: _projectTitle,
-      top: "60px"
-    });
+        // create a tooltip for the plrojectName element
+        _toolTip = ToolTip.create({
+          title: "header-title-tooltip",
+          message: "Change the name of your project",
+          element: _projectTitle,
+          top: "60px"
+        });
 
     _this.element = _rootElement;
 
@@ -94,23 +92,6 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _saveButton.removeEventListener( "click", saveProject, false );
       }
     }
-
-    function spawnQuizManager() {
-      var dialog = Dialog.spawn( "quizme" );
-      dialog.open();
-    }
-
-    _quizmanagerButton.addEventListener( "click", spawnQuizManager, false );
-
-    // function toggleQuizManagerButton( on ) {
-    //   if ( on ) {
-    //     _quizmanagerButton.classList.remove( "butter-disabled" );
-    //     _quizmanagerButton.addEventListener( "click", saveProject, false );
-    //   } else {
-    //     _quizmanagerButton.classList.add( "butter-disabled" );
-    //     _quizmanagerButton.removeEventListener( "click", saveProject, false );
-    //   }
-    // }
 
     function togglePreviewButton( on ) {
       if ( on ) {

@@ -2,9 +2,9 @@
  * If a copy of the MIT license was not distributed with this file, you can
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 
-define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tooltip",
+define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tooltip", "dialog/dialog",
           "text!layouts/trackevent-editor-defaults.html" ],
-  function( LangUtils, KeysUtils, TimeUtils, BaseEditor, ToolTip,
+  function( LangUtils, KeysUtils, TimeUtils, BaseEditor, ToolTip, Dialog,
             DEFAULT_LAYOUT_SNIPPETS ) {
 
   var NULL_FUNCTION = function(){};
@@ -40,7 +40,16 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
         "blue": "#0000ff",
         "teal": "#008080",
         "aqua": "#00ffff"
-      };
+      },
+      _quizmanagerFieldset = __defaultLayouts.querySelector( ".quizmanager-fieldset" ),
+      _quizmanagerBtn = __defaultLayouts.querySelector( ".butter-quizmanager-btn" );
+
+  // Open Dialog Quiz Manager
+  function spawnQuizManager() {
+    var dialog = Dialog.spawn( "quizme" );
+    dialog.open();
+  }
+  _quizmanagerBtn.addEventListener( "click", spawnQuizManager, false);
 
   /**
    * Class: TrackEventEditor
@@ -911,6 +920,10 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
         if ( element ) {
           container.appendChild( element );
         }
+      }
+      if (options.trackEvent.type === "quizme") {
+        // Create Quiz Manager Button
+        container.appendChild( _quizmanagerFieldset );
       }
     };
 
