@@ -103,7 +103,9 @@
           "default": 1,
           hidden: true
         },
-        target: "video-overlay",
+        target: {
+          hidden: true
+        },
       }
     },
     /**

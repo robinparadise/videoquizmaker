@@ -69,6 +69,7 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
         _lines = new Lines( _this, _popcornOptions ),
         _popcornWrapper = null,
         _selected = false;
+console.log("ID", _id);
 
     EventManager.extend( _this );
     Observer.extend( _this );

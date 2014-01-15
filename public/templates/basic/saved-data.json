@@ -31,22 +31,6 @@
                 },
                 "track": "Layer0",
                 "name": "TrackEvent0"
-            }, {
-                "id": "TrackEvent1",
-                "type": "mvideo",
-                "popcornOptions": {
-                    "start": 9,
-                    "end": 14,
-                    "target": "video-container",
-                    "name": "Video2.mp4",
-                    "width": 100,
-                    "height": 100,
-                    "top": 0,
-                    "left": 0,
-                    "transition": "popcorn-fade"
-                },
-                "track": "Layer0",
-                "name": "TrackEvent1"
             }]
         }]
     }],

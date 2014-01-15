@@ -6,17 +6,14 @@
     return fallback;
   }
 
-  var opt1 = {
+  var optDefault = {
       title: "Simple statements",
       disableRestart: true,
       disableDelete: false,
-      help: "You do not need help.",
-      showAns: false,
       allRandom: false,
       random: false,
       fxSpeed: "fast",
       hoverClass: "q-ol-hover",
-      review: true,
       showFeedback: false
   };
   var target, gettingQuizzes;
@@ -29,7 +26,13 @@
     } else {
       options.quiz = GlobalQuiz["TrueFalse"]; // Default
     }
-    !!options.quiz && options.$container.jQuizMe(options.quiz, opt1, options.callback);
+    if (!!options.quiz) {
+      options.$container.jQuizMe(options.quiz, options.optQuiz, options.callback);
+      var $quizElem = options.$container.find(".quiz-el");
+      if (options.color && options.color !== $quizElem.attr("color-quiz")) {
+        $quizElem.attr("color-quiz", options.color);
+      }
+    }
   }
 
   Popcorn.plugin( "quizme", {
@@ -54,7 +57,34 @@
           elem: "select", 
           options: [], 
           label: "Quiz",
-          "default": "TrueFalse",
+          "default": "TrueFalse"
+        },
+        help: {
+          elem: "input", 
+          type: "text", 
+          label: "Help",
+          optional: true,
+          "default": "You do not need help."
+        },
+        review: {
+          elem: "input",
+          type: "checkbox",
+          label: "Review",
+          "default": false,
+          optional: true
+        },
+        random: {
+          elem: "input",
+          type: "checkbox",
+          label: "Random",
+          "default": false,
+          optional: true
+        },
+        color: {
+          elem: "select", 
+          options: ["darkQuiz", "yellowQuiz", "greenQuiz", "redQuiz", "greenLightQuiz", "darkGreyQuiz", "custom"], 
+          label: "Color Quiz",
+          "default": "darkQuiz"
         },
         start: {
           elem: "input", 
@@ -116,7 +146,9 @@
           "default": 1,
           hidden: true
         },
-        target: "video-overlay",
+        target: {
+          hidden: true
+        },
       }
     },
 
@@ -138,7 +170,32 @@
       }
       target && target.appendChild( options._container );
 
-      !!options.title && !!(options.title = opt1.title);
+      var manifest = options._natives.manifest.options;
+
+      // Default Values
+      if (!options.title) {
+        options.title = manifest.title.default;
+      }
+      if (!options.review) {
+        options.review = manifest.review.default;
+      }
+      if (!options.help) {
+        options.help = manifest.help.default;
+      }
+      if (!options.random) {
+        options.random = manifest.random.default;
+      }
+      // jQuizme options
+      options.optQuiz = $.extend({}, optDefault);
+      options.optQuiz.title = options.title;
+      options.optQuiz.review = options.review;
+      options.optQuiz.help = options.help;
+      options.optQuiz.allRandom = options.random;
+
+      // Change color Quiz
+      if (!options.color) {
+        options.color = manifest.color.default;
+      }
 
       // Object Callback with functions that jquizme execute when finish
       options.callback = {
