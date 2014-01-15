@@ -159,8 +159,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				return false;
 			}
 			aux = [start_x, start_y];
+
 			// calculate the points for a backward line
 			if (backward) {
+
 				track = start.track._media.findNextAvailableTrackFromTimes(
 					end.popcornOptions.start,
 					start.popcornOptions.end);
@@ -170,23 +172,37 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				} else {
 					trackOrder = track.order;
 				}
+				// Width of the backwardline
+				var widthOffsetEnd, widthOffsetStart;
+				if ($end.width() <= 16) {
+					widthOffsetEnd = 1;
+				} else {
+					widthOffsetEnd = 15;
+				}
+				if ($start.width() <= 16) {
+					widthOffsetStart = 1;
+				} else {
+					widthOffsetStart = 15;
+				}
+
 				// trackTop for 'start' trackEvent
 				trackTop = (trackOrder - start.track.order) * _trackHeigh;
 				// point 2
-				aux.push( start_x + 15 );
+				aux.push( start_x + widthOffsetStart );
 				aux.push( start_y + (trackOrder - start.track.order)*_trackHeigh/2 );
 				// point 3
-				aux.push( start_x + 15 );
+				aux.push( start_x + widthOffsetStart );
 				aux.push( start_y + trackTop );
 				// trackTop for 'end' trackEvent
 				trackTop = (trackOrder - end.track.order) * _trackHeigh;
 				// point 4
-				aux.push( end_x - 15 );
+				aux.push( end_x - widthOffsetEnd );
 				aux.push( aux[5] ); // same as point3
 				// point 5
-				aux.push( end_x - 15 );
+				aux.push( end_x - widthOffsetEnd );
 				aux.push( end_y + (trackOrder - end.track.order)*_trackHeigh/2 );
 			}
+
 			aux.push(end_x);
 			aux.push(end_y);
 			return aux;
