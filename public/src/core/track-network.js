@@ -15,9 +15,28 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			_trackHeigh,
 			_scrollLeft = 0,
 			_scrollTop = 0;
-			drawing = false;
+			drawing = false,
+			_automaticLines = false;
 
 		var trackNetwork = this;
+
+		Object.defineProperties( this, {
+			automaticLines: {
+				enumerable: true,
+				get: function() {
+					return _automaticLines;
+				},
+				set: function(val) {
+					_automaticLines = val;
+					if (val === true) {
+						this.calculateLines();
+					}
+					else {
+						this.removeAutomaticLines();
+					}
+				}
+        	}
+		});
 
 		this.getTrackEvent = function(id) {
 			return app.getTrackEvents("id", id)[0];
@@ -57,6 +76,16 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			// Remove all lines when is trackeventremoved
 			if (evType === "trackeventremoved") {
 				this.cleanOldLines(evTrack, {});
+			}
+
+			// If automatic lines is true just redraw manual lines
+			if (_automaticLines) {
+				this.updateLinesOfLayer();
+				if (tracks.length > 0) {
+					layer.draw();
+				}
+				this.mouseDownDrawing(stage, layer);
+				return;
 			}
 
 			for(var i in tracks) {
@@ -403,6 +432,30 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			this.drawLine(trackA, trackB, options);
 		}
 
+		// calculate and redraw all lines of the layer
+		this.removeAutomaticLines = function() {
+			Object.keys(layer.lines).forEach(function(id) {
+				// if it's an automatic line then remove it
+				if (!layer.lines[id].manual) {
+					trackNetwork.removeAutomaticLine(
+						layer.lines[id].startTrackEvent, layer.lines[id].endTrackEvent.id
+					);
+				}
+			});
+			layer.draw();
+		}
+		this.removeAutomaticLine = function(instance, id) {
+			var lineEvt = instance.lines.allLines[id];
+			if (!lineEvt.backward) {
+				this.enableAll(this, lineEvt.endInstance); // active trackEvents of this branch
+			}
+			instance.lines.removeLine(id, true);
+
+			lineEvt.line.remove();
+			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
+			// layer.draw();
+		}
+
 		this.removeOthersLines = function(obj, id) {
 			var update = false;
 
@@ -465,10 +518,11 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		this.removeLine = function(instance, id) {
 			var lineEvt = instance.lines.allLines[id];
 			// False means It's a deleted line
-			instance.lines.setDeletedLine(id);
 			if (!lineEvt.backward) {
 				this.enableAll(this, lineEvt.endInstance); // active trackEvents of this branch
 			}
+			instance.lines.setDeletedLine(id);
+
 			lineEvt.line.remove();
 			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
 			layer.draw();

@@ -7,6 +7,7 @@
   @titleBarHeight: 60px;
   @addClipHeight: 165px;
   @durationInputHeight: 48px;
+  @inputsHeight: 88px;
 
   .butter-editor-body {
     top: @titleBarHeight;
@@ -71,7 +72,7 @@
 
   .media-gallery {
     position: absolute;
-    bottom: @durationInputHeight;
+    bottom: @inputsHeight;
     top: @addClipHeight + 15px;
     width: 100%;
     margin-top: -1px;
@@ -109,8 +110,24 @@
       float: right;
       width: 200px;
     }
+    > label.media-automatic-lines {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      line-height: 22px;
+      width: auto;
+    }
+    > input.media-automatic-lines {
+      float: left;
+      width: auto;
+      margin: 10px 22px 10px 0px;
+    }
     &.bottom {
       bottom: 0;
+      position: absolute;
+    }
+    &.bottom2 {
+      bottom: 40px;
       position: absolute;
     }
     &.top {

@@ -21,6 +21,7 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
       _GALLERYITEM = LangUtils.domFragment( EDITOR_LAYOUT, ".media-gallery-item" ),
 
       _durationInput = _parentElement.querySelector( ".media-base-duration" ),
+      _automaticLines = _parentElement.querySelector( "#media-automatic-lines" ),
 
       _butter,
       _media,
@@ -70,6 +71,11 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
     }
 
     _media.url = "#t=," + durationSeconds;
+  }
+
+  function onAutomaticLinesChange(e) {
+    console.log("_automaticLines.value", e.target.checked);
+    Butter.app.trackNetwork.automaticLines = !e.target.checked;
   }
 
   function onDenied( error ) {
@@ -280,6 +286,8 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
 
     _durationInput.addEventListener( "keydown", onDurationChange, false );
     _durationInput.addEventListener( "blur", onBlur, false );
+
+    _automaticLines.addEventListener( "change", onAutomaticLinesChange, false );
   }
 
   function onDurationChange( e ) {
