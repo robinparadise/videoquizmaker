@@ -27,6 +27,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         $quizzesContainer = $rootElement.find( "#list-quizzes" ),
         $importQuiz       = $rootElement.find( "#import-quiz" ),
         $exportQuiz       = $rootElement.find( ".export-quiz" ),
+        $spinnerWrap      = $rootElement.find( "#spinner-wrapper" ),
         $error            = $rootElement.find( ".error-quizmanager" ),
         GlobalQuiz        = this.Butter.QuizOptions,
         TempDataQuiz;
@@ -164,9 +165,11 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     // get new name of quiz
                     var importedName = getNewQuizName(name, data); // avoid confict with the obj data too
                     TempDataQuiz.quizzes[importedName] = importedQuiz; // Save
+                    $spinnerWrap.show();
                     quizDB.savequiz(importedName, importedQuiz, manager.receiveQuizzes);
                 } else {
                     TempDataQuiz.quizzes[name] = importedQuiz; // Save
+                    $spinnerWrap.show();
                     quizDB.savequiz(name, importedQuiz, manager.receiveQuizzes);
                 }
             });
@@ -245,6 +248,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                 manager.isFirstStart && manager.firstStart();
             }
             dialog["quizzesScrollbar"].update();
+            $spinnerWrap.hide();
         },
         receiveQuiz: function (data) {
             var action;
@@ -279,6 +283,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
             GlobalQuiz[name] = {};
             GlobalQuiz[name] = $.extend({}, dataQuestions); // Save
             manager.appendQuestions(name, GlobalQuiz[name], action);
+            $spinnerWrap.hide();
         },
         appendQuestions: function (name, data, action) {
             if (!data) data = GlobalQuiz[name];
@@ -306,6 +311,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
         },
         getQuiz: function (name) {
             if (Object.keys( GlobalQuiz[name] ).length === 0) {
+                $spinnerWrap.show();
                 quizDB.getquiz(name, manager.receiveQuiz);
             } else {
                 manager.appendQuestions(name);
@@ -477,6 +483,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
 
     var saveQuiz = function (name, callback) {
         var id = $quizzes.find(".selected").attr("quizid");
+        $spinnerWrap.show();
         quizDB.updatequiz(id, name, TempDataQuiz[name], callback);
     }
 
@@ -551,6 +558,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                         animate: "changeNameQuiz"
                     }
                 }
+                $spinnerWrap.show();
                 quizDB.updatequiz(quizid, newname, GlobalQuiz[oldname], manager.receiveQuizzes);
             }
         }
@@ -562,6 +570,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     animate: "newQuiz"
                 }
             }
+            $spinnerWrap.show();
             quizDB.savequiz(this.value, {}, manager.receiveQuizzes);
         }
         return false;
@@ -584,6 +593,7 @@ define([ "text!dialog/dialogs/quizme.html", "dialog/dialog", "util/scrollbars", 
                     name: $selected.text()
                 }
             }
+            $spinnerWrap.show();
             quizDB.deletequiz($selected.attr("quizid"), manager.receiveQuizzes);
         }
         return false;
