@@ -29,8 +29,20 @@
     if (!!options.quiz) {
       options.$container.jQuizMe(options.quiz, options.optQuiz, options.callback);
       var $quizElem = options.$container.find(".quiz-el");
+      // Change Quiz Appearence
       if (options.color && options.color !== $quizElem.attr("color-quiz")) {
-        $quizElem.attr("color-quiz", options.color);
+        if (options.color === "custom") {
+          $quizElem.find(".q-innerArea").css({
+            'background': options.customColor
+          });
+          $quizElem.find(".q-header, .q-intro, .q-help").css({
+            'color': options.customColorHeaderFont
+          });
+          $quizElem.attr("color-quiz", "");
+        }
+        else {
+          $quizElem.attr("color-quiz", options.color);
+        }
       }
     }
   }
@@ -64,7 +76,8 @@
           type: "text", 
           label: "Help",
           optional: true,
-          "default": "You do not need help."
+          "default": "You do not need help.",
+          group: "advanced"
         },
         review: {
           elem: "input",
@@ -84,7 +97,28 @@
           elem: "select", 
           options: ["darkQuiz", "yellowQuiz", "greenQuiz", "redQuiz", "greenLightQuiz", "darkGreyQuiz", "custom"], 
           label: "Color Quiz",
-          "default": "darkQuiz"
+          "default": "darkQuiz",
+          group: "advanced"
+        },
+        customColor: {
+          elem: "input",
+          type: "text",
+          optional: true,
+          label: "Custom Color Quiz",
+          group: "advanced"
+        },
+        customColorHeaderFont: {
+          elem: "input",
+          type: "text",
+          optional: true,
+          label: "Custom Color Header-Font",
+          group: "advanced"
+        },
+        intro: {
+          elem: "textarea",
+          label: "Introduction",
+          optional: true,
+          group: "advanced"
         },
         start: {
           elem: "input", 
@@ -152,7 +186,7 @@
       }
     },
 
-    _setup: function( options ) {
+    _setup: function( options, event ) {
       options._target = target = Popcorn.dom.find( options.target );
       options._container = document.createElement( "div" );
       options._container.classList.add( "jquizme-container" );
@@ -176,21 +210,18 @@
       if (!options.title) {
         options.title = manifest.title.default;
       }
-      if (!options.review) {
-        options.review = manifest.review.default;
-      }
       if (!options.help) {
         options.help = manifest.help.default;
       }
-      if (!options.random) {
-        options.random = manifest.random.default;
-      }
+      console.log("options.review", options.review);
+
       // jQuizme options
       options.optQuiz = $.extend({}, optDefault);
       options.optQuiz.title = options.title;
       options.optQuiz.review = options.review;
       options.optQuiz.help = options.help;
       options.optQuiz.allRandom = options.random;
+      options.optQuiz.intro = options.intro;
 
       // Change color Quiz
       if (!options.color) {

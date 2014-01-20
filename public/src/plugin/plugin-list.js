@@ -74,8 +74,8 @@ define( [ "util/dragndrop", "util/lang", "editor/editor", "text!layouts/plugin-l
       element.setAttribute( "data-popcorn-plugin-type", e.data.type );
       element.setAttribute( "data-butter-draggable-type", "plugin" );
 
-      if ( e.data.hidden ) {
-        element.style.display = "none";
+      if ( e.data.hidden ) { // Plugin Sequencer is hidden
+        element.style.visibility = "hidden";
       }
 
       _containerElement.appendChild( element );
