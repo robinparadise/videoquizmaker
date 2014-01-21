@@ -12,7 +12,7 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
   function( Logger, EventManager, Observer,
             LangUtil, TimeUtil, TrackEventView, SuperTrackEvent, Lines ) {
 
-  var __guid = 0;
+  var __guid = -1;
 
   var __trackEventExceptionStrings = {
     "trackevent-overlap": "The times you have entered cause trackevents to overlap.",
@@ -36,11 +36,11 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
       if (nid > __guid) {
         __guid = nid + 1;
       }
+      return nid;
     }
     else {
       return __guid++;
     }
-    return nid;
   }
 
   /**
@@ -69,7 +69,6 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
         _lines = new Lines( _this, _popcornOptions ),
         _popcornWrapper = null,
         _selected = false;
-console.log("ID", _id);
 
     EventManager.extend( _this );
     Observer.extend( _this );

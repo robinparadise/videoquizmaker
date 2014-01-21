@@ -217,7 +217,6 @@
       if (!options.help) {
         options.help = manifest.help.default;
       }
-      console.log("options.review", options.review);
 
       // jQuizme options
       options.optQuiz = $.extend({}, optDefault);
