@@ -16,27 +16,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			_scrollLeft = 0,
 			_scrollTop = 0;
 			drawing = false,
-			_automaticLines = false;
-
-		var trackNetwork = this;
-
-		Object.defineProperties( this, {
-			automaticLines: {
-				enumerable: true,
-				get: function() {
-					return _automaticLines;
-				},
-				set: function(val) {
-					_automaticLines = val;
-					if (val === true) {
-						this.calculateLines();
-					}
-					else {
-						this.removeAutomaticLines();
-					}
-				}
-        	}
-		});
+			trackNetwork = this;
 
 		this.getTrackEvent = function(id) {
 			return app.getTrackEvents("id", id)[0];
@@ -79,7 +59,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			}
 
 			// If automatic lines is true just redraw manual lines
-			if (_automaticLines) {
+			if (app.project.automaticLines !== "true") {
 				this.updateLinesOfLayer();
 				if (tracks.length > 0) {
 					layer.draw();
@@ -321,7 +301,6 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				return true;
 			}
 			else { // New line
-
 				var line = new Kinetic.Line({ // Create Kinetic Line
 					points: points,
 					stroke: options.manual? GREEN:GREY,
@@ -449,7 +428,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			if (!lineEvt.backward) {
 				this.enableAll(this, lineEvt.endInstance); // active trackEvents of this branch
 			}
-			instance.lines.removeLine(id, true);
+			instance.lines.removeLine(id);
 
 			lineEvt.line.remove();
 			delete layer.lines[lineEvt.line._id]; // remove reference in the layer

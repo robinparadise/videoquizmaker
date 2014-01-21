@@ -3,8 +3,8 @@
  * obtain one at https://raw.github.com/mozilla/butter/master/LICENSE */
 
 define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/editor",
- "util/time", "util/dragndrop", "text!layouts/media-editor.html" ],
-  function( LangUtils, URI, KeysUtils, MediaUtils, Editor, Time, DragNDrop, EDITOR_LAYOUT ) {
+ "util/time", "util/dragndrop", "text!layouts/media-editor.html", "core/project" ],
+  function( LangUtils, URI, KeysUtils, MediaUtils, Editor, Time, DragNDrop, EDITOR_LAYOUT, Project ) {
 
   var _parentElement =  LangUtils.domFragment( EDITOR_LAYOUT,".media-editor" ),
       _addMediaTitle = _parentElement.querySelector( ".add-new-media" ),
@@ -74,8 +74,7 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
   }
 
   function onAutomaticLinesChange(e) {
-    console.log("_automaticLines.value", e.target.checked);
-    Butter.app.trackNetwork.automaticLines = !e.target.checked;
+    Butter.app.project.automaticLines = e.target.checked === true? "true":"false";
   }
 
   function onDenied( error ) {
@@ -288,6 +287,7 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
     _durationInput.addEventListener( "blur", onBlur, false );
 
     _automaticLines.addEventListener( "change", onAutomaticLinesChange, false );
+    _automaticLines.checked = Butter.app.project.automaticLines === "true";
   }
 
   function onDurationChange( e ) {

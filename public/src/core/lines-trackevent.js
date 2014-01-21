@@ -60,7 +60,7 @@ define( [ "core/eventmanager" ],
     }
 
     this.addLine = function( trackEvent, options ) {
-      if ( !_lines[trackEvent.id] ) { // New Line
+      if ( !_lines[trackEvent.id] || this.isDeletedLine(trackEvent.id) ) { // New Line
         var popupRule = _this.createPopupRule();
         popupRule.backward = options.backward;
         popupRule.manual = options.manual;
@@ -123,7 +123,7 @@ define( [ "core/eventmanager" ],
     this.setDeletedLine = function(trackEventID, preventUpdate) {
       if ( !!_lines[trackEventID] ) {
         _lines[trackEventID] = {deleted: true};
-        _rules[trackEventID] = _lines[trackEventID];
+        _rules[trackEventID] = {deleted: true};
         if (!preventUpdate) {
           _trackEvent.update({rules: _rules});
         }

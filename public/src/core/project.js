@@ -32,6 +32,9 @@ define( [ "core/eventmanager", "core/media", "util/sanitizer" ],
         // Interval for backups, starts first time user clicks Save.
         _backupInterval = -1,
 
+        // Automatic Lines state
+        _automaticLines,
+
         _thumbnail = location.protocol + "//" + location.host + "/resources/icons/fb-logo.png";
 
     function invalidate() {
@@ -169,6 +172,24 @@ define( [ "core/eventmanager", "core/media", "util/sanitizer" ],
           return _isPublished && !_isDirty;
         },
         enumerable: true
+      },
+
+      // Automatic Lines
+      "automaticLines": {
+        get: function() {
+          return _automaticLines;
+        },
+        set: function(val) {
+          _automaticLines = val;
+          invalidate();
+          if (val === "true") {
+            butter.trackNetwork.calculateLines();
+          }
+          else {
+            butter.trackNetwork.removeAutomaticLines();
+          }
+        },
+        enumerable: true
       }
 
     });
@@ -247,6 +268,10 @@ define( [ "core/eventmanager", "core/media", "util/sanitizer" ],
         _thumbnail = json.thumbnail;
       }
 
+      if ( json.automaticLines ) {
+        _automaticLines = json.automaticLines;
+      }
+
       if ( json.publishUrl ) {
         _publishUrl = json.publishUrl;
       }
@@ -322,6 +347,7 @@ define( [ "core/eventmanager", "core/media", "util/sanitizer" ],
       data.description = _description;
       data.thumbnail = _thumbnail;
       data.backupDate = Date.now();
+      data.automaticLines = _automaticLines;
       try {
         __butterStorage.setItem( "butter-backup-project", JSON.stringify( data ) );
         _needsBackup = false;
@@ -360,6 +386,7 @@ define( [ "core/eventmanager", "core/media", "util/sanitizer" ],
         author: _author,
         description: _description,
         thumbnail: _thumbnail,
+        automaticLines: _automaticLines,
         data: _this.data,
         remixedFrom: _remixedFrom
       };

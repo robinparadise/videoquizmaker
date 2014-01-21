@@ -93,6 +93,12 @@
           "default": false,
           optional: true
         },
+        intro: {
+          elem: "textarea",
+          label: "Introduction",
+          optional: true,
+          group: "advanced"
+        },
         color: {
           elem: "select", 
           options: ["darkQuiz", "yellowQuiz", "greenQuiz", "redQuiz", "greenLightQuiz", "darkGreyQuiz", "custom"], 
@@ -102,23 +108,21 @@
         },
         customColor: {
           elem: "input",
-          type: "text",
+          type: "color",
           optional: true,
           label: "Custom Color Quiz",
-          group: "advanced"
+          "default": "#052938",
+          group: "advanced",
+          /*hidden: true*/
         },
         customColorHeaderFont: {
           elem: "input",
-          type: "text",
+          type: "color",
           optional: true,
           label: "Custom Color Header-Font",
-          group: "advanced"
-        },
-        intro: {
-          elem: "textarea",
-          label: "Introduction",
-          optional: true,
-          group: "advanced"
+          "default": "#FFF",
+          group: "advanced",
+          /*hidden: true*/
         },
         start: {
           elem: "input", 

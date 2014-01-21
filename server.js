@@ -318,7 +318,8 @@ app.post( '/api/publish/:id',
                            embedShellSrc: publishUrl,
                            embedSrc: iframeUrl,
                            baseHref: APP_HOSTNAME,
-                           thumbnail: project.thumbnail
+                           thumbnail: project.thumbnail,
+                           automaticLines: project.automaticLines
                          },
                          finished );
       }
@@ -341,7 +342,8 @@ app.post( '/api/publish/:id',
                     templateScripts: templateScripts,
                     externalAssets: externalAssetsString,
                     popcorn: popcornString,
-                    thumbnail: project.thumbnail
+                    thumbnail: project.thumbnail,
+                    automaticLines: project.automaticLines
                   },
                   publishEmbedShell );
 

@@ -9,14 +9,10 @@
 
     var _rootElement = rootElement,
         _trackEvent,
+        _manifestOptions,
         _butter,
-        $containerQuiz,
         _this = this,
-        _colorQuiz = _rootElement.querySelector( "#color-quiz" ),
-
-        // Constans
-        defaultColor = "#ffaa33",
-        defaultFontHeader = "white";
+        _popcornOptions;
 
     /**
      * Member: setup
@@ -26,12 +22,15 @@
      * @param {TrackEvent} trackEvent: The TrackEvent being edited
      */
     function setup( trackEvent ) {
-      _trackEvent = trackEvent;
+      _trackEvent = trackEvent,
+      _manifestOptions = _trackEvent.manifest.options;
+      _popcornOptions = _trackEvent.popcornOptions;
 
       var container = _rootElement.querySelector( ".editor-options" ),
           advancedContainer = _rootElement.querySelector( ".advanced-options" ),
           pluginOptions = {},
-          ignoreKeys = ["color", "customColor", "customColorHeaderFont", "start", "end"],
+          //ignoreKeys = ["color", "customColor", "customColorHeaderFont", "start", "end"],
+          ignoreKeys = ["start", "end"],
           startEndElement;
 
 
@@ -46,63 +45,86 @@
       function attachHandlers() {
         var key,
             option,
-            colorQuiz = _rootElement.querySelector( "#color-quiz" ),
-            customColor = _rootElement.querySelector( "#custom-color-quiz" ),
-            customColorHeaderFont = _rootElement.querySelector( "#custom-color-header-font" );
+            //colorQuiz = _rootElement.querySelector( "#color-quiz" ),
+            //customColor = _rootElement.querySelector( "#custom-color-quiz" ),
+            //customColorHeaderFont = _rootElement.querySelector( "#custom-color-header-font" );
+            colorQuiz = pluginOptions.color,
+            customColor = pluginOptions.customColor,
+            customColorHeaderFont = pluginOptions.customColorHeaderFont;
 
-        function updateCustomColor( e ) {
-          trackEvent.update({
-            customColor: e.target.value,
-          });
-        }
-
-        function updateCustomColorHeaderFont( e ) {
-          trackEvent.update({
-            customColorHeaderFont: e.target.value,
-          });
-        }
-
-        function handler( e ) {
-          var oldValue = e.target.value;
-
-          trackEvent.update({
-            color: e.target.value
-          });
-          var target = e.target;
-
-          if ( e.target.value === "custom" ) {
-            customColor.parentNode.style.display = "block";
-            customColorHeaderFont.parentNode.style.display = "block";
+        function customColorCallback( te, prop, message ) {
+          if ( message ) {
+            _this.setErrorState( message );
+            return;
           } else {
-            customColor.parentNode.style.display = "none";
-            customColorHeaderFont.parentNode.style.display = "none";
+            te.update({
+              customColor: prop.customColor
+            });
+          }
+        }
+        function customColorHeadFontCallback( te, prop, message ) {
+          if ( message ) {
+            _this.setErrorState( message );
+            return;
+          } else {
+            te.update({
+              customColorHeaderFont: prop.customColorHeaderFont
+            });
           }
         }
 
-        customColor.parentNode.style.display = "none";
-        customColorHeaderFont.parentNode.style.display = "none";
-        customColor.addEventListener( "change", updateCustomColor, false );
-        customColorHeaderFont.addEventListener( "change", updateCustomColorHeaderFont, false );
-        colorQuiz.addEventListener( "change", handler, false );
+        function colorSelectHandler( e ) {
+          _trackEvent.update({
+            color: e.target.value
+          });
+
+          if ( e.target.value === "custom" ) {
+            customColor.element.parentNode.style.display = "block";
+            customColorHeaderFont.element.parentNode.style.display = "block";
+          } else {
+            customColor.element.parentNode.style.display = "none";
+            customColorHeaderFont.element.parentNode.style.display = "none";
+          }
+        }
 
         for ( key in pluginOptions ) {
           if ( pluginOptions.hasOwnProperty( key ) ) {
             option = pluginOptions[ key ];
 
             if ( option.elementType === "select" ) {
-              _this.attachSelectChangeHandler( option.element, option.trackEvent, key, option.trackEvent.updateTrackEventSafe );
+              if ( key === "color" ) {
+                option.element.addEventListener("change", colorSelectHandler, false);
+              }
+              else {
+                _this.attachSelectChangeHandler( option.element, option.trackEvent, key, _this.updateTrackEventSafe );
+              }
             }
             else if ( option.elementType === "input" ) {
               if ( option.element.type === "checkbox" ) {
                 _this.attachCheckboxChangeHandler( option.element, option.trackEvent, key );
-              } else {
-                _this.attachInputChangeHandler( option.element, option.trackEvent, key, option.trackEvent.updateTrackEventSafe );
+              }
+              else if ( key === "customColor" ) {
+                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customColorCallback );
+              }
+              else if ( key === "customColorHeaderFont" ) {
+                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customColorHeadFontCallback );
+              }
+              else {
+                _this.attachInputChangeHandler( option.element, option.trackEvent, key, _this.updateTrackEventSafe );
               }
             }
             else if ( option.elementType === "textarea" ) {
               _this.attachInputChangeHandler( option.element, option.trackEvent, key, _this.updateTrackEventSafe );
             }
           }
+        }
+
+        if ( _popcornOptions.color === "custom" ) {
+          customColor.element.parentNode.style.display = "block";
+          customColorHeaderFont.element.parentNode.style.display = "block";
+        } else {
+          customColor.element.parentNode.style.display = "none";
+          customColorHeaderFont.element.parentNode.style.display = "none";
         }
       }
 
