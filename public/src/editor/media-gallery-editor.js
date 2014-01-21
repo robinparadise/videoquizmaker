@@ -287,7 +287,12 @@ define( [ "util/lang", "util/uri", "util/keys", "util/mediatypes", "editor/edito
     _durationInput.addEventListener( "blur", onBlur, false );
 
     _automaticLines.addEventListener( "change", onAutomaticLinesChange, false );
-    _automaticLines.checked = Butter.app.project.automaticLines === "true";
+    if (Butter.app.project.automaticLines === undefined) {
+      Butter.app.project.automaticLines = "true";
+      _automaticLines.checked = true;
+    } else {
+      _automaticLines.checked = Butter.app.project.automaticLines === "true";
+    }
   }
 
   function onDurationChange( e ) {
