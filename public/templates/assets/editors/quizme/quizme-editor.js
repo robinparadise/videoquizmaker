@@ -122,7 +122,13 @@
         if ( _popcornOptions.color === "custom" ) {
           customColor.element.parentNode.style.display = "block";
           customColorHeaderFont.element.parentNode.style.display = "block";
-        } else {
+        }
+        else if (!_popcornOptions.color) {
+          _popcornOptions.color = "custom";
+          customColor.element.parentNode.style.display = "block";
+          customColorHeaderFont.element.parentNode.style.display = "block";
+        }
+        else {
           customColor.element.parentNode.style.display = "none";
           customColorHeaderFont.element.parentNode.style.display = "none";
         }

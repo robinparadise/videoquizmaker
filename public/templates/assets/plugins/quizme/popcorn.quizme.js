@@ -103,7 +103,7 @@
           elem: "select", 
           options: ["darkQuiz", "yellowQuiz", "greenQuiz", "redQuiz", "greenLightQuiz", "darkGreyQuiz", "custom"], 
           label: "Color Quiz",
-          "default": "darkQuiz",
+          "default": "custom",
           group: "advanced"
         },
         customColor: {
@@ -226,10 +226,10 @@
       options.optQuiz.allRandom = options.random;
       options.optQuiz.intro = options.intro;
 
-      // Change color Quiz
+/*      // Change color Quiz
       if (!options.color) {
         options.color = manifest.color.default;
-      }
+      }*/
 
       // Object Callback with functions that jquizme execute when finish
       options.callback = {
