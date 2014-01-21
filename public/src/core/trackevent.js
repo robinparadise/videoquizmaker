@@ -39,7 +39,7 @@ define( [ "./logger", "./eventmanager", "./observer", "util/lang", "util/time",
       return nid;
     }
     else {
-      return __guid++;
+      return ++__guid;
     }
   }
 

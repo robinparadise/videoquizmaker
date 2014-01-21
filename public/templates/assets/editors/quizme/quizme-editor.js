@@ -29,7 +29,6 @@
       var container = _rootElement.querySelector( ".editor-options" ),
           advancedContainer = _rootElement.querySelector( ".advanced-options" ),
           pluginOptions = {},
-          //ignoreKeys = ["color", "customColor", "customColorHeaderFont", "start", "end"],
           ignoreKeys = ["start", "end"],
           startEndElement;
 
@@ -45,9 +44,6 @@
       function attachHandlers() {
         var key,
             option,
-            //colorQuiz = _rootElement.querySelector( "#color-quiz" ),
-            //customColor = _rootElement.querySelector( "#custom-color-quiz" ),
-            //customColorHeaderFont = _rootElement.querySelector( "#custom-color-header-font" );
             colorQuiz = pluginOptions.color,
             customColor = pluginOptions.customColor,
             customColorHeaderFont = pluginOptions.customColorHeaderFont;
@@ -58,7 +54,8 @@
             return;
           } else {
             te.update({
-              customColor: prop.customColor
+              customColor: prop.customColor,
+              color: "custom"
             });
           }
         }
@@ -68,7 +65,8 @@
             return;
           } else {
             te.update({
-              customColorHeaderFont: prop.customColorHeaderFont
+              customColorHeaderFont: prop.customColorHeaderFont,
+              color: "custom"
             });
           }
         }
