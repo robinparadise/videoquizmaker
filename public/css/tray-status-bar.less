@@ -1,13 +1,17 @@
+@_butterStatusHeight: 45px;
+@_mediaStatusContainerHeight: @_butterStatusHeight;
+
+
 /*********************************************************
 * TRAY STATUS
 */
-@_butterStatusHeight: 45px;
-@_mediaStatusContainerHeight: @_butterStatusHeight;
-@_playButtonHeight: 27px;
+@_statusContainerHeight: 25px;
+@_playButtonHeight: 20px;
 @_scrubberBarHeight: 8px;
 @_scrubberHandleHeight: 10px;
 @_traySideWidth: 129px;
 @_timebarRight: 27px;
+@_buttonColour: #949494;
 
 /*********************************************************
 * Butter Status Area - The top bar in the tray
@@ -15,18 +19,31 @@
 
 .butter-status-area {
   position: absolute;
-  height: @_butterStatusHeight;
+  bottom: @_superScrollbarHeight;
   top: 0;
   left: 0;
   width: 100%;
-  .selectable( none );
+  min-height: @CONTROLS_HEIGHT;
 }
 
 .media-status-container {
   position: relative;
-  height: @_mediaStatusContainerHeight;
+  height: 100%;
   background: #FFF;
   border-top: 1px solid @baseLightOutline;
+
+  .add-track {
+    position: absolute;
+    left: 14px;
+    padding: 0;
+    font-size: 11px;
+    position: absolute;
+    top: 17px;
+    width: 80px;
+    margin-left: 10px;
+    line-height: 20px;
+    outline: none;
+  }
 }
 
 
@@ -37,9 +54,9 @@
 .time-bar {
   position: absolute;
   left: @_traySideWidth;
-  top: ( @_mediaStatusContainerHeight - @_scrubberBarHeight ) / 2;
+  top: ( @CONTROLS_HEIGHT - @_scrubberBarHeight ) / 2;
   right: @_timebarRight;
-  height: ( @_mediaStatusContainerHeight / 2 ) + ( @_scrubberBarHeight / 2 );
+  bottom: 0;
 }
 
 // Time ticks
@@ -47,29 +64,33 @@
   position: absolute;
   left: 0;
   top: @_scrubberBarHeight;
-  height: ( @_mediaStatusContainerHeight / 2 ) - ( @_scrubberBarHeight / 2 );
+  height: ( @CONTROLS_HEIGHT / 2 ) - ( @_scrubberBarHeight / 2 );
   overflow: hidden;
   right: 0;
   opacity: 0.5;
 }
 
 .time-bar-scrubber-container {
-  background: fade( @baseDark, 20% );
   border-bottom: 1px solid #FFF;
   z-index: @TRAY_Z_INDEX + 10;
-  border-radius: 15px;
-  position: absolute;
-  .selectable( none );
-  top: 0;
-  right: 0;
-  left: 0;
-  height: @_scrubberBarHeight;
+  height: 100%;
   .fill-bar {
     background: @green;
     border-radius: 15px;
     height: @_scrubberBarHeight;
     position: absolute;
+    cursor: pointer;
     top: 0;
+  }
+  .total-bar {
+    background: fade( @baseDark, 20% );
+    border-radius: 15px;
+    height: @_scrubberBarHeight;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+    left: 0;
   }
 }
 
@@ -78,10 +99,11 @@
   top: @_scrubberHandleHeight + 3px;
   left: 4px;
   width: 2px;
-  height: 150px;
+  bottom: 0;
   cursor: pointer;
   z-index: @TRAY_Z_INDEX + 9;
   background: fade( @red, 50% );
+  margin-left: 2px;
   &:after {
     content: "";
     position: absolute;
@@ -120,14 +142,12 @@
   line-height: @_tooltipHeight / 3;
   top: -( @_tooltipHeight + 4px );
   height: @_tooltipHeight;
-  &.tooltip-on {
-    .transition( all 0.1s ease 0 );
-  }
+
   &:after, &:before{
     top: 100%;
     border-bottom: none;
     border-left: 5px solid transparent;
-    border-right: 5px solid transparent;  
+    border-right: 5px solid transparent;
     border-top: 5px solid #FFF;
   }
   &:before {
@@ -138,32 +158,86 @@
 }
 
 /*********************************************************
-* Status container - Play button, time code at the top left of the tray.
+* Status container - Play button, mute button and time code at the top of the tray.
 */
+
+@statusSidePosition: -7px;
+@statusSideRotation: 25deg;
 
 .status-container {
   position: absolute;
-  width: @_traySideWidth;
-  height: @_butterStatusHeight;
-  line-height: @_butterStatusHeight;
-  top: 0;
-  left: 0;
+  width: @_traySideWidth + 70px;
+  height: @_statusContainerHeight;
+  line-height: @_statusContainerHeight;
+  top: -25px;
+  left: 25px;
+  background-color: #FFFFFF;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  border-top: 1px solid @baseLightOutline;
+
+  .status-inner-container {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    z-index: 3;
+  }
+
+  > .status-side {
+    position: absolute;
+    width: 40px;
+    height: 100%;
+    top: 9px;
+    background-color: #FFFFFF;
+    z-index: 2;
+
+    &.left {
+      left: @statusSidePosition;
+      .transform( rotate( @statusSideRotation ) );
+      border-left: 1px solid @baseLightOutline;
+    }
+
+    &.right {
+      right: @statusSidePosition;
+      .transform( rotate( -@statusSideRotation ) );
+      border-right: 1px solid @baseLightOutline;
+    }
+  }
 }
 
-.time-container {
+.time-wrapper {
+  position: relative;
+  margin-top: 5px;
   float: left;
-  margin-left: 10px;
-  input {
-    background: transparent;
+
+  .time-container {
+    display: inline;
+    position: relative;
     color: @baseText;
-    border: none;
-    width: 50px;
-    text-align: center;
     font-size: 10px;
     font-family: menlo, monospace;
-    &:focus {
-      .selectable( text );
-    } 
+
+    .current-time {
+      margin-right: -3px;
+    }
+
+    .duration-input {
+      display: inline;
+      padding: 3px;
+      border: 1px solid @baseLightOutline;
+      position: relative;
+      max-width: 55px;
+      background: transparent;
+      color: @baseText;
+      font-size: 10px;
+      font-family: menlo, monospace;
+      margin-left: -3px;
+      outline: none;
+
+      &.input-active {
+        border: 1px solid @green;
+      }
+    }
   }
 }
 
@@ -171,8 +245,6 @@
   width: @_playButtonHeight;
   height: @_playButtonHeight;
   line-height: @_playButtonHeight;
-  text-align: center;
-  border-radius: 4px;
   background: @green;
   padding: 0;
   margin: 0;
@@ -183,17 +255,21 @@
 
 .play-button-container {
   position: relative;
-  height: 100%;
   float: left;
-  width: @_playButtonHeight + 13px;
-  background: lighten( @baseLight, 5% );
-  border-right: 1px solid @baseLightOutline;
-  .triangle( "right", 4px, #FFF, 1px, @baseLightOutline );
+  height: 100%;
+  width: @_playButtonHeight + 10px;
+  margin-left: 10px;
+  margin-top: 5px;
+
   .status-button {
-    position: absolute;
-    top: 50%;
-    left: 5px;
-    margin-top: -@_playButtonHeight / 2;
+    width: 21px;
+    height: 21px;
+    line-height: 21px;
+    border-radius: 25px;
+
+    .icon {
+      margin-left: 2px;
+    }
   }
   .status-button[data-state="true"] > .icon {
     background-position: -288px -72px;
@@ -201,9 +277,9 @@
 }
 
 .mute-button-container {
-  position: absolute;
-  top: 13px;
-  left: @_traySideWidth - 23px;
+  position: relative;
+  float: left;
+  margin-top: 10px;
 
   .status-button {
     width: 20px;
