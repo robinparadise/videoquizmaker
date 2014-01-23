@@ -146,7 +146,7 @@
           elem: "input",
           type: "number",
           label: "Height",
-          "default": 90,
+          "default": 80,
           "units": "%",
           hidden: true
         },

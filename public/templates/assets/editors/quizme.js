@@ -14,7 +14,7 @@ EditorHelper.addPlugin( "quizme", function( trackEvent ) {
     window.EditorHelper.resizable( trackEvent, _container, target, {
       minWidth: 40,
       minHeight: 40,
-      handlePositions: "n,ne,e,se,s,sw,w"
+      handlePositions: "n,ne,e,se,s,sw,w,nw"
     });
   }
 

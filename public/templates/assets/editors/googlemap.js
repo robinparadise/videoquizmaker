@@ -18,7 +18,7 @@ EditorHelper.addPlugin( "googlemap", function( trackEvent, popcorn ) {
     EditorHelper.draggable( trackEvent, container, target );
 
     EditorHelper.resizable( trackEvent, container, target, {
-      handlePositions: "e, se, s, sw, w, n, ne",
+      handlePositions: "e, se, s, sw, w, n, ne, nw",
       minHeight: 20,
       minWidth: 20
     });

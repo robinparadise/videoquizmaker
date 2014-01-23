@@ -53,13 +53,16 @@ define( [ "util/dragndrop", "util/lang", "editor/editor", "text!layouts/plugin-l
       });
 
       function onClick() {
-        var trackEvent;
-
         if ( butter.currentMedia.ready ) {
-          trackEvent = butter.generateSafeTrackEvent( e.data.type, {
-            start: butter.currentTime
+          butter.deselectAllTrackEvents();
+          butter.generateSafeTrackEvent({
+            type: e.data.type,
+            popcornOptions: {
+              start: butter.currentTime
+            }
+          }, function( trackEvent ) {
+            butter.editor.editTrackEvent( trackEvent );
           });
-          butter.editor.editTrackEvent( trackEvent );
         }
       }
 
