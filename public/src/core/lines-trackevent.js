@@ -86,10 +86,16 @@ define( [ "core/eventmanager" ],
         if (options.backward !== undefined) {
           _lines[trackEventID].backward = options.backward;
           _rules[trackEventID].backward = options.backward;
+          if (_lines[trackEventID].line) {
+            _lines[trackEventID].line.backward = options.backward;
+          }
         }
         if (options.manual !== undefined) {
           _lines[trackEventID].manual = options.manual;
           _rules[trackEventID].manual = options.manual;
+          if (_lines[trackEventID].line) {
+            _lines[trackEventID].line.manual = options.manual;
+          }
         }
         if (options.line) {
           _lines[trackEventID].line = options.line;
@@ -146,8 +152,12 @@ define( [ "core/eventmanager" ],
       return false;
     }
 
-    this.update = function() {
-      _trackEvent.update({rules: _rules});
+    this.update = function(teID) {
+      if (teID && !_lines[teID].manual) {
+        _this.setLine(teID, {manual: true}); // and update itself
+      } else {
+        _trackEvent.update({rules: _rules});
+      } 
     }
 
     this.isLeafNode = function() {

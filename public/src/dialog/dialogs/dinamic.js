@@ -284,17 +284,17 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     $popupTab.hide();
                     $popupScore.show();
                     setScore();
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
                 $assuredScore.change(function(ev) {
                     _options.score.condition = $assuredScore.find(":selected").attr("value");
                     _options.keyrule = "score";
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
                 $score.change(function() {
                     _options.score.value = this.value;
                     _options.keyrule = "score";
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
             }
 
@@ -306,7 +306,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                         $questions.find(".selected").removeClass("selected").find(".assured-pass-wrapper").slideUp();
                         $that.addClass("selected");
                         $that.find(".assured-pass-wrapper").slideDown(function() {
-                            dialog.scrollbar.update();
+                            dialog.scrollbar.update(_data.endID, true);
                         });
 
                         var name = _options.questions.name;
@@ -318,12 +318,12 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                         _options.questions.n    = pos;
                         _options.questions.ques = GlobalQuiz[name][type][pos].ques;
                         setQuestions();
-                        _trackEvent.lines.update();
+                        _trackEvent.lines.update(_data.endID);
                     }
                 });
                 $headerQuestions.click(function(ev) {
                     if ( $(this).hasClass("butter-active") ) {
-                        dialog.scrollbar.update();
+                        dialog.scrollbar.update(_data.endID, true);
                         return;
                     }
                     $headers.removeClass("butter-active");
@@ -331,7 +331,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     $popupTab.hide();
                     $popupQuestions.show();
                     appendQuestions();
-                    dialog.scrollbar.update();
+                    dialog.scrollbar.update(_data.endID, true);
                 });
 
                 $questions.on("change", "[name='assured-pass']", function(ev) {
@@ -352,8 +352,8 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                 $questions.on("change", ".answer-checkbox", function(ev) {
                     ev.preventDefault();
                     setUserAnswers($(this));
+                    _trackEvent.lines.update();
                 });
-                _trackEvent.lines.update();
             }
 
             // Pass Changes
@@ -365,12 +365,12 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     $popupTab.hide();
                     $popupPass.show();
                     setTimePass();
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
                 $assuredPass.change(function() {
                     _options.pass = $assuredPass.find(":selected").val();
                     _options.keyrule = "pass";
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
             }
             // Time Changes
@@ -382,7 +382,7 @@ define( [ "text!dialog/dialogs/dinamic.html", "dialog/dialog", "util/scrollbars"
                     } else {
                         _options.keyrule = "pass";
                     }
-                    _trackEvent.lines.update();
+                    _trackEvent.lines.update(_data.endID);
                 });
 
                 $assuredTimeSelect.change(function() {

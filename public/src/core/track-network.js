@@ -22,6 +22,15 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			return app.getTrackEvents("id", id)[0];
 		}
 
+		this.clearLayer = function() {
+			layer.children.splice(0);
+			layer.draw();
+		}
+
+		this.redrawLayer = function() {
+			layer.draw();
+		}
+
 		// Create Layer Canvas
 		this.createCanvas = function() {
 			if (!stage) {
@@ -231,8 +240,11 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					line = start.lines.allLines[end.id].line,
 					update = false;
 				line.setPoints(points);
-				if (options.manual && options.manual !== lineEvt.manual) {
+				if (lineEvt.manual) {
 					line.attrs.stroke = GREEN; // change color
+				}
+				if (options.manual && options.manual !== lineEvt.manual) {
+					//line.attrs.stroke = GREEN; // change color
 					lineEvt.rule.manual = options.manual;
 					lineEvt.manual = options.manual;
 					line.manual = options.manual;
@@ -504,11 +516,6 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 			lineEvt.line.remove();
 			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
-			layer.draw();
-		}
-
-		this.clearLayer = function() {
-			layer.children.splice(0);
 			layer.draw();
 		}
 
