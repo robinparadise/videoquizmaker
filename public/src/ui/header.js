@@ -20,6 +20,7 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
         _projectMenu = _rootElement.querySelector( ".butter-project-menu" ),
         _projectMenuControl = _rootElement.querySelector( ".butter-project-menu-control" ),
         _projectMenuList = _projectMenu.querySelector( ".butter-btn-menu" ),
+        _quizmanagerBtn = _rootElement.querySelector( ".quizmanager-btn" ),
         //_tabzilla = _rootElement.querySelector( "#tabzilla" ),
         _noProjectNameToolTip,
         _projectTitlePlaceHolderText = _projectName.innerHTML,
@@ -217,7 +218,8 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       _projectMenu.classList.remove( "butter-btn-menu-expanded" );
     }, true );
 
-    function quizmanagerCallback() {
+    function quizmanagerCallback(e) {
+      e.preventDefault();
       var dialog = Dialog.spawn( "quizme" );
       dialog.open();
     }
@@ -234,6 +236,8 @@ define([ "dialog/dialog", "util/lang", "text!layouts/header.html", "ui/user-data
       quizmanagerCallback: quizmanagerCallback,
       feedbackCallback: feedbackCallback
     });
+
+    _quizmanagerBtn.addEventListener("click", quizmanagerCallback, false);
 
 
     function onLogin() {
