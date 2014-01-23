@@ -414,7 +414,7 @@ function init() {
         // See if we should pause at some time other than duration.
         if ( end > 0 && end > start && end <= popcorn.duration() ) {
           popcorn.cue( end, function() {
-            popcorn.pause();
+            //popcorn.pause();
             popcorn.emit( "ended" );
           });
         }
