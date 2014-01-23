@@ -203,8 +203,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
           track = e.data.track,
           start = e.data.start,
           end = e.data.end,
-          popcornOptions = {},
-          trackEvent;
+          popcornOptions = {};
 
       popcornOptions.start = start;
       popcornOptions.end = end;
@@ -217,12 +216,20 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
         }
       }
 
+      function addCallback( trackEvent ) {
+        butter.editor.editTrackEvent( trackEvent );
+      }
+
       if ( _media.ready ) {
         if ( popcornOptions && popcornOptions.end ) {
           popcornOptions.end = popcornOptions.end + start;
         }
-        trackEvent = butter.generateSafeTrackEvent( type, popcornOptions, track );
-        butter.editor.editTrackEvent( trackEvent );
+        butter.deselectAllTrackEvents();
+        butter.generateSafeTrackEvent({
+          type: type,
+          popcornOptions: popcornOptions,
+          track: track
+        }, addCallback );
       }
     }
 

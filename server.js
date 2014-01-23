@@ -142,6 +142,15 @@ require( 'express-persona' )( app, {
   audience: APP_HOSTNAME
 });
 
+require( "webmaker-mediasync" )( app, {
+  serviceKeys: {
+    soundcloud: config.SYNC_SOUNDCLOUD,
+    flickr: config.SYNC_FLICKR,
+    giphy: config.SYNC_GIPHY
+  },
+  limit: config.SYNC_LIMIT
+});
+
 var routes = require('./routes');
 routes( app, Project, filter, sanitizer, stores, utils, metrics );
 
