@@ -192,15 +192,15 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				}
 				// Width of the backwardline
 				var widthOffsetEnd, widthOffsetStart;
-				if ($end.width() <= 16) {
-					widthOffsetEnd = 1;
+				if ($end.width() <= 20) {
+					widthOffsetEnd = 2;
 				} else {
-					widthOffsetEnd = 15;
+					widthOffsetEnd = 10;
 				}
-				if ($start.width() <= 16) {
-					widthOffsetStart = 1;
+				if ($start.width() <= 20) {
+					widthOffsetStart = 2;
 				} else {
-					widthOffsetStart = 15;
+					widthOffsetStart = 10;
 				}
 
 				// trackTop for 'start' trackEvent
