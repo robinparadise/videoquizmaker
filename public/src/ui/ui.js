@@ -548,6 +548,7 @@ define( [ "core/eventmanager", "./toggler",
         var selectedEvents = butter.selectedEvents.slice(),             // Copy selectedEvents array to circumvent it changing
                                                                         // if deletion actually occurs, while still taking
                                                                         // advantage of caching.
+            sortedSelectedEvents = butter.sortedSelectedEvents.slice(),
             selectedEvent,
             dialog,
             i, l = selectedEvents.length;
@@ -571,7 +572,7 @@ define( [ "core/eventmanager", "./toggler",
             selectedEvent.track.removeTrackEvent( selectedEvent );
             //Delete completely: redraw lines
             butter.sortTrackEventsBySet( orderedTrackEvents );
-            butter.trackNetwork.calculateLines("trackeventremoved", selectedEvents);
+            butter.trackNetwork.calculateLines("trackeventremoved", sortedSelectedEvents);
             return;
           }
 
@@ -587,7 +588,7 @@ define( [ "core/eventmanager", "./toggler",
                   selectedEvent.track.removeTrackEvent( selectedEvent );
                 }
                 //Delete completely: redraw lines
-                butter.trackNetwork.calculateLines("trackeventremoved", selectedEvents);
+                butter.trackNetwork.calculateLines("trackeventremoved", sortedSelectedEvents);
                 dialog.close();
               },
               cancel: function() {

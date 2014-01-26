@@ -74,7 +74,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					stage = undefined;
 					return false
 				}
-				layer.lines = {} // Object to save lines by ID
+				layer.lines = {}; // Object to save lines by ID
+				layer.linesTo = {};
 				this.listenEvents(stage, layer);
 			}
 			_scrollLeft = $wrapper[0].scrollLeft;
@@ -94,19 +95,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			if (evType === "trackeventremoved" && !!evTrack) { //evTrack are selectedTrackevents
 				for (var i in evTrack) {
 					this.cleanOldLines(evTrack[i], {});
-					if (!fromSetMedia || !setMedia) {
-						fromSetMedia = evTrack[i].popcornOptions.setMedia;
-						setMedia = evTrack[i].popcornOptions.setMedia;
-						continue;
-					}
-					// Look for the first and Last setMedia selected
-					else if (evTrack[i].popcornOptions.setMedia < fromSetMedia) {
-						fromSetMedia = evTrack[i].popcornOptions.setMedia;
-					}
-					else if (evTrack[i].popcornOptions.setMedia > setMedia) {
-						setMedia = evTrack[i].popcornOptions.setMedia;
-					}
+					this.removeLinesToEnd(evTrack[i].id);
 				}
+				fromSetMedia = evTrack[evTrack.length-1].popcornOptions.setMedia;
+				setMedia = evTrack[0].popcornOptions.setMedia;
 				if (fromSetMedia > 0) {
 					--fromSetMedia;
 				}
@@ -123,6 +115,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 			// Update just the evTrack's set
 			if (evType === "trackeventupdated" && !!evTrack) {
+				this.updateLinesToEnd(evTrack.id);
 				setMedia = evTrack.popcornOptions.setMedia;
 				fromSetMedia = setMedia;
 				if (setMediaResizing < fromSetMedia) {
@@ -139,60 +132,43 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				}
 			}
 			else if (evType === "pasteTrackEvents" && app.selectedEvents.length > 0) {
-				var orderedSelectedSet = [];
-				for(var i in app.selectedEvents) {
-					orderedSelectedSet.push(app.selectedEvents[i].popcornOptions.setMedia);
-				}
-				orderedSelectedSet.sort();
-				fromSetMedia = orderedSelectedSet[0]; // Update from first selected TE
-				setMedia = orderedSelectedSet[orderedSelectedSet.length-1]; // Update until the last selected
+				// Update until the last selected
+				setMedia = app.sortedSelectedEvents[0].popcornOptions.setMedia;
+				// Update from first selected TE
+				fromSetMedia = app.sortedSelectedEvents[app.sortedSelectedEvents.length-1].popcornOptions.setMedia;
 				if (fromSetMedia > 0) {
 					--fromSetMedia;
 				}
 			}
-			else if (evType === "dropfinished" && !!app.selectedEvents) { // Only selected Events might be dropped
-				var selected = app.selectedEvents;
-				for (var i in selected) { // Only update Selected Events
-					if (!fromSetMedia || !setMedia) {
-						fromSetMedia = selected[i].popcornOptions.setMedia;
-						setMedia = selected[i].popcornOptions.setMedia;
-						continue;
-					}
-					// Look for the first and Last setMedia selected
-					if (selected[i].popcornOptions.setMedia < fromSetMedia) {
-						fromSetMedia = selected[i].popcornOptions.setMedia;
-					} else if (selected[i].popcornOptions.setMedia > setMedia) {
-						setMedia = selected[i].popcornOptions.setMedia;
-					}
-				}
-				if (typeof setMediaDragging === "number") {
-					if (setMediaDragging < fromSetMedia) { // Update from the Dragging trackEvent
-						fromSetMedia = setMediaDragging;
-					} else if (setMediaDragging > setMedia) { // Update until the Dragging trackEvent
-						setMedia = setMediaDragging;
-					}
-				} else if (typeof setMediaDragging === "object") {
-					if (setMediaDragging[0] < fromSetMedia) { // Update from the Dragging trackEvent
+			else if (evType === "dropfinished" && !!app.sortedSelectedEvents.length > 0) { // Only selected Events might be dropped
+				var selected = app.sortedSelectedEvents;
+				this.updateLinesToEnd(selected[selected.length-1].id);
+
+				fromSetMedia = selected[selected.length-1].popcornOptions.setMedia;
+				setMedia = selected[0].popcornOptions.setMedia;
+				if (typeof setMediaDragging === "object") {
+					// Update from the Dragging trackEvent
+					if (setMediaDragging[0] < fromSetMedia) {
 						fromSetMedia = setMediaDragging[0];
-					} else if (setMediaDragging[setMediaDragging.length-1] > setMedia) { // Update until the Dragging trackEvent
-						setMedia = setMediaDragging[setMediaDragging.length-1];
+					}
+					// Update until the Dragging trackEvent
+					else if (setMediaDragging[1] > setMedia) {
+						setMedia = setMediaDragging[1];
 					}
 				}
-				setMediaDragging = undefined; // reset reference Dragging trackEventetMedia
+
 				if (fromSetMedia > 0) {
 					--fromSetMedia;
 				}
+				setMediaDragging = undefined;
 			}
 			else if (evType === "trackeventdragstarted" && !!evTrack) { // evTrack is dragging
 				if (setMediaDragging) return;
-				if (app.selectedEvents.length > 1) {
-					setMediaDragging = [];
-					for (var i in app.selectedEvents) {
-						setMediaDragging.push(app.selectedEvents[i].popcornOptions.setMedia);
-					}
-					setMediaDragging.sort();
-				} else if (app.selectedEvents.length === 1) {
-					setMediaDragging = evTrack.popcornOptions.setMedia;
+				if (app.sortedSelectedEvents.length > 0) {
+					setMediaDragging = [
+						app.sortedSelectedEvents[app.sortedSelectedEvents.length-1].popcornOptions.setMedia,
+						app.sortedSelectedEvents[0].popcornOptions.setMedia
+					]
 				}
 				return;
 			}
@@ -293,6 +269,29 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				layer.lines[id].setPoints(points);
 			});
 			layer.draw();
+		}
+
+		this.updateLinesToEnd = function(endID) {
+			if (typeof layer.linesTo[endID] === "object") {
+				Object.keys(layer.linesTo[endID]).forEach(function(startID) {
+					points = trackNetwork.calculatePoints(
+						layer.linesTo[endID][startID].startTrackEvent,
+						layer.linesTo[endID][startID].endTrackEvent,
+						layer.linesTo[endID][startID].backward
+					);
+					if (!points) return;
+					// update points of every line
+					layer.linesTo[endID][startID].setPoints(points);
+				});
+			}
+		}
+
+		this.removeLinesToEnd = function(endID) {
+			if (typeof layer.linesTo[endID] === "object") {
+				Object.keys(layer.linesTo[endID]).forEach(function(startID) {
+					trackNetwork.removeLine(layer.linesTo[endID][startID].startTrackEvent, endID);
+				});
+			}
 		}
 
 		this.calculatePoints = function(start, end, backward) {
@@ -430,13 +429,13 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					dialog.open( "empty" );
 				});
 				layer.add(line);
-				layer.lines[line._id] = line;
 
 				line.manual = lineEvt.manual;
 				line.backward = lineEvt.backward;
 				// Save references to the tracks events
 				line.startTrackEvent = start;
 				line.endTrackEvent = end;
+				this.saveLineInLayer(line);
 				start.lines.setLine( end.id, {
 					line: line,
 					endInstance: end
@@ -480,11 +479,11 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				});
 
 				layer.add(line);
-				layer.lines[line._id] = line;
 
 				// Save references to the tracks events
 				line.startTrackEvent = start;
 				line.endTrackEvent = end;
+				this.saveLineInLayer(line);
 				if (options.manual) line.manual = true;
 				if (options.backward) line.backward = true;
 				// Save "line" and "popup rule" into the object
@@ -567,15 +566,15 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			});
 			layer.draw();
 		}
-		this.removeAutomaticLine = function(instance, id) {
-			var lineEvt = instance.lines.allLines[id];
+		this.removeAutomaticLine = function(instance, endId) {
+			var lineEvt = instance.lines.allLines[endId];
 			if (!lineEvt.backward) {
 				this.enableAll(this, lineEvt.endInstance); // active trackEvents of this branch
 			}
-			instance.lines.removeLine(id);
+			instance.lines.removeLine(endId);
 
 			lineEvt.line.remove();
-			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
+			trackNetwork.removeLineInLayer(line); // remove reference in the layer
 			// layer.draw();
 		}
 
@@ -591,12 +590,31 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						lineID = allLines[trackID].line._id;
 						obj.lines.removeLine(trackID, true); // Remove line from TrackEvent
 						layer.lines[lineID].remove(); // Remove line from layer children
-						delete layer.lines[lineID] // Delete from layer
+						trackNetwork.removeLineInLayer(line); // Delete from layer
 						update = true;
 					}
 				});
 			}
 			return update;
+		}
+
+		this.saveLineInLayer = function(line) {
+			layer.lines[line._id] = line;
+			if (typeof(layer.linesTo[line.endTrackEvent.id]) === "object") {
+				layer.linesTo[line.endTrackEvent.id][line.startTrackEvent.id] = line;
+			}
+			else {
+				layer.linesTo[line.endTrackEvent.id] = {}
+				layer.linesTo[line.endTrackEvent.id][line.startTrackEvent.id] = line;
+			}
+		}
+		this.removeLineInLayer = function(line) {
+			delete layer.lines[line._id];
+			if (line.endTrackEvent && layer.linesTo[line.endTrackEvent.id]) {
+				if (line.startTrackEvent && layer.linesTo[line.endTrackEvent.id][line.startTrackEvent.id]) {
+					delete layer.linesTo[line.endTrackEvent.id][line.startTrackEvent.id];
+				}
+			}
 		}
 
 		// Remove old lines references
@@ -609,7 +627,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					lineID = allLines[trackID].line._id;
 					obj.lines.removeLine(trackID, true); // Remove line from TrackEvent
 					layer.lines[lineID].remove(); // Remove line from layer children
-					delete layer.lines[lineID]; // Delete from layer
+					trackNetwork.removeLineInLayer(layer.lines[lineID]); // Delete from layer
 					update = true;
 				}
 			});
@@ -620,6 +638,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 
 		// Active all instance of this branch
 		this.enableAll = function(that, instance) {
+			if (typeof instance !== "object") return; // removed instance
 			if (instance.superTrackEvent.isSuperTrackEvent) { // Enable all SubTrackEvents
 				instance.superTrackEvent.subTrackEvents.forEach(function(id) {
 					instance.superTrackEvent.subTrackEvents[id].update({disable: false});
@@ -648,7 +667,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			instance.lines.setDeletedLine(id);
 
 			lineEvt.line.remove();
-			delete layer.lines[lineEvt.line._id]; // remove reference in the layer
+			this.removeLineInLayer(lineEvt.line); // remove reference in the layer
 			layer.draw();
 		}
 
