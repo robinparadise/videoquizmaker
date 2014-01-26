@@ -149,7 +149,7 @@
 			btn:{	// [ "text", "title" ]
 				begin: [ "Begin Quiz" ],
 				check: [ "Check", "Check your answer" ],
-				del: [ "Delete", "Delete quiz" ],
+				del: [ "Continue", "Delete quiz" ],
 				help: [ "Help", 'Click for help'],
 				next: [ "Next", "Next question" ],
 				restart: [ "Restart", "Restart the quit over" ],
@@ -223,8 +223,8 @@
 		multiLen : 3, // Set the number of multiple choice choices for quizType multi & multiList.
 		numOfQuizQues: 0, // Sets the number of questions asked. Must be between 0 and the total questions.
 		performErrorChecking : true, // Check all the quiz formats.
-		random: true, // Randomizes all the questions in each quiz type section.
-		review: true, // Allows for review of questions at gameOver.
+		random: false, // Randomizes all the questions in each quiz type section.
+		review: false, // Allows for review of questions at gameOver.
 		showFeedback: true, // Show the answers after each question.
 		showAnsInfo: true, // If provided, show the answers information after each question.
 		showHTML: false, //This will show the HTML, by converting to unicode, rather than render it.
