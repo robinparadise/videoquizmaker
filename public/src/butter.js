@@ -177,69 +177,6 @@ window.Butter = {
         return _currentMedia.getManifest( name );
       }; //getManifest
 
-/*      _this.generateSafeTrackEvent = function( type, popcornOptions, track, position ) {
-        var trackEvent,
-            relativePosition,
-            start = popcornOptions.start,
-            end = popcornOptions.end;
-
-        if ( start + _defaultTrackeventDuration > _currentMedia.duration ) {
-          start = _currentMedia.duration - _defaultTrackeventDuration;
-        }
-
-        if ( start < 0 ) {
-          start = 0;
-        }
-
-        if ( !end && end !== 0 ) {
-          end = start + _defaultTrackeventDuration;
-        }
-
-        if ( end > _currentMedia.duration ) {
-          end = _currentMedia.duration;
-        }
-
-        if ( !_defaultTarget ) {
-          console.warn( "No targets to drop events!" );
-          return;
-        }
-
-        if ( !( track instanceof Track ) ) {
-          if ( track && track.constructor === Array ) {
-            position = track;
-          }
-          track = _currentMedia.orderedTracks[ 0 ];
-        }
-
-        track = track || _currentMedia.addTrack();
-
-        if ( track.findOverlappingTrackEvent( start, end ) ) {
-          track = _currentMedia.insertTrackBefore( track );
-        }
-
-        popcornOptions.start = start;
-        popcornOptions.end = end;
-        popcornOptions.target = _defaultTarget.elementID;
-
-        if ( position ) {
-          relativePosition = getRelativePosition( position, type );
-          popcornOptions.left = relativePosition[ 0 ];
-          popcornOptions.top = relativePosition[ 1 ];
-        }
-
-        trackEvent = track.addTrackEvent({
-          popcornOptions: popcornOptions,
-          type: type
-        });
-
-        _this.deselectAllTrackEvents();
-        trackEvent.selected = true;
-
-        _defaultTarget.view.blink();
-
-        return trackEvent;
-      };*/
-
       _this.generateSafeTrackEvent = function( options, callback ) {
 
         options = options || {};

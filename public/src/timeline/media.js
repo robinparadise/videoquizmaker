@@ -218,6 +218,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
 
       function addCallback( trackEvent ) {
         butter.editor.editTrackEvent( trackEvent );
+        butter.dispatch("plugindroppedstopped", trackEvent);
       }
 
       if ( _media.ready ) {
@@ -263,6 +264,7 @@ define( [ "core/trackevent", "core/track", "core/eventmanager",
       updateUI();
       // Track Network
       butter.trackNetwork = new TrackNetwork(butter);
+      butter.trackNetwork.updateLinesOfLayer();
     });
 
     this.trackContainer = _tracksContainer;

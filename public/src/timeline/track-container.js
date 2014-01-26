@@ -43,6 +43,8 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
     DragNDrop.listen( "dropfinished", function() {
       _media.cleanUpEmptyTracks();
       _vScrollbar.update();
+      butter.sortTrackEventsBySet( butter.orderedTrackEvents );
+      butter.trackNetwork.calculateLines("dropfinished");
     });
 
     _container.addEventListener( "mousedown", function() {
@@ -135,7 +137,9 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
 
       _vScrollbar.update();
       _hScrollbar.update();
-      butter.trackNetwork && butter.trackNetwork.updateLinesOfLayer();
+      if (butter.trackNetwork && !butter.trackNetwork.stageReady) {
+        butter.sortTrackEventsBySet(butter.app.orderedTrackEvents);
+      }
     }
 
     _media.listen( "mediaready", function(){
@@ -183,6 +187,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       _container.appendChild( element );
 
       _vScrollbar.update();
+      butter.trackNetwork.calculateLines("trackeventdragstarted", e.target.trackEvent);
     }
 
     function onTrackEventDragged( draggable, droppable ) {
@@ -266,6 +271,8 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
           trackEventEnd = trackEvent.popcornOptions.end,
           min, max,
           trackEvents = trackEvent.track.trackEvents;
+
+          butter.dispatch("trackeventresizestartedbounds", trackEvent);
 
       // Only one of these two functions, onTrackEventResizedLeft or onTrackEventResizedRight,
       // is run during resizing. Since all the max/min data is prepared ahead of time, we know
@@ -439,6 +446,7 @@ define( [ "core/logger", "util/dragndrop", "./ghost-manager" ],
       _leftViewportBoundary = left >= 0 ? ( left > 1 ? 1 : left ) : _leftViewportBoundary;
       _viewportWidthRatio = width >= 0 ? ( width > 1 ? 1 : width ) : _viewportWidthRatio;
       resetContainer();
+      !!butter.trackNetwork && butter.trackNetwork.updateLinesOfLayer();
     };
 
     _this.snapTo = function( time ) {

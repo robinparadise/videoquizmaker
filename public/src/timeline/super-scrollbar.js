@@ -361,7 +361,6 @@ define( [ "util/lang", "text!layouts/super-scrollbar.html" ],
     _this.resize = function() {
       _this.update();
       _boundsChangedCallback( _viewPort.offsetLeft / _rect.width, _viewPort.offsetWidth / _rect.width );
-      butter.trackNetwork.updateLinesOfLayer();
     };
 
     Object.defineProperties( this, {

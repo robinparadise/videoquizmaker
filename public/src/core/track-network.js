@@ -14,8 +14,10 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			RED = "red",
 			_trackHeigh,
 			_scrollLeft = 0,
-			_scrollTop = 0;
+			_scrollTop = 0,
 			drawing = false,
+			setMediaDragging,
+			setMediaResizing,
 			trackNetwork = this;
 
 		this.getTrackEvent = function(id) {
@@ -31,12 +33,36 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			layer.draw();
 		}
 
+		Object.defineProperties( this, {
+			stageReady: {
+				enumerable: true,
+				configurable: false,
+				get: function(){
+					return !!stage;
+				}
+			},
+			isDragging: {
+				enumerable: true,
+				configurable: false,
+				get: function(){
+					return !!setMediaDragging;
+				}
+			},
+			isDrawing: {
+				enumerable: true,
+				configurable: false,
+				get: function(){
+					return drawing;
+				}
+			}
+		});
+
 		// Create Layer Canvas
 		this.createCanvas = function() {
 			if (!stage) {
 				try {
-					$wrapper = $(".tracks-container-wrapper");
-					$scrollHandle = $wrapper.find(".tracks-container");
+					$wrapper = $("#tracks-container-wrapper");
+					$scrollHandle = $wrapper.find("#tracks-container");
 					_trackHeigh = app.tracks[0].view.element.offsetHeight;
 					stage = new Kinetic.Stage({
 						container: 'tracks-container-canvas'
@@ -49,7 +75,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					return false
 				}
 				layer.lines = {} // Object to save lines by ID
-				this.createLineEventMouse(stage, layer);
+				this.listenEvents(stage, layer);
 			}
 			_scrollLeft = $wrapper[0].scrollLeft;
 			_scrollTop  = $scrollHandle.position().top;
@@ -61,10 +87,29 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		// List all tracks and then calculate coords for lines.
 		this.calculateLines = function(evType, evTrack) {
 			if (!this.createCanvas()) return;
-			var tracks = app.orderedTrackEventsSet, tempTracksIDs, drawn;
+			var tracks = app.orderedTrackEventsSet,
+				tempTracksIDs, drawn, setMedia, fromSetMedia;
+
 			// Remove all lines when is trackeventremoved
-			if (evType === "trackeventremoved") {
-				this.cleanOldLines(evTrack, {});
+			if (evType === "trackeventremoved" && !!evTrack) { //evTrack are selectedTrackevents
+				for (var i in evTrack) {
+					this.cleanOldLines(evTrack[i], {});
+					if (!fromSetMedia || !setMedia) {
+						fromSetMedia = evTrack[i].popcornOptions.setMedia;
+						setMedia = evTrack[i].popcornOptions.setMedia;
+						continue;
+					}
+					// Look for the first and Last setMedia selected
+					else if (evTrack[i].popcornOptions.setMedia < fromSetMedia) {
+						fromSetMedia = evTrack[i].popcornOptions.setMedia;
+					}
+					else if (evTrack[i].popcornOptions.setMedia > setMedia) {
+						setMedia = evTrack[i].popcornOptions.setMedia;
+					}
+				}
+				if (fromSetMedia > 0) {
+					--fromSetMedia;
+				}
 			}
 
 			// If automatic lines is true just redraw manual lines
@@ -73,11 +118,91 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				if (tracks.length > 0) {
 					layer.draw();
 				}
-				this.mouseDownDrawing(stage, layer);
 				return;
 			}
 
-			for(var i in tracks) {
+			// Update just the evTrack's set
+			if (evType === "trackeventupdated" && !!evTrack) {
+				setMedia = evTrack.popcornOptions.setMedia;
+				fromSetMedia = setMedia;
+				if (setMediaResizing < fromSetMedia) {
+					fromSetMedia = setMediaResizing;
+				}
+				else if (setMediaResizing > setMedia) {
+					setMedia = setMediaResizing;
+				}
+				if (setMediaResizing) {
+					setMediaResizing = undefined;
+				}
+				if (fromSetMedia > 0) {
+					--fromSetMedia;
+				}
+			}
+			else if (evType === "pasteTrackEvents" && app.selectedEvents.length > 0) {
+				var orderedSelectedSet = [];
+				for(var i in app.selectedEvents) {
+					orderedSelectedSet.push(app.selectedEvents[i].popcornOptions.setMedia);
+				}
+				orderedSelectedSet.sort();
+				fromSetMedia = orderedSelectedSet[0]; // Update from first selected TE
+				setMedia = orderedSelectedSet[orderedSelectedSet.length-1]; // Update until the last selected
+				if (fromSetMedia > 0) {
+					--fromSetMedia;
+				}
+			}
+			else if (evType === "dropfinished" && !!app.selectedEvents) { // Only selected Events might be dropped
+				var selected = app.selectedEvents;
+				for (var i in selected) { // Only update Selected Events
+					if (!fromSetMedia || !setMedia) {
+						fromSetMedia = selected[i].popcornOptions.setMedia;
+						setMedia = selected[i].popcornOptions.setMedia;
+						continue;
+					}
+					// Look for the first and Last setMedia selected
+					if (selected[i].popcornOptions.setMedia < fromSetMedia) {
+						fromSetMedia = selected[i].popcornOptions.setMedia;
+					} else if (selected[i].popcornOptions.setMedia > setMedia) {
+						setMedia = selected[i].popcornOptions.setMedia;
+					}
+				}
+				if (typeof setMediaDragging === "number") {
+					if (setMediaDragging < fromSetMedia) { // Update from the Dragging trackEvent
+						fromSetMedia = setMediaDragging;
+					} else if (setMediaDragging > setMedia) { // Update until the Dragging trackEvent
+						setMedia = setMediaDragging;
+					}
+				} else if (typeof setMediaDragging === "object") {
+					if (setMediaDragging[0] < fromSetMedia) { // Update from the Dragging trackEvent
+						fromSetMedia = setMediaDragging[0];
+					} else if (setMediaDragging[setMediaDragging.length-1] > setMedia) { // Update until the Dragging trackEvent
+						setMedia = setMediaDragging[setMediaDragging.length-1];
+					}
+				}
+				setMediaDragging = undefined; // reset reference Dragging trackEventetMedia
+				if (fromSetMedia > 0) {
+					--fromSetMedia;
+				}
+			}
+			else if (evType === "trackeventdragstarted" && !!evTrack) { // evTrack is dragging
+				if (setMediaDragging) return;
+				if (app.selectedEvents.length > 1) {
+					setMediaDragging = [];
+					for (var i in app.selectedEvents) {
+						setMediaDragging.push(app.selectedEvents[i].popcornOptions.setMedia);
+					}
+					setMediaDragging.sort();
+				} else if (app.selectedEvents.length === 1) {
+					setMediaDragging = evTrack.popcornOptions.setMedia;
+				}
+				return;
+			}
+			else if (evType !== "trackeventremoved") {
+				setMedia = tracks.length;
+				fromSetMedia = 0;
+			}
+
+			// Drawing loop fromSetMedia to setMedia
+			for(var i = fromSetMedia; i <= setMedia; i++) {
 				var j = Number(i) + 1;
 				tempTracksIDs = {} // We save the keys Id of the trackevents
 
@@ -139,17 +264,23 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 			if (tracks.length > 0) {
 				layer.draw();
 			}
-			this.mouseDownDrawing(stage, layer);
 		}
 
 		// calculate and redraw all lines of the layer
-		this.updateLinesOfLayer = function() {
+		this.updateLinesOfLayer = function(evType) {
+			var scrollTop_Old = _scrollTop;
 			if (!stage) {
 				this.calculateLines();
 				return;
 			} else {
 				this.createCanvas();
 			}
+
+			// When evType is "scroll" just update when the scrollbar is "vertical"
+			if (evType === "scroll" && scrollTop_Old === _scrollTop) {
+				return; // scrollTop_Old == _scrollTop => scroll is horizontal
+			}
+
 			var points;
 			Object.keys(layer.lines).forEach(function(id) {
 				points = trackNetwork.calculatePoints(
@@ -233,18 +364,19 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				return false; // Line was removed
 			}
 			var points = this.calculatePoints(start, end, options.backward);
-			if (!points) return false;
+			if (!points) {
+				return false;
+			}
 
 			if ( start.lines.isLine(end.id) ) { // if there is a kinetic line
 				var lineEvt = start.lines.allLines[end.id];
 					line = start.lines.allLines[end.id].line,
 					update = false;
 				line.setPoints(points);
-				if (lineEvt.manual) {
+				if (lineEvt.manual || options.manual) {
 					line.attrs.stroke = GREEN; // change color
 				}
 				if (options.manual && options.manual !== lineEvt.manual) {
-					//line.attrs.stroke = GREEN; // change color
 					lineEvt.rule.manual = options.manual;
 					lineEvt.manual = options.manual;
 					line.manual = options.manual;
@@ -502,7 +634,8 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 						that.enableAll(that, lineEvt.allLines[id].endInstance);
 					}
 				});
-				instance.update({disable: false});
+				instance.popcornOptions.disable = false;
+				//instance.update({disable: false});
 			}
 		}
 
@@ -551,77 +684,62 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 		}
 
 		// Reset all events and then bind the events again (cause live events seem dont works)
-		this.mouseDownDrawing = function(stage, layer) {
-			var $butterTrackEv = $wrapper.find(".butter-track-event");
-			$butterTrackEv.find(".right-handle-line").off();
-			$butterTrackEv.off();
+		this.onHandlePointMousedown = function(trackEventStart) {
+			if (drawing) {
+				drawing = false;
+				layer.draw();
+			}
+			else {
+				instStart = trackEventStart;
+				$instStart = trackEventStart.$element;
+				var $that = $instStart.find(".handle-point"),
+					$wrap = $instStart.parent();
 
-			// EventListener for handle pointers
-			$butterTrackEv.find(".right-handle-line")
-			.on("mousedown" ,  function(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				if (drawing) {
-					drawing = false;
-					layer.draw();
-				} else {
-					var $that = $(this);
-					var $wrap = $that.parent().parent();
-					$instStart = $that.parent();
-					instStart = trackNetwork.getTrackEvent( $instStart.attr('data-butter-trackevent-id') );
-					
-					lineMouse = new Kinetic.Line({
-						points: [0, 0, 50, 50],
-						strokeWidth: 3,
-						stroke: RED,
-						lineCap: 'round',
-						lineJoin: 'round',
-						shadowColor: GREY,
-						shadowBlur: 6,
-						shadowOffset: 4,
-						shadowOpacity: 0.4
-					});
-					lineBack = new Kinetic.Line({
-						points: [0, 0, 50, 50],
-						strokeWidth: 3,
-						stroke: BLUE,
-						lineCap: 'round',
-						lineJoin: 'round',
-						shadowColor: GREY,
-						shadowBlur: 6,
-						shadowOffset: 4,
-						shadowOpacity: 0.2
-					});
-					layer.add(lineMouse);
-					layer.add(lineBack);
-					//start point and end point are the same
-					var points = [
-						$that.parent().position().left + $that.position().left,
-						$wrap.position().top + $that.outerHeight()/2 + $that.position().top +1.5
-					];
-					points.push(points[0]);
-					points.push(points[1]);
-					lineMouse.setPoints(points);
+				lineMouse = new Kinetic.Line({
+					points: [0, 0, 50, 50],
+					strokeWidth: 3,
+					stroke: RED,
+					lineCap: 'round',
+					lineJoin: 'round',
+					shadowColor: GREY,
+					shadowBlur: 6,
+					shadowOffset: 4,
+					shadowOpacity: 0.4
+				});
+				lineBack = new Kinetic.Line({
+					points: [0, 0, 50, 50],
+					strokeWidth: 3,
+					stroke: BLUE,
+					lineCap: 'round',
+					lineJoin: 'round',
+					shadowColor: GREY,
+					shadowBlur: 6,
+					shadowOffset: 4,
+					shadowOpacity: 0.2
+				});
+				layer.add(lineMouse);
+				layer.add(lineBack);
+				//start point and end point are the same
+				var points = [
+					$that.parent().position().left + $that.position().left,
+					$wrap.position().top + $that.outerHeight()/2 + $that.position().top +1.5
+				];
+				points.push(points[0]);
+				points.push(points[1]);
+				lineMouse.setPoints(points);
 
-					drawing = true;
-					layer.draw();
-				}
-			});
+				drawing = true;
+				layer.draw();
+			}
 
-			// When mouse drawing highlight track-event box
-			$butterTrackEv.hover(function(e) {
-				if (drawing) this.classList.add("highlight");
-			}, function() {
-				this.classList.remove("highlight");
-			});
 		}
 
 		// Drawing lines along the cursor path
-		this.createLineEventMouse = function(stage, layer) {
+		this.listenEvents = function(stage, layer) {
 			var points, pointOrig, pointDest, $src, $parent;
 
 			// Try to close dialog when blur
-			$(".butter-tray").on("mousedown", function(e) {
+			$("#butter-tray").on("mousedown", function(e) {
 				try { dialog.close() } catch(err) {};
 				app.deselectAllTrackEvents();
 			});
@@ -684,6 +802,44 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 					trackNetwork.drawLineFromEvent($instStart, $parent, {manual: true});
 				}
 				layer.draw();
+			});
+
+
+			app.listen("handlepointmousedown", function(e) {
+				trackNetwork.onHandlePointMousedown(e.data);
+			});
+
+			app.listen("plugindroppedstopped", function(e) {
+				trackNetwork.calculateLines("trackeventupdated", e.data);
+			});
+			app.listen("trackeventupdatedbounds", function(e) {
+				if (setMediaDragging) return;
+				app.sortTrackEvents2(app.orderedTrackEvents);
+				app.sortTrackEventsBySet( app.orderedTrackEvents );
+				trackNetwork.calculateLines("trackeventupdated", e.data);
+			});
+			app.listen("mediaready", function() {
+				trackNetwork.updateLinesOfLayer();
+			});
+			app.listen("trackeventresizestartedbounds", function(e) {
+				setMediaResizing = e.data.popcornOptions.setMedia;
+			});
+			app.listen("sortended", function(e) {
+				trackNetwork.updateLinesOfLayer();
+			});
+			app.editor.listen( "editortoggled", function() {
+				trackNetwork.updateLinesOfLayer();
+			});
+			window.addEventListener( "resize", function() {
+				trackNetwork.updateLinesOfLayer();
+			});
+
+			// When mouse drawing highlight track-event box
+			app.listen("trackeventhover", function(e) {
+				if (drawing) e.data.classList.add("highlight");
+			});
+			app.listen("trackeventunhover", function(e) {
+				e.data.classList.remove("highlight");
 			});
 		}
 	}

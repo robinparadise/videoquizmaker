@@ -137,6 +137,9 @@ define( [
             trackEvent.view.elementText = trackEvent.popcornTrackEvent.toString();
             // we should only get here if no exceptions happened
             trackEvent.dispatch( "trackeventupdated", trackEvent );
+            if (newOptions.start || newOptions.end) {
+              Butter.app.dispatch( "trackeventupdatedbounds", trackEvent );
+            } 
           }
         }
       }

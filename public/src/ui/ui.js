@@ -317,52 +317,89 @@ define( [ "core/eventmanager", "./toggler",
         }
         offsetEnd.value = undefined;
         return false;
-      },
-      // We ordered the tracks by Set (the tracks which are in the same space of time
-      // belong to the same Set). We have to ignore the "subTrackEvents"
-      sortTrackEventsBySet = function( base ) {
-        var aux, j, offsetEnd = {value:undefined}; // OffsetEnd: longest end time
+      };
 
-        for (var i in base) {
-          // we skip the subtracks events
-          if ( !base[i].superTrackEvent.isSubTrackEvent ) {
-            if ( !aux ) {
-              aux = [ [ base[i] ] ];
-              !!base[i].popcornOptions && !!(base[i].popcornOptions.setMedia = aux.length -1);
-            }
-            // Next Track
-            j = Number(i) + 1;
-            if ( !base[j] ) return aux;
-            // skipping the subtracks events
-            while (base[j].superTrackEvent.isSubTrackEvent) {
-              j++;
-              if ( !base[j] ) return aux;
-            }
+    butter.sortTrackEvents2 = function( items ) {
+      var len = items.length,
+          value, i, j;
 
-            if ( belongsToSameSet(base[i].popcornOptions, base[j].popcornOptions, offsetEnd) ) {
-              aux[aux.length-1].push(base[j]);
-              !!base[i].popcornOptions && !!(base[i].popcornOptions.setMedia = aux.length -1);
-              !!base[j].popcornOptions && !!(base[j].popcornOptions.setMedia = aux.length -1);
-            } else {
-              aux[aux.length] = [base[j]];
-              !!base[j].popcornOptions && !!(base[j].popcornOptions.setMedia = aux.length -1);
+      for (i = 0; i < len; i++) {
+        value = items[i];
+        for (j=i-1; j > -1 && items[j].popcornOptions.start > value.popcornOptions.start; j--) {
+          items[j+1] = items[j];
+        }
+        items[j+1] = value;
+      };
+      return items;
+    };
+    // We ordered the tracks by Set (the tracks which are in the same space of time
+    // belong to the same Set). We have to ignore the "subTrackEvents"
+    butter.sortTrackEventsBySet = function( base ) {
+      var aux, j, offsetEnd = {value:undefined}; // OffsetEnd: longest end time
+
+      for (var i in base) {
+        // we skip the subtracks events
+        if ( !base[i].superTrackEvent.isSubTrackEvent ) {
+          if ( !aux ) {
+            aux = [ [ base[i] ] ];
+            !!base[i].popcornOptions && !!(base[i].popcornOptions.setMedia = aux.length -1);
+          }
+          // Next Track
+          j = Number(i) + 1;
+          if ( !base[j] ) break;
+          // skipping the subtracks events
+          while (base[j].superTrackEvent.isSubTrackEvent) {
+            j++;
+            if ( !base[j] ) {
+              butter.orderedTrackEventsSet = aux;
+              return aux;
             }
           }
-        }
 
-        if (!aux) { // There's no tracks
-          return [];
-        } else {
-          return aux;
+          if ( belongsToSameSet(base[i].popcornOptions, base[j].popcornOptions, offsetEnd) ) {
+            aux[aux.length-1].push(base[j]);
+            !!base[i].popcornOptions && !!(base[i].popcornOptions.setMedia = aux.length -1);
+            !!base[j].popcornOptions && !!(base[j].popcornOptions.setMedia = aux.length -1);
+          } else {
+            aux[aux.length] = [base[j]];
+            !!base[j].popcornOptions && !!(base[j].popcornOptions.setMedia = aux.length -1);
+          }
         }
-      };
+      }
+
+      if (!aux) { // There's no tracks
+        butter.orderedTrackEventsSet = [];
+        return [];
+      } else {
+        butter.orderedTrackEventsSet = aux;
+        return aux;
+      }
+    };
+    // splice the trackevent in the Set
+    butter.spliceTrackEventBySet = function(te, i) {
+      var base = orderedTrackEvents;
+      var currSet = butter.orderedTrackEventsSet[te.popcornOptions.setMedia];
+      if (currSet.length === 1) {
+        butter.orderedTrackEventsSet.splice(te.popcornOptions.setMedia, 1);
+        for (var j = i; j<base.length; j++) {
+          base[j].popcornOptions.setMedia--;
+        }
+      } else if (currSet > 1) {
+        var index = currSet.indexOf(te);
+        currSet.splice( index, 1 );
+      }
+    };
 
     butter.listen( "trackeventadded", function( e ) {
       var trackEvent = e.data;
       !trackEvent.$element && !(trackEvent.$element = $(trackEvent.view.element));
       orderedTrackEvents.push( trackEvent );
-      orderedTrackEvents.sort( sortTrackEvents );
-      butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
+      butter.sortTrackEvents2(orderedTrackEvents);
+      if (!!butter.trackNetwork && !!butter.trackNetwork.stageReady) {
+        if (!butter.trackNetwork.isDragging) {
+          butter.sortTrackEventsBySet( orderedTrackEvents );
+        }
+      }
     }); // listen
 
     butter.listen( "trackeventremoved", function( e ) {
@@ -370,14 +407,19 @@ define( [ "core/eventmanager", "./toggler",
           index = orderedTrackEvents.indexOf( trackEvent );
       if( index > -1 ){
         orderedTrackEvents.splice( index, 1 );
-        butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
+        butter.spliceTrackEventBySet( trackEvent, index );
       } // if
     }); // listen
 
-    butter.listen( "trackeventupdated", function() {
-      orderedTrackEvents.sort( sortTrackEvents );
-      butter.orderedTrackEventsSet = sortTrackEventsBySet( orderedTrackEvents );
-      !!butter.trackNetwork && butter.trackNetwork.calculateLines("trackeventupdated");
+    butter.listen( "trackeventupdated", function( e ) {
+      // Do Nothing
+      /*
+      butter.sortTrackEvents2(orderedTrackEvents);
+      if (butter.trackNetwork && !!butter.trackNetwork.stageReady) {
+        butter.sortTrackEventsBySet( orderedTrackEvents );
+        butter.dispatch("trackeventupdatedbounds", e.data);
+      }
+      */
     }); // listen
 
     var processKey = {
@@ -528,10 +570,12 @@ define( [ "core/eventmanager", "./toggler",
             butter.editor.closeTrackEventEditor( selectedEvent );
             selectedEvent.track.removeTrackEvent( selectedEvent );
             //Delete completely: redraw lines
-            butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
+            butter.sortTrackEventsBySet( orderedTrackEvents );
+            butter.trackNetwork.calculateLines("trackeventremoved", selectedEvents);
             return;
           }
 
+          butter.sortTrackEventsBySet( orderedTrackEvents );
           // Delete the events with warning dialog.
           dialog = Dialog.spawn( "delete-track", {
             data: selectedEvents.length + " track events",
@@ -541,9 +585,9 @@ define( [ "core/eventmanager", "./toggler",
                   selectedEvent = selectedEvents[ i ];
                   butter.editor.closeTrackEventEditor( selectedEvent );
                   selectedEvent.track.removeTrackEvent( selectedEvent );
-                  //Delete completely: redraw lines
-                  butter.trackNetwork.calculateLines("trackeventremoved", selectedEvent);
                 }
+                //Delete completely: redraw lines
+                butter.trackNetwork.calculateLines("trackeventremoved", selectedEvents);
                 dialog.close();
               },
               cancel: function() {
@@ -584,6 +628,7 @@ define( [ "core/eventmanager", "./toggler",
       86: function( e ) { // v key
         if ( e.ctrlKey || e.metaKey ) {
           butter.pasteTrackEvents();
+          butter.trackNetwork.calculateLines("pasteTrackEvents");
         }
       }, // v key
 

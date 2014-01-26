@@ -49,7 +49,6 @@ define( [ "dialog/dialog", "util/dragndrop", "util/lang", "text!layouts/track-ha
           _draggingHandleId = id;
         }
       }
-
     });
 
     var _sortable = DragNDrop.sortable( _listElement, {
@@ -84,7 +83,7 @@ define( [ "dialog/dialog", "util/dragndrop", "util/lang", "text!layouts/track-ha
         // We now need to set the values of "current index" to where we replaced since sortstarted
         // won't fire again until the mouse is let go and then an element is selected again.
         _draggingHandleIndex = indexCache;
-        butter.trackNetwork.updateLinesOfLayer();
+        butter.dispatch("sortended");
       }
     });
 

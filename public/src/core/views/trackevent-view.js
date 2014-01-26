@@ -301,6 +301,15 @@ define( [ "core/logger", "core/eventmanager", "util/dragndrop",
     _element.addEventListener( "mouseout", function ( e ) {
       _this.dispatch( "trackeventmouseout", { originalEvent: e, trackEvent: _trackEvent } );
     }, false );
+    _element.querySelector(".handle-point").addEventListener( "mousedown", function( e ) {
+      e.stopPropagation();
+      Butter.app.dispatch("handlepointmousedown", _trackEvent);
+    }, false );
+    $(_element).hover(function( e ) {
+      Butter.app.dispatch("trackeventhover", _element);
+    }, function( e ){
+      Butter.app.dispatch("trackeventunhover", _element);
+    });
 
     function select() {
       if ( _draggable && !_draggable.selected ) {
