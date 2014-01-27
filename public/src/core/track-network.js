@@ -132,6 +132,7 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				}
 			}
 			else if (evType === "pasteTrackEvents" && app.selectedEvents.length > 0) {
+				this.updateLinesOfLayer();
 				// Update until the last selected
 				setMedia = app.sortedSelectedEvents[0].popcornOptions.setMedia;
 				// Update from first selected TE
@@ -844,6 +845,9 @@ define( [ "dialog/dialog" ], function( Dialog ) {
 				setMediaResizing = e.data.popcornOptions.setMedia;
 			});
 			app.listen("sortended", function(e) {
+				trackNetwork.updateLinesOfLayer();
+			});
+			app.listen("trackadded", function() {
 				trackNetwork.updateLinesOfLayer();
 			});
 			app.editor.listen( "editortoggled", function() {

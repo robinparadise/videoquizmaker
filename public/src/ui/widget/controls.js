@@ -76,7 +76,7 @@ define( [ "util/lang", "util/time", "text!layouts/controls.html" ],
 
       // Wire custom callbacks for right-hand buttons
       controlsShare.addEventListener( "click", onShareClick, false );
-      controlsRemix.addEventListener( "click", onRemixClick, false );
+      controlsRemix && controlsRemix.addEventListener( "click", onRemixClick, false );
       controlsFullscreen.addEventListener( "click", onFullscreenClick, false );
       controlsLogo.addEventListener( "click", onLogoClick, false );
 

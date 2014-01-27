@@ -10,7 +10,7 @@ html(lang='en')
     // This is the embed, the actual content is at the following URL
     link(rel='canonical', href='#{embedShellSrc}')
     if !description
-      description = 'Created with Popcorn Maker - part of the Mozilla Webmaker initiative'
+      description = 'Created with Videoquiz Maker - based on Popcorn Maker (part of the Mozilla Webmaker initiative)'
     meta(property='og:description', content='#{description}')
     meta(property='og:title', content='#{title}')
     meta(property='og:type', content='video.other')
@@ -38,7 +38,7 @@ html(lang='en')
           a.embed-logo
           .embed-project
             div
-              .mozpopcorn Popcorn Maker
+              .mozpopcorn Videoquiz Maker
               .embed-title #{title}
               .embed-author #{author}
             .post-roll-description
@@ -50,9 +50,6 @@ html(lang='en')
                 a#replay-post
                   span Replay
               li
-                a(href='#{remixUrl}', target='_blank')#remix-post
-                  span Remix
-              li
                 a#share-post
                   span Share
     #share-container
@@ -62,7 +59,7 @@ html(lang='en')
           a.embed-logo
           .embed-project
             div
-              .mozpopcorn Popcorn Maker
+              .mozpopcorn Videoquiz Maker
               .embed-title #{title}
               .embed-author #{author}
           #share-options.share-options
@@ -101,7 +98,7 @@ html(lang='en')
         span.attribution-text Credits
       #attribution-details.attribution-details
         span.attribution-close
-        div.attribution-mopop mozilla Popcorn
+        div.attribution-mopop Videoquiz Maker
         div.attribution-title #{title}
         if author
           div.attribution-author #{author}
