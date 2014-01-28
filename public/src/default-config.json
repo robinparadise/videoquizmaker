@@ -26,10 +26,6 @@
         "icon": "{{baseDir}}templates/assets/plugins/quizme/quizme-icon.png"
       },
       {
-        "type": "mvideo",
-        "icon": "{{baseDir}}templates/assets/plugins/mvideo/mvideo-icon.png"
-      },
-      {
         "type": "text",
         "icon": "{{baseDir}}templates/assets/plugins/text/text-icon.png"
       },
