@@ -75,11 +75,15 @@
     {
       "name": "Michael Nieling",
       "email": "m@ocupop.com"
+    },
+    {
+      "name": "Robin Giles",
+      "email": "robinchogiles@gmail.com"
     }
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/mozilla/butter.git"
+    "url": "https://github.com/robinparadise/videoquizmaker.git"
   },
   "dependencies": {
     "async": "0.2.6",
