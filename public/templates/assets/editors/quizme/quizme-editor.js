@@ -28,6 +28,7 @@
 
       var container = _rootElement.querySelector( ".editor-options" ),
           advancedContainer = _rootElement.querySelector( ".advanced-options" ),
+          styleContainer = _rootElement.querySelector( ".style-options" ),
           pluginOptions = {},
           ignoreKeys = ["start", "end"],
           startEndElement;
@@ -45,8 +46,11 @@
         var key,
             option,
             colorQuiz = pluginOptions.color,
+            customFontSize = pluginOptions.customFontSize,
             customColor = pluginOptions.customColor,
-            customColorHeaderFont = pluginOptions.customColorHeaderFont;
+            customHeaderFontColor = pluginOptions.customHeaderFontColor,
+            customBodyColor = pluginOptions.customBodyColor,
+            customBodyFontColor = pluginOptions.customBodyFontColor;
 
         function customColorCallback( te, prop, message ) {
           if ( message ) {
@@ -59,13 +63,35 @@
             });
           }
         }
-        function customColorHeadFontCallback( te, prop, message ) {
+        function customHeaderFontColorCallback( te, prop, message ) {
           if ( message ) {
             _this.setErrorState( message );
             return;
           } else {
             te.update({
-              customColorHeaderFont: prop.customColorHeaderFont,
+              customHeaderFontColor: prop.customHeaderFontColor,
+              color: "custom"
+            });
+          }
+        }
+        function customBodyColorCallback( te, prop, message ) {
+          if ( message ) {
+            _this.setErrorState( message );
+            return;
+          } else {
+            te.update({
+              customBodyColor: prop.customBodyColor,
+              color: "custom"
+            });
+          }
+        }
+        function customBodyFontColorCallback( te, prop, message ) {
+          if ( message ) {
+            _this.setErrorState( message );
+            return;
+          } else {
+            te.update({
+              customBodyFontColor: prop.customBodyFontColor,
               color: "custom"
             });
           }
@@ -78,10 +104,14 @@
 
           if ( e.target.value === "custom" ) {
             customColor.element.parentNode.style.display = "block";
-            customColorHeaderFont.element.parentNode.style.display = "block";
+            customHeaderFontColor.element.parentNode.style.display = "block";
+            customBodyColor.element.parentNode.style.display = "block";
+            customBodyFontColor.element.parentNode.style.display = "block";
           } else {
             customColor.element.parentNode.style.display = "none";
-            customColorHeaderFont.element.parentNode.style.display = "none";
+            customHeaderFontColor.element.parentNode.style.display = "none";
+            customBodyColor.element.parentNode.style.display = "none";
+            customBodyFontColor.element.parentNode.style.display = "none";
           }
         }
 
@@ -104,8 +134,14 @@
               else if ( key === "customColor" ) {
                 _this.attachColorChangeHandler( option.element, option.trackEvent, key, customColorCallback );
               }
-              else if ( key === "customColorHeaderFont" ) {
-                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customColorHeadFontCallback );
+              else if ( key === "customHeaderFontColor" ) {
+                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customHeaderFontColorCallback );
+              }
+              else if ( key === "customBodyColor" ) {
+                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customBodyColorCallback );
+              }
+              else if ( key === "customBodyFontColor" ) {
+                _this.attachColorChangeHandler( option.element, option.trackEvent, key, customBodyFontColorCallback );
               }
               else {
                 _this.attachInputChangeHandler( option.element, option.trackEvent, key, _this.updateTrackEventSafe );
@@ -119,16 +155,22 @@
 
         if ( _popcornOptions.color === "custom" ) {
           customColor.element.parentNode.style.display = "block";
-          customColorHeaderFont.element.parentNode.style.display = "block";
+          customHeaderFontColor.element.parentNode.style.display = "block";
+          customBodyColor.element.parentNode.style.display = "block";
+          customBodyFontColor.element.parentNode.style.display = "block";
         }
         else if (!_popcornOptions.color) {
           _popcornOptions.color = "custom";
           customColor.element.parentNode.style.display = "block";
-          customColorHeaderFont.element.parentNode.style.display = "block";
+          customHeaderFontColor.element.parentNode.style.display = "block";
+          customBodyColor.element.parentNode.style.display = "block";
+          customBodyFontColor.element.parentNode.style.display = "block";
         }
         else {
           customColor.element.parentNode.style.display = "none";
-          customColorHeaderFont.element.parentNode.style.display = "none";
+          customHeaderFontColor.element.parentNode.style.display = "none";
+          customBodyColor.element.parentNode.style.display = "none";
+          customBodyFontColor.element.parentNode.style.display = "none";
         }
       }
 
@@ -140,6 +182,7 @@
         callback: callback,
         basicContainer: container,
         advancedContainer: advancedContainer,
+        styleContainer: styleContainer,
         ignoreManifestKeys: ignoreKeys
       });
 

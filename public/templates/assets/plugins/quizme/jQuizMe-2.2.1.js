@@ -9,11 +9,11 @@
 */
 (function($){	
 	var _jQuizMeLayout = $("<div/>").addClass( "quiz-el").append( 
-		$("<div/>").addClass( "q-header q-innerArea").append(
+		$("<div/>").addClass( "q-header q-header-main q-innerArea").append(
 			$("<div/>").addClass( "q-counter"),
 			$("<div/>").addClass( "q-title")
 		),
-		$("<div/>").addClass( "q-help q-innerArea").append( 
+		$("<div/>").addClass( "q-help q-header-main q-innerArea").append( 
 			$("<div/>").addClass( "q-help-menu" ).append(
 				$( "<span/>" ).addClass( "q-quit-area" ).append(
 					$( "<input type ='button'/>" ).addClass( "q-quit-btn" ),

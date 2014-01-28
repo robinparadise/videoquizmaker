@@ -347,7 +347,7 @@ app.post( '/api/publish/:id',
                     mediaSrc: attribURL,
                     embedShellSrc: publishUrl,
                     baseHref: baseHref,
-                    remixUrl: remixUrl,
+                    /*remixUrl: remixUrl,*/
                     templateScripts: templateScripts,
                     externalAssets: externalAssetsString,
                     popcorn: popcornString,

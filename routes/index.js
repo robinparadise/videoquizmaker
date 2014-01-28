@@ -41,7 +41,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
         description: result.description,
         automaticLines: result.automaticLines,
         author: result.author,
-        remixedFrom: result.remixedFrom,
+        /*remixedFrom: result.remixedFrom,*/
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
         // Add URLs for embed, embed shell
@@ -74,7 +74,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
     );
   });
 
-  app.get( '/api/project/:id/remixes',
+/*  app.get( '/api/project/:id/remixes',
     filter.isStorageAvailable,
     filter.crossOriginAccessible,
     function( req, res ) {
@@ -84,7 +84,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
         }
         res.jsonp( { error: 'okay', results: pruneSearchResults( projects ) } );
       });
-  });
+  });*/
 
   app.get( '/api/project/:id?',
     filter.isLoggedIn, filter.isStorageAvailable,
@@ -115,7 +115,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
     });
   });
 
-  // We have a separate remix API for unsecured and sanitized access to projects
+/*  // We have a separate remix API for unsecured and sanitized access to projects
   app.get( '/api/remix/:id',
     filter.isStorageAvailable,
     function( req, res ) {
@@ -140,7 +140,7 @@ module.exports = function routesCtor( app, Project, filter, sanitizer,
       res.json( projectJSON );
       metrics.increment( 'user.remix' );
     });
-  });
+  });*/
 
   app.post( '/api/delete/:id?',
     filter.isLoggedIn, filter.isStorageAvailable,

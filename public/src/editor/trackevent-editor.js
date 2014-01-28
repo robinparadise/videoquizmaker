@@ -70,8 +70,10 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
     events.open = function( parentElement, trackEvent ) {
       var basicButton = rootElement.querySelector( ".basic-tab" ),
           advancedButton = rootElement.querySelector( ".advanced-tab" ),
+          styleButton = rootElement.querySelector( ".style-tab" ),
           basicTab = rootElement.querySelector( ".editor-options" ),
           advancedTab = rootElement.querySelector( ".advanced-options" ),
+          styleTab = rootElement.querySelector( ".style-options" ),
           wrapper = rootElement.querySelector( ".scrollbar-outer" );
 
       _trackEvent = trackEvent;
@@ -81,7 +83,51 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
       }
       // Code for handling basic/advanced options tabs are going to be the same. If the user defined these buttons
       // handle it for them here rather than force them to write the code in their editor
-      if ( basicButton && advancedButton ) {
+      if ( basicButton && advancedButton && styleButton ) {
+        basicButton.addEventListener( "mouseup", function() {
+          if ( basicTab.classList.contains( "display-off" ) ) {
+            basicTab.classList.remove( "display-off" );
+            advancedTab.classList.add( "display-off" );
+            styleTab.classList.add( "display-off" );
+            basicButton.classList.add( "butter-active" );
+            advancedButton.classList.remove( "butter-active" );
+            styleButton.classList.remove( "butter-active" );
+            extendObject.scrollbar.update();
+          }
+        });
+
+        advancedButton.addEventListener( "mouseup", function() {
+          if ( advancedTab.classList.contains( "display-off" ) ) {
+            basicTab.classList.add( "display-off" );
+            advancedTab.classList.remove( "display-off" );
+            styleTab.classList.add( "display-off" );
+            basicButton.classList.remove( "butter-active" );
+            advancedButton.classList.add( "butter-active" );
+            styleButton.classList.remove( "butter-active" );
+            extendObject.scrollbar.update();
+          }
+        });
+
+        styleButton.addEventListener( "mouseup", function() {
+          if ( styleTab.classList.contains( "display-off" ) ) {
+            basicTab.classList.add( "display-off" );
+            advancedTab.classList.add( "display-off" );
+            styleTab.classList.remove( "display-off" );
+            basicButton.classList.remove( "butter-active" );
+            advancedButton.classList.remove( "butter-active" );
+            styleButton.classList.add( "butter-active" );
+            extendObject.scrollbar.update();
+          }
+        });
+
+        // Override default scrollbar to account for both tab containers
+        extendObject.addScrollbar({
+          inner: wrapper,
+          outer: wrapper,
+          appendTo: rootElement.querySelector( ".scrollbar-container" )
+        });
+      }
+      else if ( basicButton && advancedButton ) {
         basicButton.addEventListener( "mouseup", function() {
           if ( basicTab.classList.contains( "display-off" ) ) {
             basicTab.classList.toggle( "display-off" );
@@ -911,12 +957,14 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
           manifestKeys,
           basicContainer,
           advancedContainer,
+          styleContainer,
           trackEvent = options.trackEvent,
           ignoreManifestKeys = options.ignoreManifestKeys || [],
           i, l;
 
       basicContainer = options.basicContainer || extendObject.rootElement;
       advancedContainer = options.advancedContainer || extendObject.rootElement;
+      styleContainer = options.styleContainer || extendObject.rootElement;
 
       if ( !trackEvent.manifest ) {
         throw "Unable to create properties from null manifest. Perhaps trackevent is not initialized properly yet.";
@@ -931,7 +979,13 @@ define([ "util/lang", "util/keys", "util/time", "./base-editor", "ui/widget/tool
       for ( i = 0, l = manifestKeys.length; i < l; ++i ) {
         item = manifestKeys[ i ];
         optionGroup = manifestOptions[ item ].group ? manifestOptions[ item ].group : "basic";
-        container = optionGroup === "advanced" ? advancedContainer : basicContainer;
+        if (optionGroup === "advanced") {
+          container = advancedContainer;
+        } else if (optionGroup === "style") {
+          container = styleContainer;
+        } else {
+          container = basicContainer;
+        }
         if ( ignoreManifestKeys && ignoreManifestKeys.indexOf( item ) > -1 ) {
           continue;
         }

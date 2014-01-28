@@ -18,6 +18,26 @@
   };
   var target, gettingQuizzes;
 
+  var changeQuizCSS = function($elem, options) {
+    if (options.color && options.color !== $elem.attr("color-quiz")) {
+      $elem.attr("color-quiz", options.color);
+      if (options.color === "custom") {
+        $elem.css({
+          'border-color': options.customColor,   // Change Header Background Color
+          'background': options.customBodyColor, // change Body Background Color
+          'color': options.customBodyFontColor   // change Body Font Color
+        });
+        $elem.find(".q-header-main").css({
+          'background': options.customColor,     // Change Header Background Color
+          'color': options.customHeaderFontColor // change Header Font Color
+        });
+      }
+    }
+    if (options.customFontSize) {
+      $elem.css({'font-size': options.customFontSize + "px"});   // change Quiz Font Size
+    }
+  }
+
   // get Quizzes
   var GlobalQuiz = {};
   var createQuiz = function(options) {
@@ -27,23 +47,12 @@
       options.quiz = GlobalQuiz["TrueFalse"]; // Default
     }
     if (!!options.quiz) {
+
+      options.$container.find(".quiz-el").remove();
       options.$container.jQuizMe(options.quiz, options.optQuiz, options.callback);
       var $quizElem = options.$container.find(".quiz-el");
       // Change Quiz Appearence
-      if (options.color && options.color !== $quizElem.attr("color-quiz")) {
-        if (options.color === "custom") {
-          $quizElem.find(".q-innerArea").css({
-            'background': options.customColor
-          });
-          $quizElem.find(".q-header, .q-intro, .q-help").css({
-            'color': options.customColorHeaderFont
-          });
-          $quizElem.attr("color-quiz", "");
-        }
-        else {
-          $quizElem.attr("color-quiz", options.color);
-        }
-      }
+      changeQuizCSS($quizElem, options);
     }
   }
 
@@ -99,12 +108,30 @@
           optional: true,
           group: "advanced"
         },
+        customFontSize: {
+          elem: "input",
+          type: "number",
+          label: "Font Size",
+          units: "px",
+          "default": "19",
+          group: "style"
+        },
         color: {
           elem: "select", 
-          options: ["darkQuiz", "yellowQuiz", "greenQuiz", "redQuiz", "greenLightQuiz", "darkGreyQuiz", "custom"], 
+          options: [
+            "darkQuiz",
+            "whiteQuiz",
+            "redQuiz",
+            "yellowQuiz",
+            "goldQuiz",
+            "greenQuiz",
+            "blueQuiz",
+            "darkGreyQuiz",
+            "custom"
+          ], 
           label: "Color Quiz",
           "default": "custom",
-          group: "advanced"
+          group: "style"
         },
         customColor: {
           elem: "input",
@@ -112,17 +139,31 @@
           optional: true,
           label: "Custom Color Quiz",
           "default": "#052938",
-          group: "advanced",
-          /*hidden: true*/
+          group: "style"
         },
-        customColorHeaderFont: {
+        customHeaderFontColor: {
           elem: "input",
           type: "color",
           optional: true,
-          label: "Custom Color Header-Font",
+          label: "Custom Header Font Color",
           "default": "#FFF",
-          group: "advanced",
-          /*hidden: true*/
+          group: "style"
+        },
+        customBodyColor: {
+          elem: "input",
+          type: "color",
+          optional: true,
+          label: "Custom Body Background Color",
+          "default": "#ffffff",
+          group: "style"
+        },
+        customBodyFontColor: {
+          elem: "input",
+          type: "color",
+          optional: true,
+          label: "Custom Body Font Color",
+          "default": "#000000",
+          group: "style"
         },
         start: {
           elem: "input", 
