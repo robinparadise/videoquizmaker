@@ -1,0 +1,220 @@
+/*
+* jQuizMe - jQuery quiz plugin
+*
+* @version 2.2.1
+* @date 10/09/2012
+*/
+
+// COLORS
+@redQuiz: #D3473C;
+@blueQuiz: #47A4BE;
+@greenQuiz: #3FB58E;
+@yellowQuiz: #ffaa33;
+@goldQuiz: #DCB20C;
+@darkGreyQuiz: #3A3C3C;
+@darkQuiz: #052938;
+@whiteQuiz: #fff;
+@paddingAll: 0.2em; 
+
+.jquizme-container {
+    position: absolute;
+}
+.quiz-el {
+    font-size: 1.2em;
+    font-family: Arial, Verdana, Helvetica, sans-serif;
+    position: relative;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    box-shadow: 0px 0px 10px #555;
+    border: @paddingAll solid @darkQuiz;
+    background: white;
+    div {
+        padding: @paddingAll;
+    }
+    input {
+        &[type="button"] {
+            color: black;
+            font-size: 85%;
+            background: #f4f5f5;
+            border: 1px solid #bfc4c4;
+            border-top-color: #ccd1d1;
+            border-bottom-color: #b1b8b8;
+            box-shadow: inset 0 1px 0 #ffffff;
+            &[disabled="disabled"] {
+                color: #555;
+            }
+        }
+    }
+    /* .q-innerArea = .q-header, .q-help, .q-prob, .q-intro, .q-gameOver */
+    .q-innerArea {
+        position:relative;
+        clear: both;
+        color: black;
+    }
+    .q-header-main {
+        background: @darkQuiz;
+        color: white;
+    }
+    .q-help, .q-ansSel, .userInputArea {
+        padding: 0 @paddingAll;
+    }
+    .q-intro {
+        padding: @paddingAll * 2;
+        font-style: italic;
+    }
+    .q-title {
+        overflow: hidden;
+        width: 80%;
+        margin: 0;
+    }
+    /*This is a hack, because IE fails on float:right.*/
+    .q-counter {
+        position: absolute;
+        top: 0%;
+        right: 0%;
+        margin: 1%;
+        padding: 0%;
+    }
+    .q-counter {
+        float: right;
+    }
+    .q-prob .q-innerArea {
+        padding: @paddingAll;
+    }
+    /*.q-probArea = .q-ques, .q-ansSel, .q-result */
+    .q-probArea{
+        position: relative;
+    }
+    .q-quit-confirm, .q-quit-area, .q-review-arrows{
+        display: inline;
+        width: auto;
+    }
+    .q-quit-area{
+        float: right;
+    }
+    .q-review-arrows{
+        position: relative; /*IE hack.*/
+        width: 2.3em;
+    }
+    .q-center{
+        text-align: center;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .q-gameOver .q-statTotal{
+        color: @darkQuiz;
+    }
+    .q-quesInput{
+        width: 95%;
+    }
+    .q-ol{
+        list-style-type: upper-alpha;
+        list-style-position: inside;
+        padding: 0;
+        margin: 0;
+    }
+    .q-ol-li{
+        margin: 0.4em auto 0.4em auto;
+    }
+    .q-ol-hover{
+        background: #777777;
+    }
+    .q-ol-active{
+        background: black;
+        color: #ccffaa;
+    }
+    /*IE displays the wrong width for <select> tags.*/
+    .q-select{
+        width : 80%;
+    }
+    .q-select{
+        width: 100%;
+    }
+    .q-review-menu{
+        text-align: center;
+        width: auto;
+    }
+    .q-reviewBar-btns{
+        position: relative;
+        display: inline-block;
+        width: 50%;
+    }
+    .q-rightArrow{
+        float:right;
+    }
+    .q-leftArrow{
+        float:left;
+    }
+    .q-timer-area{
+        display:block;
+        text-align:center;
+        width: auto;
+        line-height: 0;
+        height:0;
+    }
+}
+
+/* Color Quiz*/
+.quiz-el[color-quiz="yellowQuiz"] {
+    border-color: @yellowQuiz;
+    .q-header-main {
+        background: @yellowQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="darkQuiz"] {
+    border-color: @darkQuiz;
+    .q-header-main {
+        background: @darkQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="redQuiz"] {
+    border-color: @redQuiz;
+    .q-header-main {
+        background: @redQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="greenQuiz"] {
+    border-color: @greenQuiz;
+    .q-header-main {
+        background: @greenQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="darkGreyQuiz"] {
+    border-color: @darkGreyQuiz;
+    .q-header-main {
+        background: @darkGreyQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="blueQuiz"] {
+    border-color: @blueQuiz;
+    .q-header-main {
+        background: @blueQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="goldQuiz"] {
+    border-color: @goldQuiz;
+    .q-header-main {
+        background: @goldQuiz;
+        color: white;
+    }
+}
+.quiz-el[color-quiz="whiteQuiz"] {
+    border-color: @whiteQuiz;
+    .q-header-main {
+        background: @whiteQuiz;
+        color: black;
+    }
+}
+.quiz-el:not([color-quiz="custom"]) {
+    background: white;
+    color: black;
+}

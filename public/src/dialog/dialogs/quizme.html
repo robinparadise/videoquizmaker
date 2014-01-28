@@ -1,0 +1,93 @@
+<!--  This Source Code Form is subject to the terms of the MIT license
+      If a copy of the MIT license was not distributed with this file, you can
+      obtain one at http://www.mozillapopcorn.org/butter-license.txt -->
+
+<div class="butter-dialog quizmanager mediamanager">
+    <h1><span class="title"></span>Quiz Manager</h1>
+    <ul class="manager-list">
+
+        <li id="list-quizzes">
+            <div class="manager-header list-quizzes-header">Quizzes</div>
+            <div class="scrollbar-container quizzes-container">
+                <div class="scrollbar-outer scrollbar-inner">
+                    <ul class="manager-sublist quizzes"></ul>
+                    <input class="add-new-quiz" type="text" placeholder="Type name of quiz...">
+                    <div class="wrapper-icon">
+                        <span class="icon icon-white icon-plus add-quiz"></span>
+                        <span class="icon icon-white icon-minus delete-quiz selected"></span>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li class="list-questions">
+            <div class="manager-header list-questions-header">Questions</div>
+            <div class="scrollbar-container questions-container">
+                <div class="scrollbar-outer scrollbar-inner">
+                    <ul class="manager-sublist questions"></ul>
+                    <div class="wrapper-icon">
+                        <span class="icon icon-white icon-plus add-question"></span>
+                    </div>
+                </div>
+            </div>
+        </li>
+
+        <li class="list-question-edit">
+            <div class="manager-header list-question-edit-header">Question</div>
+            <ul class="manager-sublist question-edit">
+                <fieldset>
+                    <textarea placeholder="Type a question here..." class="question-input"></textarea>
+                </fieldset>
+                <fieldset>
+                    <label class="property-name">Type of answers</label>
+                    <select class="select-type-answer">
+                        <option typequiz="tf" class="type-tf" value="type-tf" selected>True False</option>
+                        <option typequiz="multiList" class="type-multiList" value="type-multiList">Multilist</option>
+                        <option typequiz="multi" class="type-multi" value="type-multi">List</option>
+                        <option typequiz="fill" class="type-fill" value="type-fill">Fill</option>
+                        <option typequiz="cards" class="type-cards" value="type-cards">Cards</option>
+                    </select>
+                </fieldset>
+                <fieldset>
+                    <label class="property-name">Answers</label>
+                    <div class="butter-form-radio">
+                        <input class="answer truefalse value-true" type="radio" name="tf">
+                        <label class="answer truefalse"><strong>True</strong></label>
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer truefalse value-false" type="radio" name="tf">
+                        <label class="answer truefalse"><strong>False</strong></label>
+                    </div>
+                    <input class="answer ans-fill" type="text" placeholder="Type the answer here...">
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an answer here...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an answer here...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an optional answer...">
+                    </div>
+                    <div class="butter-form-radio">
+                        <input class="answer multi radio-multi" type="radio" name="multi">
+                        <input class="answer multi ans-multi" type="text" placeholder="Type an optional answer...">
+                    </div>
+                    <div class="butter-form-align-center add-update-question-wrapper">
+                        <input value="Add" type="button" class="butter-btn btn-green add-update-question">
+                        <span class="delete-question">Delete</span>
+                    </div>
+                </fieldset>
+            </ul>
+        </li>
+    </ul>
+    <label class="error-quizmanager"></label>
+    <label class="export-quiz">Export quizzes</label>
+    <span>|</span>
+    <label for="import-quiz" class="import-quiz">Import quizzes</label>
+    <input type="file" id="import-quiz"/>
+    <a class="close-button"><span class="icon icon-only icon-x"></span></a>
+    <div id="spinner-wrapper"><span class="media-loading-spinner butter-spinner"></span></div>
+</div>
